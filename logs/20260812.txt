@@ -1,0 +1,5030 @@
+[2026-08-12 20:16:21] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:22] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:28] EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+[2026-08-12 20:16:33] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:39] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:16:44] EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:47] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:47] EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+[2026-08-12 20:16:47] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:16:49] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:16:54] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:16:54] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:16:59] EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+[2026-08-12 20:17:04] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:17:05] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:17:07] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:17:07] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:07] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:07] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:20] EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:21] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:27] EVENT: JEWEL GIFT
+GIFT: Floating heart
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:31] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:33] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:34] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:35] EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:40] EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:47] EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:50] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:17:53] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:17:54] EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+[2026-08-12 20:17:58] EVENT: SUPER CHAT
+ORIGINAL: ₱50.00
+CURRENCY: PHP
+AMOUNT: 50.00
+USD RATE: 0.01635000
+USD AMOUNT: $0.82
+RESULT: SUCCESS
+TIME ADDED: +24.52 seconds
+[2026-08-12 20:17:59] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:18:01] EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:18:04] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:18:08] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:18:37] EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:18:40] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:18:58] EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+[2026-08-12 20:19:02] EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:19:06] EVENT: SUPER CHAT
+ORIGINAL: $20.00
+CURRENCY: USD
+AMOUNT: 20.00
+USD RATE: 1.00000000
+USD AMOUNT: $20.00
+RESULT: SUCCESS
+TIME ADDED: +600.00 seconds
+[2026-08-12 20:19:07] EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:19:17] EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:19:20] EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+[2026-08-12 20:19:45] EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+[2026-08-12 20:19:53] EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:19:58] EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+[2026-08-12 20:20:06] EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+[2026-08-12 20:20:08] EVENT: SUPER CHAT
+ORIGINAL: MYR 3.00
+CURRENCY: MYR
+AMOUNT: 3.00
+USD RATE: 0.24446000
+USD AMOUNT: $0.73
+RESULT: SUCCESS
+TIME ADDED: +22.00 seconds
+[2026-08-12 20:20:08] EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+
+**********************************************************************
+[2026-08-12 20:20:40]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:20:40]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:20:52]
+EVENT: JEWEL GIFT
+GIFT: Party hat
+JEWELS: 20
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:20:54]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:20:59]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:20:59]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:03]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:06]
+EVENT: JEWEL GIFT
+GIFT: Let em cook
+JEWELS: 750
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +375.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:31]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:45]
+EVENT: SUPER CHAT
+ORIGINAL: ARS 100.00
+CURRENCY: ARS
+AMOUNT: 100.00
+USD RATE: 0.00067000
+USD AMOUNT: $0.07
+RESULT: SUCCESS
+TIME ADDED: +2.01 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:45]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:45]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:21:54]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:22:39]
+EVENT: SUPER CHAT
+ORIGINAL: A$10.00
+CURRENCY: AUD
+AMOUNT: 10.00
+USD RATE: 0.70542000
+USD AMOUNT: $7.05
+RESULT: SUCCESS
+TIME ADDED: +211.63 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:22:41]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:22:50]
+EVENT: SUPER CHAT
+ORIGINAL: HK$15.00
+CURRENCY: HKD
+AMOUNT: 15.00
+USD RATE: 0.12734000
+USD AMOUNT: $1.91
+RESULT: SUCCESS
+TIME ADDED: +57.30 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:23:01]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:23:33]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:23:34]
+EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:00]
+EVENT: JEWEL GIFT
+GIFT: GGEZ
+JEWELS: 20
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:12]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:14]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:21]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:28]
+EVENT: SUPER CHAT
+ORIGINAL: SAR 7.99
+CURRENCY: SAR
+AMOUNT: 7.99
+USD RATE: 0.26667000
+USD AMOUNT: $2.13
+RESULT: SUCCESS
+TIME ADDED: +63.92 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:24:59]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:02]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:05]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:15]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:21]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:21]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:22]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:28]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:42]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:43]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:47]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:25:55]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:26:07]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:26:11]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:26:14]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:26:27]
+EVENT: SUPER CHAT
+ORIGINAL: £4.99
+CURRENCY: GBP
+AMOUNT: 4.99
+USD RATE: 1.35020000
+USD AMOUNT: $6.74
+RESULT: SUCCESS
+TIME ADDED: +202.12 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:26:57]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:27:04]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:27:11]
+EVENT: JEWEL GIFT
+GIFT: Chili
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:27:32]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:27:39]
+EVENT: SUPER CHAT
+ORIGINAL: €2.49
+CURRENCY: EUR
+AMOUNT: 2.49
+USD RATE: 1.15530000
+USD AMOUNT: $2.88
+RESULT: SUCCESS
+TIME ADDED: +86.30 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:27:45]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:05]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:19]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:20]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:21]
+EVENT: SUPER CHAT
+ORIGINAL: NOK 59.00
+CURRENCY: NOK
+AMOUNT: 59.00
+USD RATE: 0.10527000
+USD AMOUNT: $6.21
+RESULT: SUCCESS
+TIME ADDED: +186.33 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:26]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:27]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:43]
+EVENT: JEWEL GIFT
+GIFT: Trophy cake
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:49]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:28:54]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:02]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:02]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:25]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:38]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:45]
+EVENT: SUPER CHAT
+ORIGINAL: A$2.00
+CURRENCY: AUD
+AMOUNT: 2.00
+USD RATE: 0.70542000
+USD AMOUNT: $1.41
+RESULT: SUCCESS
+TIME ADDED: +42.33 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:29:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:06]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:11]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:14]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:20]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:36]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:36]
+EVENT: SUPER CHAT
+ORIGINAL: $5.00
+CURRENCY: USD
+AMOUNT: 5.00
+USD RATE: 1.00000000
+USD AMOUNT: $5.00
+RESULT: SUCCESS
+TIME ADDED: +150.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:30:58]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:03]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:20]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:21]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:27]
+EVENT: SUPER CHAT
+ORIGINAL: CA$2.00
+CURRENCY: CAD
+AMOUNT: 2.00
+USD RATE: 0.71768000
+USD AMOUNT: $1.44
+RESULT: SUCCESS
+TIME ADDED: +43.06 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:28]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:31]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:36]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:38]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:38]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:39]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:42]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:42]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:45]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:51]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:31:55]
+EVENT: SUPER CHAT
+ORIGINAL: £2.00
+CURRENCY: GBP
+AMOUNT: 2.00
+USD RATE: 1.35020000
+USD AMOUNT: $2.70
+RESULT: SUCCESS
+TIME ADDED: +81.01 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:15]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:21]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:22]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:23]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:24]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:31]
+EVENT: SUPER CHAT
+ORIGINAL: £2.00
+CURRENCY: GBP
+AMOUNT: 2.00
+USD RATE: 1.35020000
+USD AMOUNT: $2.70
+RESULT: SUCCESS
+TIME ADDED: +81.01 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:31]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:31]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:33]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:41]
+EVENT: SUPER CHAT
+ORIGINAL: €0.99
+CURRENCY: EUR
+AMOUNT: 0.99
+USD RATE: 1.15530000
+USD AMOUNT: $1.14
+RESULT: SUCCESS
+TIME ADDED: +34.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:41]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:43]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:45]
+EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:47]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:54]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:32:55]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:08]
+EVENT: JEWEL GIFT
+GIFT: Finger heart
+JEWELS: 350
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +175.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:09]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:35]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:35]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:40]
+EVENT: JEWEL GIFT
+GIFT: Press F
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:44]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:46]
+EVENT: SUPER CHAT
+ORIGINAL: €0.99
+CURRENCY: EUR
+AMOUNT: 0.99
+USD RATE: 1.15530000
+USD AMOUNT: $1.14
+RESULT: SUCCESS
+TIME ADDED: +34.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:47]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:33:52]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:35:27]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:35:45]
+EVENT: SUPER CHAT
+ORIGINAL: £1.99
+CURRENCY: GBP
+AMOUNT: 1.99
+USD RATE: 1.35020000
+USD AMOUNT: $2.69
+RESULT: SUCCESS
+TIME ADDED: +80.61 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:13]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:13]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:19]
+EVENT: SUPER CHAT
+ORIGINAL: ₹40.00
+CURRENCY: INR
+AMOUNT: 40.00
+USD RATE: 0.01048000
+USD AMOUNT: $0.42
+RESULT: SUCCESS
+TIME ADDED: +12.58 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:31]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:33]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:38]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:36:53]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:37:17]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:37:19]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:39:10]
+EVENT: JEWEL GIFT
+GIFT: GGEZ
+JEWELS: 20
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:39:33]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:39:54]
+EVENT: SUPER CHAT
+ORIGINAL: £1.99
+CURRENCY: GBP
+AMOUNT: 1.99
+USD RATE: 1.35020000
+USD AMOUNT: $2.69
+RESULT: SUCCESS
+TIME ADDED: +80.61 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:39:56]
+EVENT: SUPER CHAT
+ORIGINAL: CA$2.79
+CURRENCY: CAD
+AMOUNT: 2.79
+USD RATE: 0.71768000
+USD AMOUNT: $2.00
+RESULT: SUCCESS
+TIME ADDED: +60.07 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:40:31]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:46:34]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:46:51]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:46:53]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:46:54]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:01]
+EVENT: JEWEL GIFT
+GIFT: Press F
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:11]
+EVENT: SUPER CHAT
+ORIGINAL: A$3.00
+CURRENCY: AUD
+AMOUNT: 3.00
+USD RATE: 0.70542000
+USD AMOUNT: $2.12
+RESULT: SUCCESS
+TIME ADDED: +63.49 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:41]
+EVENT: SUPER CHAT
+ORIGINAL: TRY 110.00
+CURRENCY: TRY
+AMOUNT: 110.00
+USD RATE: 0.02095000
+USD AMOUNT: $2.30
+RESULT: SUCCESS
+TIME ADDED: +69.14 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:41]
+EVENT: SUPER CHAT
+ORIGINAL: NT$170.00
+CURRENCY: USD
+AMOUNT: 170.00
+USD RATE: 1.00000000
+USD AMOUNT: $170.00
+RESULT: SUCCESS
+TIME ADDED: +5100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:41]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:47:42]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:05]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:27]
+EVENT: SUPER CHAT
+ORIGINAL: ¥800
+CURRENCY: JPY
+AMOUNT: 800.00
+USD RATE: 0.00628000
+USD AMOUNT: $5.02
+RESULT: SUCCESS
+TIME ADDED: +150.72 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:35]
+EVENT: SUPER CHAT
+ORIGINAL: €0.99
+CURRENCY: EUR
+AMOUNT: 0.99
+USD RATE: 1.15530000
+USD AMOUNT: $1.14
+RESULT: SUCCESS
+TIME ADDED: +34.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:44]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:48]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:48:56]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:49:01]
+EVENT: SUPER CHAT
+ORIGINAL: £20.00
+CURRENCY: GBP
+AMOUNT: 20.00
+USD RATE: 1.35020000
+USD AMOUNT: $27.00
+RESULT: SUCCESS
+TIME ADDED: +810.12 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:49:50]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:49:53]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:50:05]
+EVENT: JEWEL GIFT
+GIFT: Press F
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:50:09]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:50:10]
+EVENT: JEWEL GIFT
+GIFT: Cheers
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:50:11]
+EVENT: JEWEL GIFT
+GIFT: Trophy cake
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:50:31]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:51:27]
+EVENT: SUPER CHAT
+ORIGINAL: $2.29
+CURRENCY: USD
+AMOUNT: 2.29
+USD RATE: 1.00000000
+USD AMOUNT: $2.29
+RESULT: SUCCESS
+TIME ADDED: +68.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:52:43]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:52:45]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:52:47]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:52:51]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:53:01]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:53:11]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:53:41]
+EVENT: JEWEL GIFT
+GIFT: Flow state
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:54:22]
+EVENT: JEWEL GIFT
+GIFT: Chili
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:54:43]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:54:59]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:54:59]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:55:36]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:56:18]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:56:19]
+EVENT: JEWEL GIFT
+GIFT: Goat trophy
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:58:47]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:58:54]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:11]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:24]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:32]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:48]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:49]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:54]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:59]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:59]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 20:59:59]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:00:13]
+EVENT: JEWEL GIFT
+GIFT: Chili
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:00:27]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:00:30]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:00:47]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:00:52]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:01:33]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:01:41]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:01:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:01:49]
+EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:01:54]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:36]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:40]
+EVENT: JEWEL GIFT
+GIFT: Chili
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:47]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:50]
+EVENT: SUPER CHAT
+ORIGINAL: €1.00
+CURRENCY: EUR
+AMOUNT: 1.00
+USD RATE: 1.15520000
+USD AMOUNT: $1.16
+RESULT: SUCCESS
+TIME ADDED: +34.66 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:50]
+EVENT: JEWEL GIFT
+GIFT: Chili
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:02:51]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:03:26]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:03:40]
+EVENT: SUPER CHAT
+ORIGINAL: €2.00
+CURRENCY: EUR
+AMOUNT: 2.00
+USD RATE: 1.15520000
+USD AMOUNT: $2.31
+RESULT: SUCCESS
+TIME ADDED: +69.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:03:44]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:04:02]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:04:29]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:05:05]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:05:08]
+EVENT: SUPER CHAT
+ORIGINAL: €1.00
+CURRENCY: EUR
+AMOUNT: 1.00
+USD RATE: 1.15520000
+USD AMOUNT: $1.16
+RESULT: SUCCESS
+TIME ADDED: +34.66 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:05:25]
+EVENT: SUPER CHAT
+ORIGINAL: ARS 5,000.00
+CURRENCY: ARS
+AMOUNT: 5000.00
+USD RATE: 0.00067000
+USD AMOUNT: $3.35
+RESULT: SUCCESS
+TIME ADDED: +100.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:06:17]
+EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:06:27]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:06:37]
+EVENT: SUPER CHAT
+ORIGINAL: A$2.99
+CURRENCY: AUD
+AMOUNT: 2.99
+USD RATE: 0.70542000
+USD AMOUNT: $2.11
+RESULT: SUCCESS
+TIME ADDED: +63.28 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:06:53]
+EVENT: JEWEL GIFT
+GIFT: Makeup brush
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:06:59]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:07:04]
+EVENT: JEWEL GIFT
+GIFT: Floating heart
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:08:53]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:09:05]
+EVENT: SUPER CHAT
+ORIGINAL: NOK 25.00
+CURRENCY: NOK
+AMOUNT: 25.00
+USD RATE: 0.10527000
+USD AMOUNT: $2.63
+RESULT: SUCCESS
+TIME ADDED: +78.95 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:40:59]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:09]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:09]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:09]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:12]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:13]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:14]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:15]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:26]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:38]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:48]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:50]
+EVENT: SUPER CHAT
+ORIGINAL: BAM 1.00
+CURRENCY: BAM
+AMOUNT: 1.00
+USD RATE: 0.59062000
+USD AMOUNT: $0.59
+RESULT: SUCCESS
+TIME ADDED: +17.72 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:41:59]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:01]
+EVENT: JEWEL GIFT
+GIFT: Finger heart
+JEWELS: 350
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +175.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:09]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:10]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:15]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:15]
+EVENT: JEWEL GIFT
+GIFT: High five
+JEWELS: 100
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +50.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:17]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:18]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:25]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:28]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:33]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:39]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:42:42]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:43:01]
+EVENT: JEWEL GIFT
+GIFT: Husky
+JEWELS: 800
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +400.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:43:13]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:43:16]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:43:32]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:43:32]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:44:42]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:05]
+EVENT: SUPER CHAT
+ORIGINAL: ₹100.00
+CURRENCY: INR
+AMOUNT: 100.00
+USD RATE: 0.01048000
+USD AMOUNT: $1.05
+RESULT: SUCCESS
+TIME ADDED: +31.44 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:05]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:29]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:49]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:51]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:45:57]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:01]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:01]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:17]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:24]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:28]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:31]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:34]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:35]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:39]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:41]
+EVENT: JEWEL GIFT
+GIFT: Goat trophy
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:45]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:48]
+EVENT: SUPER CHAT
+ORIGINAL: ₫20,000
+CURRENCY: VND
+AMOUNT: 20.00
+USD RATE: 0.00003800
+USD AMOUNT: $0.00
+RESULT: SUCCESS
+TIME ADDED: +0.02 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:51]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:53]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:46:58]
+EVENT: SUPER CHAT
+ORIGINAL: €2.00
+CURRENCY: EUR
+AMOUNT: 2.00
+USD RATE: 1.15520000
+USD AMOUNT: $2.31
+RESULT: SUCCESS
+TIME ADDED: +69.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:00]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:07]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:09]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:14]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:14]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:24]
+EVENT: SUPER CHAT
+ORIGINAL: $10.00
+CURRENCY: USD
+AMOUNT: 10.00
+USD RATE: 1.00000000
+USD AMOUNT: $10.00
+RESULT: SUCCESS
+TIME ADDED: +300.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:26]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:27]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:29]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:30]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:36]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:38]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:38]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:39]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:40]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:41]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:46]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:51]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:47:59]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:00]
+EVENT: JEWEL GIFT
+GIFT: Press F
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:06]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:16]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:22]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:22]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:28]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:35]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:35]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:39]
+EVENT: JEWEL GIFT
+GIFT: Floating heart
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:41]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:44]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:53]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:53]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:48:55]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:01]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:03]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:08]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:08]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:22]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:33]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:33]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:34]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:37]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:41]
+EVENT: JEWEL GIFT
+GIFT: Flow state
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:42]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:49:43]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:00]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:03]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:05]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:09]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:11]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:19]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:19]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:19]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:19]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:29]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:34]
+EVENT: JEWEL GIFT
+GIFT: Clutch
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:41]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:44]
+EVENT: JEWEL GIFT
+GIFT: Loot box
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:58]
+EVENT: SUPER CHAT
+ORIGINAL: A$14.99
+CURRENCY: AUD
+AMOUNT: 14.99
+USD RATE: 0.70543000
+USD AMOUNT: $10.57
+RESULT: SUCCESS
+TIME ADDED: +317.23 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:50:58]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:06]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:12]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:16]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:16]
+EVENT: JEWEL GIFT
+GIFT: GGEZ
+JEWELS: 20
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:28]
+EVENT: SUPER CHAT
+ORIGINAL: ₹40.00
+CURRENCY: INR
+AMOUNT: 40.00
+USD RATE: 0.01048000
+USD AMOUNT: $0.42
+RESULT: SUCCESS
+TIME ADDED: +12.58 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:31]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:32]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:35]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:41]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:41]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:43]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:45]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:47]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:48]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:48]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:50]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:54]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:51:57]
+EVENT: SUPER CHAT
+ORIGINAL: CA$2.79
+CURRENCY: CAD
+AMOUNT: 2.79
+USD RATE: 0.71773000
+USD AMOUNT: $2.00
+RESULT: SUCCESS
+TIME ADDED: +60.07 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:00]
+EVENT: JEWEL GIFT
+GIFT: Finger heart
+JEWELS: 350
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +175.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:00]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:03]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:10]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:12]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:13]
+EVENT: SUPER CHAT
+ORIGINAL: ARS 5,000.00
+CURRENCY: ARS
+AMOUNT: 5000.00
+USD RATE: 0.00067000
+USD AMOUNT: $3.35
+RESULT: SUCCESS
+TIME ADDED: +100.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:16]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:18]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:23]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:36]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:40]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:44]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:49]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:50]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:58]
+EVENT: JEWEL GIFT
+GIFT: Thumbs up
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:59]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:52:59]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:03]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:04]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:05]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:05]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:13]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:15]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:17]
+EVENT: SUPER CHAT
+ORIGINAL: SEK 27.00
+CURRENCY: SEK
+AMOUNT: 27.00
+USD RATE: 0.10518000
+USD AMOUNT: $2.84
+RESULT: SUCCESS
+TIME ADDED: +85.20 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:19]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:20]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:23]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:24]
+EVENT: SUPER CHAT
+ORIGINAL: CA$2.00
+CURRENCY: CAD
+AMOUNT: 2.00
+USD RATE: 0.71773000
+USD AMOUNT: $1.44
+RESULT: SUCCESS
+TIME ADDED: +43.06 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:30]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:30]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:35]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:36]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:40]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:40]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:45]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:53]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:53]
+EVENT: JEWEL GIFT
+GIFT: GG
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:54]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:57]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:53:58]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:00]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:12]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:20]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:20]
+EVENT: JEWEL GIFT
+GIFT: Flower
+JEWELS: 30
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +15.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:32]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:34]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:36]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:41]
+EVENT: JEWEL GIFT
+GIFT: Six seven
+JEWELS: 67
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +33.50 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:44]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:52]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:55]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:54:56]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:04]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:05]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:06]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:12]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: SUPER CHAT
+ORIGINAL: £5.00
+CURRENCY: GBP
+AMOUNT: 5.00
+USD RATE: 1.35030000
+USD AMOUNT: $6.75
+RESULT: SUCCESS
+TIME ADDED: +202.55 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:13]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:16]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:21]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:29]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:41]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 21:55:43]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:50]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:52]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:53]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:53]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:53]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:55]
+EVENT: JEWEL GIFT
+GIFT: GLHF
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:56]
+EVENT: JEWEL GIFT
+GIFT: Unc alert
+JEWELS: 440
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +220.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:24:56]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:00]
+EVENT: JEWEL GIFT
+GIFT: Goat trophy
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:06]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:12]
+EVENT: SUPER CHAT
+ORIGINAL: HK$25.00
+CURRENCY: HKD
+AMOUNT: 25.00
+USD RATE: 0.12734000
+USD AMOUNT: $3.18
+RESULT: SUCCESS
+TIME ADDED: +95.51 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:31]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:31]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:35]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:35]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:46]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:47]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:48]
+EVENT: JEWEL GIFT
+GIFT: Laughing disco
+JEWELS: 250
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +125.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:51]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:52]
+EVENT: SUPER CHAT
+ORIGINAL: £5.00
+CURRENCY: GBP
+AMOUNT: 5.00
+USD RATE: 1.35030000
+USD AMOUNT: $6.75
+RESULT: SUCCESS
+TIME ADDED: +202.55 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:54]
+EVENT: JEWEL GIFT
+GIFT: Happy poop
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:25:57]
+EVENT: SUPER CHAT
+ORIGINAL: HUF 1,000
+CURRENCY: HUF
+AMOUNT: 1.00
+USD RATE: 0.00316000
+USD AMOUNT: $0.00
+RESULT: SUCCESS
+TIME ADDED: +0.09 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:08]
+EVENT: JEWEL GIFT
+GIFT: Press F
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:09]
+EVENT: SUPER CHAT
+ORIGINAL: $4.99
+CURRENCY: USD
+AMOUNT: 4.99
+USD RATE: 1.00000000
+USD AMOUNT: $4.99
+RESULT: SUCCESS
+TIME ADDED: +149.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:34]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:34]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:41]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:42]
+EVENT: SUPER CHAT
+ORIGINAL: $5.00
+CURRENCY: USD
+AMOUNT: 5.00
+USD RATE: 1.00000000
+USD AMOUNT: $5.00
+RESULT: SUCCESS
+TIME ADDED: +150.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:43]
+EVENT: JEWEL GIFT
+GIFT: Sparkles
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:51]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:26:58]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:27:16]
+EVENT: JEWEL GIFT
+GIFT: Goat trophy
+JEWELS: 1000
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +500.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:27:17]
+EVENT: JEWEL GIFT
+GIFT: Makeup brush
+JEWELS: 6
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +3.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:27:22]
+EVENT: SUPER CHAT
+ORIGINAL: ₪6.00
+CURRENCY: ILS
+AMOUNT: 6.00
+USD RATE: 0.33341000
+USD AMOUNT: $2.00
+RESULT: SUCCESS
+TIME ADDED: +60.01 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:27:52]
+EVENT: JEWEL GIFT
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:27:52]
+EVENT: JEWEL GIFT
+GIFT: GGEZ
+JEWELS: 20
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:03]
+EVENT: SUPER CHAT
+ORIGINAL: CZK 50.00
+CURRENCY: CZK
+AMOUNT: 50.00
+USD RATE: 0.04759000
+USD AMOUNT: $2.38
+RESULT: SUCCESS
+TIME ADDED: +71.39 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:13]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:17]
+EVENT: JEWEL GIFT
+GIFT: Hiding
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:30]
+EVENT: JEWEL GIFT
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:42]
+EVENT: SUPER CHAT
+ORIGINAL: £1.99
+CURRENCY: GBP
+AMOUNT: 1.99
+USD RATE: 1.35030000
+USD AMOUNT: $2.69
+RESULT: SUCCESS
+TIME ADDED: +80.61 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:28:55]
+EVENT: JEWEL GIFT
+GIFT: Gold coin
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:29:25]
+EVENT: SUPER CHAT
+ORIGINAL: €2.00
+CURRENCY: EUR
+AMOUNT: 2.00
+USD RATE: 1.15510000
+USD AMOUNT: $2.31
+RESULT: SUCCESS
+TIME ADDED: +69.31 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:29:34]
+EVENT: JEWEL GIFT
+GIFT: Stay hydrated
+JEWELS: 550
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +275.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:29:50]
+EVENT: JEWEL GIFT
+GIFT: W
+JEWELS: 10
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +5.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-08-12 22:29:53]
+EVENT: JEWEL GIFT
+GIFT: Jammin
+JEWELS: 200
+SOURCE: gift-name fallback
+RESULT: SUCCESS
+TIME ADDED: +100.00 seconds
+**********************************************************************
