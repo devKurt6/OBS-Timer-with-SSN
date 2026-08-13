@@ -11,6 +11,7 @@ import asyncio
 import hashlib
 from collections import OrderedDict
 from urllib.parse import quote
+import sys
 
 try:
     import websockets
@@ -109,7 +110,17 @@ STATE_FILE = "timer_state.json"
 
 # ---------------- SOCIAL STREAM NINJA ----------------
 # Set this to the Session ID shown in SSN's Session Options.
-SSN_SESSION_ID = "CdwUvNURjp"
+# ---------------- SOCIAL STREAM NINJA ----------------
+
+if len(sys.argv) < 2:
+    print("ERROR: SSN Session ID is required.")
+    print("Usage: python timer.py SESSION_ID")
+    print("Example: python timer.py CdwUvNURjp")
+    sys.exit(1)
+
+SSN_SESSION_ID = sys.argv[1]
+
+print(f"SSN Session ID: {SSN_SESSION_ID}")
 SSN_WEBSOCKET_SERVER = "wss://io.socialstream.ninja"
 SSN_RECONNECT_MAX_SECONDS = 30
 SSN_DUPLICATE_WINDOW_SECONDS = 15
