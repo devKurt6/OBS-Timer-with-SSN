@@ -33,12 +33,12 @@ app = Flask(__name__)
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 0.5
+GIFT_SECONDS_PER_JEWEL = 1
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 30
+SUPERCHAT_SECONDS_PER_USD = 60
 
 
 # ---------------- CURRENCY API ----------------
