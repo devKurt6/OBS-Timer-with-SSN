@@ -1,0 +1,723 @@
+{
+  "100": {
+    "file": "100.png",
+    "colors": [
+      "#F36F72",
+      "#C9C7F2"
+    ]
+  },
+  "air travel": {
+    "file": "air_travel.png",
+    "colors": [
+      "#F36FB5",
+      "#9EDC54"
+    ]
+  },
+  "ball party": {
+    "file": "ball_party.png",
+    "colors": [
+      "#93C95A",
+      "#2B63B8"
+    ]
+  },
+  "beach dog": {
+    "file": "beach_dog.png",
+    "colors": [
+      "#F47445",
+      "#B53B32"
+    ]
+  },
+  "biscuit tin": {
+    "file": "biscuit_tin.png",
+    "colors": [
+      "#8EDCF0",
+      "#D699D4"
+    ]
+  },
+  "blowfish": {
+    "file": "blowfish.png",
+    "colors": [
+      "#FFB75B",
+      "#F5A6BB"
+    ]
+  },
+  "bouquet": {
+    "file": "bouquet.png",
+    "colors": [
+      "#E84D56",
+      "#4BAE91"
+    ]
+  },
+  "bravo": {
+    "file": "bravo.png",
+    "colors": [
+      "#F2CE58",
+      "#6651A9"
+    ]
+  },
+  "bubble heart": {
+    "file": "bubble_heart.png",
+    "colors": [
+      "#BFEAF4",
+      "#E793D6"
+    ]
+  },
+  "bumblebee": {
+    "file": "bumblebee.png",
+    "colors": [
+      "#F5C54F",
+      "#374574"
+    ]
+  },
+  "butterfly": {
+    "file": "butterfly.png",
+    "colors": [
+      "#8D71BB",
+      "#E5A2BD"
+    ]
+  },
+  "castle": {
+    "file": "castle.png",
+    "colors": [
+      "#F28AB9",
+      "#BE86DA"
+    ]
+  },
+  "cheers": {
+    "file": "cheers.png",
+    "colors": [
+      "#DD593D",
+      "#43A9A8"
+    ]
+  },
+  "chili": {
+    "file": "chili.png",
+    "colors": [
+      "#C73336",
+      "#E66A35"
+    ]
+  },
+  "clapping seal": {
+    "file": "clapping_seal.png",
+    "colors": [
+      "#4D55C8",
+      "#A67AEC"
+    ]
+  },
+  "clock it": {
+    "file": "clock_it.png",
+    "colors": [
+      "#B87348",
+      "#7F4834"
+    ]
+  },
+  "clutch": {
+    "file": "clutch.png",
+    "colors": [
+      "#FFE765",
+      "#E6A832"
+    ]
+  },
+  "controller": {
+    "file": "controller.png",
+    "colors": [
+      "#78D743",
+      "#3A941F"
+    ]
+  },
+  "corgi": {
+    "file": "corgi.png",
+    "colors": [
+      "#DA934C",
+      "#6D3DAD"
+    ]
+  },
+  "duckling": {
+    "file": "duckling.png",
+    "colors": [
+      "#F8D54D",
+      "#A77BE8"
+    ]
+  },
+  "envelope": {
+    "file": "envelope.png",
+    "colors": [
+      "#4D189D",
+      "#883ECB"
+    ]
+  },
+  "finger heart": {
+    "file": "finger_heart.png",
+    "colors": [
+      "#FF6E72",
+      "#DB51D7"
+    ]
+  },
+  "firework": {
+    "file": "firework.png",
+    "colors": [
+      "#F5C96B",
+      "#7144C9"
+    ]
+  },
+  "floating heart": {
+    "file": "floating_heart.png",
+    "colors": [
+      "#E439A5",
+      "#B92F9B"
+    ]
+  },
+  "flow state": {
+    "file": "flow_state.png",
+    "colors": [
+      "#B7DDF4",
+      "#23387E"
+    ]
+  },
+  "flower": {
+    "file": "flower.png",
+    "colors": [
+      "#D93345",
+      "#F37B89"
+    ]
+  },
+  "fortune cookie": {
+    "file": "fortune_cookie.png",
+    "colors": [
+      "#9B612E",
+      "#F1B268"
+    ]
+  },
+  "gamer corgi": {
+    "file": "gamer_corgi.png",
+    "colors": [
+      "#101C6B",
+      "#2A55B8"
+    ]
+  },
+  "gg": {
+    "file": "gg.png",
+    "colors": [
+      "#FF9277",
+      "#E55A67"
+    ]
+  },
+  "gg keys": {
+    "file": "gg_keys.png",
+    "colors": [
+      "#372450",
+      "#6F55BE"
+    ]
+  },
+  "ggez": {
+    "file": "ggez.png",
+    "colors": [
+      "#F3E44D",
+      "#7C2AAB"
+    ]
+  },
+  "girl power": {
+    "file": "girl_power.png",
+    "colors": [
+      "#F26F56",
+      "#EF455E"
+    ]
+  },
+  "glhf": {
+    "file": "glhf.png",
+    "colors": [
+      "#B9F1CC",
+      "#63CFA0"
+    ]
+  },
+  "goat trophy": {
+    "file": "goat_trophy.png",
+    "colors": [
+      "#FFE360",
+      "#D79B32"
+    ]
+  },
+  "gold coin": {
+    "file": "gold_coin.png",
+    "colors": [
+      "#F6DA7E",
+      "#9C6624"
+    ]
+  },
+  "guitar": {
+    "file": "guitar.png",
+    "colors": [
+      "#4CC8E6",
+      "#A156D7"
+    ]
+  },
+  "happy birthday": {
+    "file": "happy_birthday.png",
+    "colors": [
+      "#DE4C72",
+      "#915394"
+    ]
+  },
+  "happy poop": {
+    "file": "happy_poop.png",
+    "colors": [
+      "#F4D15B",
+      "#A46E2A"
+    ]
+  },
+  "headliner": {
+    "file": "headliner.png",
+    "colors": [
+      "#57362E",
+      "#C18365"
+    ]
+  },
+  "headphones": {
+    "file": "headphones.png",
+    "colors": [
+      "#FB8654",
+      "#45C7D3"
+    ]
+  },
+  "high five": {
+    "file": "high_five.png",
+    "colors": [
+      "#F6D85D",
+      "#E45B58"
+    ]
+  },
+  "hooray": {
+    "file": "hooray.png",
+    "colors": [
+      "#F5CD52",
+      "#E2424C"
+    ]
+  },
+  "hot pot": {
+    "file": "hot_pot.png",
+    "colors": [
+      "#F2B05B",
+      "#E75B4F"
+    ]
+  },
+  "hound": {
+    "file": "hound.png",
+    "colors": [
+      "#D2A06F",
+      "#63422E"
+    ]
+  },
+  "husky": {
+    "file": "husky.png",
+    "colors": [
+      "#574B77",
+      "#A181CC"
+    ]
+  },
+  "idol life": {
+    "file": "idol_life.png",
+    "colors": [
+      "#FFF2A5",
+      "#F154B2"
+    ]
+  },
+  "island": {
+    "file": "island.png",
+    "colors": [
+      "#70CBE1",
+      "#F2D493"
+    ]
+  },
+  "jelly friends": {
+    "file": "jelly_friends.png",
+    "colors": [
+      "#C83B9A",
+      "#8B4EC4"
+    ]
+  },
+  "laughing disco": {
+    "file": "laughing_disco.png",
+    "colors": [
+      "#D3D2F5",
+      "#AF79D5"
+    ]
+  },
+  "let em cook": {
+    "file": "let_em_cook.png",
+    "colors": [
+      "#9866BC",
+      "#F2C751"
+    ]
+  },
+  "limo": {
+    "file": "limo.png",
+    "colors": [
+      "#F59ED1",
+      "#6C88F2"
+    ]
+  },
+  "loot box": {
+    "file": "loot_box.png",
+    "colors": [
+      "#FFD953",
+      "#EF6B82"
+    ]
+  },
+  "makeup brush": {
+    "file": "makeup_brush.png",
+    "colors": [
+      "#9B65D4",
+      "#6FD6C6"
+    ]
+  },
+  "marshmallow hi": {
+    "file": "marshmallow_hi.png",
+    "colors": [
+      "#E895C1",
+      "#F2BEDB"
+    ]
+  },
+  "matsuri": {
+    "file": "matsuri.png",
+    "colors": [
+      "#E64C61",
+      "#F1C15E"
+    ]
+  },
+  "mic drop": {
+    "file": "mic_drop.png",
+    "colors": [
+      "#68237F",
+      "#CB59CA"
+    ]
+  },
+  "mvp": {
+    "file": "mvp.png",
+    "colors": [
+      "#EB504A",
+      "#F4D379"
+    ]
+  },
+  "mystery gift": {
+    "file": "mystery_gift.png",
+    "colors": [
+      "#753BB2",
+      "#5FD4BE"
+    ]
+  },
+  "nap": {
+    "file": "nap.png",
+    "colors": [
+      "#F2D7B0",
+      "#8EC3E8"
+    ]
+  },
+  "night market": {
+    "file": "night_market.png",
+    "colors": [
+      "#F2693F",
+      "#3772EA"
+    ]
+  },
+  "party blowers": {
+    "file": "party_blowers.png",
+    "colors": [
+      "#8A57D5",
+      "#F27A59"
+    ]
+  },
+  "party hat": {
+    "file": "party_hat.png",
+    "colors": [
+      "#DD3D44",
+      "#41409B"
+    ]
+  },
+  "picnic basket": {
+    "file": "picnic_basket.png",
+    "colors": [
+      "#E0B568",
+      "#F6D8A2"
+    ]
+  },
+  "power potion": {
+    "file": "power_potion.png",
+    "colors": [
+      "#B9F3EF",
+      "#A6F0C0"
+    ]
+  },
+  "press f": {
+    "file": "press_f.png",
+    "colors": [
+      "#55585E",
+      "#17191E"
+    ]
+  },
+  "racing game": {
+    "file": "racing_game.png",
+    "colors": [
+      "#3A50E6",
+      "#E34BA8"
+    ]
+  },
+  "ramen bowl": {
+    "file": "ramen_bowl.png",
+    "colors": [
+      "#507CA4",
+      "#DAB96A"
+    ]
+  },
+  "rock star": {
+    "file": "rock_star.png",
+    "colors": [
+      "#4FC5E9",
+      "#A865DA"
+    ]
+  },
+  "sand castle": {
+    "file": "sand_castle.png",
+    "colors": [
+      "#F4D4A3",
+      "#C6874C"
+    ]
+  },
+  "seal splash": {
+    "file": "seal_splash.png",
+    "colors": [
+      "#4E47BD",
+      "#86CDE0"
+    ]
+  },
+  "seaside": {
+    "file": "seaside.png",
+    "colors": [
+      "#65CBE8",
+      "#F294C1"
+    ]
+  },
+  "shopping cart": {
+    "file": "shopping_cart.png",
+    "colors": [
+      "#A969CE",
+      "#F0C162"
+    ]
+  },
+  "six seven": {
+    "file": "six_seven.png",
+    "colors": [
+      "#3B78B6",
+      "#9FCD47"
+    ]
+  },
+  "sparkles": {
+    "file": "sparkles.png",
+    "colors": [
+      "#FFF1A0",
+      "#C88E30"
+    ]
+  },
+  "spill the tea": {
+    "file": "spill_the_tea.png",
+    "colors": [
+      "#A6672B",
+      "#F26499"
+    ]
+  },
+  "sports car": {
+    "file": "sports_car.png",
+    "colors": [
+      "#FFB04D",
+      "#E5662D"
+    ]
+  },
+  "star": {
+    "file": "star.png",
+    "colors": [
+      "#FFF29B",
+      "#DBB464"
+    ]
+  },
+  "stay hydrated": {
+    "file": "stay_hydrated.png",
+    "colors": [
+      "#B69B67",
+      "#85CBEC"
+    ]
+  },
+  "sun balloon": {
+    "file": "sun_balloon.png",
+    "colors": [
+      "#FFD34E",
+      "#8963CB"
+    ]
+  },
+  "sundae": {
+    "file": "sundae.png",
+    "colors": [
+      "#F3A4C6",
+      "#8650C4"
+    ]
+  },
+  "sunshine": {
+    "file": "sunshine.png",
+    "colors": [
+      "#FFE176",
+      "#F1A743"
+    ]
+  },
+  "super gg": {
+    "file": "super_gg.png",
+    "colors": [
+      "#F45B9B",
+      "#5F73C6"
+    ]
+  },
+  "sushi": {
+    "file": "sushi.png",
+    "colors": [
+      "#F8A56D",
+      "#F4D6A6"
+    ]
+  },
+  "thumbs up": {
+    "file": "thumbs_up.png",
+    "colors": [
+      "#48BEB4",
+      "#9BDB63"
+    ]
+  },
+  "tokyo night": {
+    "file": "tokyo_night.png",
+    "colors": [
+      "#8B469A",
+      "#4FC992"
+    ]
+  },
+  "treat": {
+    "file": "treat.png",
+    "colors": [
+      "#A9672D",
+      "#DCA55C"
+    ]
+  },
+  "trifle smash": {
+    "file": "trifle_smash.png",
+    "colors": [
+      "#F8DCAF",
+      "#E56C6A"
+    ]
+  },
+  "trophy cake": {
+    "file": "trophy_cake.png",
+    "colors": [
+      "#C99135",
+      "#9F59C5"
+    ]
+  },
+  "tube dancer": {
+    "file": "tube_dancer.png",
+    "colors": [
+      "#BFF4F1",
+      "#65C4D6"
+    ]
+  },
+  "tulips": {
+    "file": "tulips.png",
+    "colors": [
+      "#E96F8B",
+      "#E9B34E"
+    ]
+  },
+  "turn it up": {
+    "file": "turn_it_up.png",
+    "colors": [
+      "#454C58",
+      "#8D9BB2"
+    ]
+  },
+  "unc alert": {
+    "file": "unc_alert.png",
+    "colors": [
+      "#D83B35",
+      "#4B4DA8"
+    ]
+  },
+  "victory spin": {
+    "file": "victory_spin.png",
+    "colors": [
+      "#C68E2D",
+      "#8452C0"
+    ]
+  },
+  "w": {
+    "file": "w.png",
+    "colors": [
+      "#A9ADB6",
+      "#555A64"
+    ]
+  },
+  "w pinata": {
+    "file": "w_pinata.png",
+    "colors": [
+      "#B78B36",
+      "#7B4DB7"
+    ]
+  },
+  "watermelon": {
+    "file": "watermelon.png",
+    "colors": [
+      "#F18775",
+      "#D95764"
+    ]
+  },
+  "woof you!": {
+    "file": "woof_you.png",
+    "colors": [
+      "#C8834C",
+      "#F3C579"
+    ]
+  },
+  "hiding": {
+    "file": "hiding.png",
+    "colors": [
+      "#B08969",
+      "#CBB3A0"
+    ]
+  },
+  "go team!": {
+    "file": "go_team.png",
+    "colors": [
+      "#908A8E",
+      "#DE4845"
+    ]
+  },
+  "foam finger": {
+    "file": "foam_finger.png",
+    "colors": [
+      "#1C9EF7",
+      "#1C6AB3"
+    ]
+  },
+  "football": {
+    "file": "football.png",
+    "colors": [
+      "#915746",
+      "#D4CFCB"
+    ]
+  },
+  "nacho": {
+    "file": "nacho.png",
+    "colors": [
+      "#AB6F22",
+      "#483B29"
+    ]
+  },
+  "superchat": {
+    "file": "superchat.png",
+    "colors": [
+        "#FFD700",
+        "#FF8C00"
+    ]
+}
+}
