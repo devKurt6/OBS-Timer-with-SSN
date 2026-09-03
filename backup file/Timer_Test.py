@@ -34,12 +34,12 @@ app = Flask(__name__)
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -114,7 +114,7 @@ SUBTRACT_HOTKEYS = {}
 #
 # Set this to False (or just delete/comment the hotkeys) before
 # going live, so these test combos can't be triggered by accident.
-ENABLE_TEST_ANIMATION_HOTKEYS = False
+ENABLE_TEST_ANIMATION_HOTKEYS = True
 
 # combo -> (event_type, tier label (for logging only), gift name, value)
 # "value" is jewels for a gift, or USD amount for a superchat.
@@ -251,17 +251,13 @@ lock = threading.RLock()
 #     "name": "Fireworks" (gift name) or None (superchat),
 #     "value": 3000 (jewels) or 5.00 (USD amount),
 #     "seconds": 1500.0,
-#     "ts": 1786500000.0,
-#     "image_url": "https://..." (SSN's real gift/Super Chat image,
-#                                  or None if SSN didn't provide one -
-#                                  the overlay then falls back to our
-#                                  own gift_images/ folder by name)
+#     "ts": 1786500000.0
 # }
 recent_events = []
 next_event_id = 1
 
 
-def push_event(event_type, name, value, seconds, image_url=None):
+def push_event(event_type, name, value, seconds):
     """Record a gift/superchat event so the overlay can animate it."""
 
     global next_event_id
@@ -274,7 +270,6 @@ def push_event(event_type, name, value, seconds, image_url=None):
             "value": value,
             "seconds": seconds,
             "ts": time.time(),
-            "image_url": image_url or None,
         }
 
         next_event_id += 1
@@ -984,15 +979,9 @@ def parse_donation(text):
 # SUPER CHAT PROCESSING
 # ============================================================
 
-def process_super_chat(donation_text, image_url=None):
+def process_super_chat(donation_text):
     """
     Convert a Super Chat amount to USD and then to seconds.
-
-    image_url, when provided by SSN (data.contentimg), is passed
-    straight through to the overlay. SSN rarely attaches an image
-    to a plain Super Chat, so this is usually None, and the overlay
-    then falls back to the local "superchat" entry in
-    gift_images/_manifest.json.
     """
 
     parsed = parse_donation(donation_text)
@@ -1058,7 +1047,7 @@ def process_super_chat(donation_text, image_url=None):
 
     add_time(seconds)
 
-    push_event("superchat", None, usd_amount, seconds, image_url)
+    push_event("superchat", None, usd_amount, seconds)
 
     print(
         "SUPER CHAT:",
@@ -1467,25 +1456,13 @@ def process_ssn_paid_event(data):
 
         add_time(seconds)
 
-        # SSN's own gift image, when available. Per SSN's Event
-        # Reference: "Gift images use contentimg" for YouTube
-        # jeweldonation events. When present, this is the ACTUAL
-        # gift artwork YouTube uses - no local image needed.
-        #
-        # If SSN doesn't supply one for this gift, image_url is
-        # None here, and the overlay automatically falls back to
-        # our own gift_images/_manifest.json lookup by gift name.
-        image_url = data.get("contentimg") or None
-        image_source = "SSN" if image_url else "no image from SSN"
-
-        push_event("gift", gift_name, jewels, seconds, image_url)
+        push_event("gift", gift_name, jewels, seconds)
 
         print(
             f"JEWEL DONATION: "
             f"{gift_name} -> "
             f"{jewels:g} Jewels ({source}) -> "
-            f"+{seconds:.2f} seconds "
-            f"[image: {image_source}]"
+            f"+{seconds:.2f} seconds"
         )
 
         log_donation(
@@ -1493,7 +1470,6 @@ def process_ssn_paid_event(data):
             f"GIFT: {gift_name}\n"
             f"JEWELS: {jewels:g}\n"
             f"SOURCE: {source}\n"
-            f"IMAGE: {image_source}\n"
             f"RESULT: SUCCESS\n"
             f"TIME ADDED: +{seconds:.2f} seconds"
         )
@@ -1523,14 +1499,8 @@ def process_ssn_paid_event(data):
             donation_text
         )
 
-        # SSN rarely attaches an image to a plain Super Chat (it's
-        # just a colored text card, not an item), but if it ever
-        # does supply data.contentimg, use it the same way gifts do.
-        image_url = data.get("contentimg") or None
-
         success = process_super_chat(
-            donation_text,
-            image_url
+            donation_text
         )
 
         if not success:
@@ -2502,8 +2472,8 @@ html, body {
     justify-content: center;
     align-items: center;
 
-    font-size: 20px;
-    font-weight: 650;
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.2;
 
     text-align: center;
@@ -2821,7 +2791,8 @@ html, body {
     
     <div id="right">
     <div class="box-bg">
-         <div id="msg">Stream ends in...
+         <div id="msg">
+            Stream ends in...
         </div>
         
         <div id="time-row">
@@ -2938,7 +2909,7 @@ function getFlyPositions(){
     // random extra distance/jitter so repeated gifts don't all
     // look identical.
     const startX = Math.round(
-        fxRect.width / 2 + 80 
+        fxRect.width / 2 + 90 + Math.random() * 70
     );
     const startY = Math.round(endY + (Math.random() - 0.5) * 18);
 
@@ -2950,7 +2921,7 @@ function getFlyPositions(){
 // its start position, doing nothing, before it starts sliding left
 // toward the timer. Gives viewers a real chance to see it instead
 // of it just flashing by. Change this one number to adjust the pause.
-const HOLD_BEFORE_FLY_SECONDS = .5;
+const HOLD_BEFORE_FLY_SECONDS = 3;
 
 // How long the little fade/pop-in at the start position takes,
 // right before the hold begins.
@@ -2980,7 +2951,7 @@ const LAND_AT_FRACTION = 0.7;
 //
 // Set either to false to turn that extra off without touching
 // anything else.
-const ENABLE_ARRIVAL_COUNTDOWN = false;
+const ENABLE_ARRIVAL_COUNTDOWN = true;
 const ENABLE_GLITTER_TRAIL = true;
 
 // Creates the "<text> in Ns" label at the object's own start
@@ -3240,7 +3211,7 @@ function spawnGiftConfettiAnimation(ev){
     // Continuous scaling from the exact jewel value.
     const count = Math.round(lerp(5, 55, intensity));
     const baseSize = Math.round(lerp(7, 16, intensity));
-    const duration = lerp(0.7, 0.7, intensity);
+    const duration = lerp(0.9, 1.8, intensity);
 
     // Stable per-gift-name color scheme (base hue + two
     // analogous hues for a bit of variety within the burst).
@@ -3378,16 +3349,18 @@ function applyTimerPop(big, giftName){
     );
 }
 
-function spawnGiftImageAnimation(ev, imageSrc){
+function spawnGiftImageAnimation(ev, filename){
 
     const jewels = Number(ev.value) || 0;
     const intensity = giftIntensity(jewels);
 
-    // Gift image is always the same size as the digit timer box
-    // (115px) - no more jewel-based size scaling. Duration still
-    // scales with jewel value so bigger gifts still feel bigger.
-    const size = 155;
-    const duration = lerp(0.7, 0.7, intensity);
+    // Continuous scaling from the exact jewel value, same idea
+    // as the confetti version, just applied to one image instead
+    // of many particles.
+    const size = Math.round(lerp(70, 190, intensity));
+    const duration = lerp(1.0, 1.7, intensity);
+
+    const hue = hashHue(ev.name);
 
     const target = getFlyPositions();
     const startRot = Math.round((Math.random() - 0.5) * 40);
@@ -3396,10 +3369,7 @@ function spawnGiftImageAnimation(ev, imageSrc){
 
     const img = document.createElement('img');
     img.className = 'gift-image-fly';
-    // imageSrc is either SSN's own real gift image URL (ev.image_url,
-    // preferred - see spawnGiftAnimation below) or our local
-    // /gift-image/<file> fallback from gift_images/_manifest.json.
-    img.src = imageSrc;
+    img.src = '/gift-image/' + filename;
     img.alt = ev.name || 'gift';
 
     img.style.width = size + 'px';
@@ -3411,14 +3381,9 @@ function spawnGiftImageAnimation(ev, imageSrc){
     img.style.setProperty('--end-y', target.endY + 'px');
     img.style.setProperty('--start-rot', startRot + 'deg');
     img.style.setProperty('--end-rot', '0deg');
-
-    // Keep the gift a STEADY size the whole time it flies -
-    // peak-scale matches start-scale, so it never grows mid-flight.
-    // It only shrinks away at the very end, right as it lands.
-    img.style.setProperty('--start-scale', '0.5');
-    img.style.setProperty('--peak-scale', '0.5');
+    img.style.setProperty('--peak-scale', '1.12');
     img.style.setProperty('--end-scale', '0.12');
-    img.style.setProperty('--glow', 'hsl(270, 90%, 65%)');
+    img.style.setProperty('--glow', `hsl(${hue}, 90%, 65%)`);
 
     // If the image fails to load (missing/renamed file), fall
     // back to confetti instead of showing a broken image icon.
@@ -3430,13 +3395,11 @@ function spawnGiftImageAnimation(ev, imageSrc){
     fx.appendChild(img);
 
     const totalDuration = playHoldThenFly(img, duration, 0, {
-        // popOnArrival removed - that's what caused the extra
-        // inflate/grow right as it arrived. Now it just shrinks
-        // away smoothly.
-        burstColor: 'hsl(270, 90%, 65%)',
+        popOnArrival: true,
+        burstColor: `hsl(${hue}, 90%, 65%)`,
         countdownText: `${ev.name || 'Gift'} arriving`,
         glitterTrail: true,
-        glitterColor: 'hsl(270, 90%, 65%)'
+        glitterColor: `hsl(${hue}, 90%, 65%)`
     });
 
     return { duration: totalDuration, big: intensity > 0.55 };
@@ -3446,17 +3409,10 @@ function spawnGiftAnimation(ev){
 
     const key = String(ev.name || "").trim().toLowerCase();
     const entry = GIFT_IMAGE_FILES[key];
-    const localFile = entry && entry.file;
+    const filename = entry && entry.file;
 
-    // 1) Prefer SSN's own real gift image (ev.image_url), pulled
-    //    straight from YouTube's gift catalog by SSN itself.
-    // 2) Fall back to our local gift_images/_manifest.json entry
-    //    for this gift name, if SSN didn't supply one.
-    // 3) Fall back to confetti if neither is available.
-    const imageSrc = ev.image_url || (localFile ? ('/gift-image/' + localFile) : null);
-
-    if (imageSrc){
-        return spawnGiftImageAnimation(ev, imageSrc);
+    if (filename){
+        return spawnGiftImageAnimation(ev, filename);
     }
 
     return spawnGiftConfettiAnimation(ev);
@@ -3483,12 +3439,12 @@ const SUPERCHAT_EMOJI = {
 // Height follows automatically from the image's own aspect ratio
 // (or a fixed ratio for the emoji fallback - see buildSuperchatIcon).
 const SUPERCHAT_TIER_WIDTH = { small: 120, medium: 165, large: 210, huge: 260 };
-const SUPERCHAT_TIER_DURATION = { small: 0.7, medium: 0.7, large: 0.7, huge: 0.7 };
+const SUPERCHAT_TIER_DURATION = { small: 1.4, medium: 1.8, large: 2.2, huge: 2.6 };
 
 // Font size for the "$12.50" printed below the ticket text, scaled
 // with tier so it stays readable without overflowing the ticket.
-//const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 48, large: 52, huge: 55 };
-const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 46, large: 46, huge: 46 };
+const SUPERCHAT_VALUE_FONT_SIZE = { small: 16, medium: 20, large: 25, huge: 30 };
+
 function tierFromUsd(usd){
     usd = Number(usd) || 0;
     if (usd < 5) return "small";
@@ -3528,18 +3484,13 @@ function spawnSuperchatAnimation(ev){
 
     const tier = tierFromUsd(ev.value);
 
-    // Super Chat image is always the same size as the digit timer
-    // box (115px) - no more tier-based width. Duration and the $
-    // label font size still scale with tier.
-    const width = 295;
+    const width = SUPERCHAT_TIER_WIDTH[tier];
     const duration = SUPERCHAT_TIER_DURATION[tier];
 
-    // Real Super Chat artwork: prefer SSN's own image (ev.image_url),
-    // then fall back to the local "superchat" entry in
-    // gift_images/_manifest.json - same lookup gifts already use.
+    // Real Super Chat artwork, if gift_images/_manifest.json has a
+    // "superchat" entry - same lookup gifts already use.
     const imageEntry = GIFT_IMAGE_FILES['superchat'];
-    const localFile = imageEntry && imageEntry.file;
-    const imageSrc = ev.image_url || (localFile ? ('/gift-image/' + localFile) : null);
+    const filename = imageEntry && imageEntry.file;
 
     const fx = document.getElementById('fx-layer');
     const target = getFlyPositions();
@@ -3552,10 +3503,10 @@ function spawnSuperchatAnimation(ev){
     wrap.style.width = width + 'px';
     wrap.style.setProperty('--glow', '#FFD700');
 
-    if (imageSrc){
+    if (filename){
         const img = document.createElement('img');
         img.className = 'superchat-image';
-        img.src = imageSrc;
+        img.src = '/gift-image/' + filename;
         img.alt = 'Super Chat';
 
         // If the real image fails to load (missing/renamed file),
@@ -3588,20 +3539,13 @@ function spawnSuperchatAnimation(ev){
     wrap.style.setProperty('--end-y', target.endY + 'px');
     wrap.style.setProperty('--start-rot', startRot + 'deg');
     wrap.style.setProperty('--end-rot', '0deg');
-
-    // Keep the Super Chat box a STEADY size the whole time it flies -
-    // peak-scale matches start-scale, so it never grows mid-flight.
-    // It only shrinks away at the very end, right as it lands.
-    wrap.style.setProperty('--start-scale', '0.5');
-    wrap.style.setProperty('--peak-scale', '0.5');
+    wrap.style.setProperty('--peak-scale', '1.12');
     wrap.style.setProperty('--end-scale', '0.12');
 
     fx.appendChild(wrap);
 
     const totalDuration = playHoldThenFly(wrap, duration, 0, {
-        // popOnArrival removed - that's what caused the extra
-        // inflate/grow right as it arrived. Now it just shrinks
-        // away smoothly, same steady feel as gifts.
+        popOnArrival: true,
         burstColor: '#FFD700',
         countdownText: 'Super Chat arriving',
         glitterTrail: true,
@@ -3726,7 +3670,7 @@ function getFadeTexts(isLocked){
     if (isLocked){
 
         return [
-            "Definitely ending/raiding streamer in...",
+            "Definitely ending/raiding \\n streamer in...",
             "Timer locked."
         ];
 

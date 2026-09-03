@@ -34,12 +34,12 @@ app = Flask(__name__)
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -2502,8 +2502,8 @@ html, body {
     justify-content: center;
     align-items: center;
 
-    font-size: 20px;
-    font-weight: 650;
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.2;
 
     text-align: center;
@@ -2821,7 +2821,8 @@ html, body {
     
     <div id="right">
     <div class="box-bg">
-         <div id="msg">Stream ends in...
+         <div id="msg">
+            Stream ends in...
         </div>
         
         <div id="time-row">
@@ -3240,7 +3241,7 @@ function spawnGiftConfettiAnimation(ev){
     // Continuous scaling from the exact jewel value.
     const count = Math.round(lerp(5, 55, intensity));
     const baseSize = Math.round(lerp(7, 16, intensity));
-    const duration = lerp(0.7, 0.7, intensity);
+    const duration = lerp(0.9, 1.8, intensity);
 
     // Stable per-gift-name color scheme (base hue + two
     // analogous hues for a bit of variety within the burst).
@@ -3387,7 +3388,9 @@ function spawnGiftImageAnimation(ev, imageSrc){
     // (115px) - no more jewel-based size scaling. Duration still
     // scales with jewel value so bigger gifts still feel bigger.
     const size = 155;
-    const duration = lerp(0.7, 0.7, intensity);
+    const duration = lerp(1.0, 1.0, intensity);
+
+    const hue = hashHue(ev.name);
 
     const target = getFlyPositions();
     const startRot = Math.round((Math.random() - 0.5) * 40);
@@ -3418,7 +3421,7 @@ function spawnGiftImageAnimation(ev, imageSrc){
     img.style.setProperty('--start-scale', '0.5');
     img.style.setProperty('--peak-scale', '0.5');
     img.style.setProperty('--end-scale', '0.12');
-    img.style.setProperty('--glow', 'hsl(270, 90%, 65%)');
+    img.style.setProperty('--glow', `hsl(${hue}, 90%, 65%)`);
 
     // If the image fails to load (missing/renamed file), fall
     // back to confetti instead of showing a broken image icon.
@@ -3433,10 +3436,10 @@ function spawnGiftImageAnimation(ev, imageSrc){
         // popOnArrival removed - that's what caused the extra
         // inflate/grow right as it arrived. Now it just shrinks
         // away smoothly.
-        burstColor: 'hsl(270, 90%, 65%)',
+        burstColor: `hsl(${hue}, 90%, 65%)`,
         countdownText: `${ev.name || 'Gift'} arriving`,
         glitterTrail: true,
-        glitterColor: 'hsl(270, 90%, 65%)'
+        glitterColor: `hsl(${hue}, 90%, 65%)`
     });
 
     return { duration: totalDuration, big: intensity > 0.55 };
@@ -3483,7 +3486,7 @@ const SUPERCHAT_EMOJI = {
 // Height follows automatically from the image's own aspect ratio
 // (or a fixed ratio for the emoji fallback - see buildSuperchatIcon).
 const SUPERCHAT_TIER_WIDTH = { small: 120, medium: 165, large: 210, huge: 260 };
-const SUPERCHAT_TIER_DURATION = { small: 0.7, medium: 0.7, large: 0.7, huge: 0.7 };
+const SUPERCHAT_TIER_DURATION = { small: 1.2, medium: 1.2, large: 1.2, huge: 1.2 };
 
 // Font size for the "$12.50" printed below the ticket text, scaled
 // with tier so it stays readable without overflowing the ticket.
@@ -3726,7 +3729,7 @@ function getFadeTexts(isLocked){
     if (isLocked){
 
         return [
-            "Definitely ending/raiding streamer in...",
+            "Definitely ending/raiding \\n streamer in...",
             "Timer locked."
         ];
 

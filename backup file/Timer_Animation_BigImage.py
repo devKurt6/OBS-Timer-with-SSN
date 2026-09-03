@@ -34,12 +34,12 @@ app = Flask(__name__)
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -2502,8 +2502,8 @@ html, body {
     justify-content: center;
     align-items: center;
 
-    font-size: 20px;
-    font-weight: 650;
+    font-size: 15px;
+    font-weight: 600;
     line-height: 1.2;
 
     text-align: center;
@@ -2821,7 +2821,8 @@ html, body {
     
     <div id="right">
     <div class="box-bg">
-         <div id="msg">Stream ends in...
+         <div id="msg">
+            Stream ends in...
         </div>
         
         <div id="time-row">
@@ -2938,7 +2939,7 @@ function getFlyPositions(){
     // random extra distance/jitter so repeated gifts don't all
     // look identical.
     const startX = Math.round(
-        fxRect.width / 2 + 80 
+        fxRect.width / 2 + 40 
     );
     const startY = Math.round(endY + (Math.random() - 0.5) * 18);
 
@@ -3240,7 +3241,7 @@ function spawnGiftConfettiAnimation(ev){
     // Continuous scaling from the exact jewel value.
     const count = Math.round(lerp(5, 55, intensity));
     const baseSize = Math.round(lerp(7, 16, intensity));
-    const duration = lerp(0.7, 0.7, intensity);
+    const duration = lerp(0.9, 1.8, intensity);
 
     // Stable per-gift-name color scheme (base hue + two
     // analogous hues for a bit of variety within the burst).
@@ -3383,11 +3384,13 @@ function spawnGiftImageAnimation(ev, imageSrc){
     const jewels = Number(ev.value) || 0;
     const intensity = giftIntensity(jewels);
 
-    // Gift image is always the same size as the digit timer box
-    // (115px) - no more jewel-based size scaling. Duration still
-    // scales with jewel value so bigger gifts still feel bigger.
-    const size = 155;
-    const duration = lerp(0.7, 0.7, intensity);
+    // Continuous scaling from the exact jewel value, same idea
+    // as the confetti version, just applied to one image instead
+    // of many particles.
+    const size = Math.round(lerp(70, 190, intensity));
+    const duration = lerp(1.0, 1.7, intensity);
+
+    const hue = hashHue(ev.name);
 
     const target = getFlyPositions();
     const startRot = Math.round((Math.random() - 0.5) * 40);
@@ -3418,7 +3421,7 @@ function spawnGiftImageAnimation(ev, imageSrc){
     img.style.setProperty('--start-scale', '0.5');
     img.style.setProperty('--peak-scale', '0.5');
     img.style.setProperty('--end-scale', '0.12');
-    img.style.setProperty('--glow', 'hsl(270, 90%, 65%)');
+    img.style.setProperty('--glow', `hsl(${hue}, 90%, 65%)`);
 
     // If the image fails to load (missing/renamed file), fall
     // back to confetti instead of showing a broken image icon.
@@ -3433,10 +3436,10 @@ function spawnGiftImageAnimation(ev, imageSrc){
         // popOnArrival removed - that's what caused the extra
         // inflate/grow right as it arrived. Now it just shrinks
         // away smoothly.
-        burstColor: 'hsl(270, 90%, 65%)',
+        burstColor: `hsl(${hue}, 90%, 65%)`,
         countdownText: `${ev.name || 'Gift'} arriving`,
         glitterTrail: true,
-        glitterColor: 'hsl(270, 90%, 65%)'
+        glitterColor: `hsl(${hue}, 90%, 65%)`
     });
 
     return { duration: totalDuration, big: intensity > 0.55 };
@@ -3483,12 +3486,12 @@ const SUPERCHAT_EMOJI = {
 // Height follows automatically from the image's own aspect ratio
 // (or a fixed ratio for the emoji fallback - see buildSuperchatIcon).
 const SUPERCHAT_TIER_WIDTH = { small: 120, medium: 165, large: 210, huge: 260 };
-const SUPERCHAT_TIER_DURATION = { small: 0.7, medium: 0.7, large: 0.7, huge: 0.7 };
+const SUPERCHAT_TIER_DURATION = { small: 1.4, medium: 1.8, large: 2.2, huge: 2.6 };
 
 // Font size for the "$12.50" printed below the ticket text, scaled
 // with tier so it stays readable without overflowing the ticket.
-//const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 48, large: 52, huge: 55 };
-const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 46, large: 46, huge: 46 };
+const SUPERCHAT_VALUE_FONT_SIZE = { small: 16, medium: 20, large: 25, huge: 30 };
+
 function tierFromUsd(usd){
     usd = Number(usd) || 0;
     if (usd < 5) return "small";
@@ -3528,10 +3531,7 @@ function spawnSuperchatAnimation(ev){
 
     const tier = tierFromUsd(ev.value);
 
-    // Super Chat image is always the same size as the digit timer
-    // box (115px) - no more tier-based width. Duration and the $
-    // label font size still scale with tier.
-    const width = 295;
+    const width = SUPERCHAT_TIER_WIDTH[tier];
     const duration = SUPERCHAT_TIER_DURATION[tier];
 
     // Real Super Chat artwork: prefer SSN's own image (ev.image_url),
@@ -3726,7 +3726,7 @@ function getFadeTexts(isLocked){
     if (isLocked){
 
         return [
-            "Definitely ending/raiding streamer in...",
+            "Definitely ending/raiding \\n streamer in...",
             "Timer locked."
         ];
 
