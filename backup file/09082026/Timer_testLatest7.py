@@ -54,12 +54,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -2012,10 +2012,10 @@ def combo_live_update():
     except (TypeError, ValueError):
         reported_count = 0
 
-    if not user_key or reported_count < 1:
+    if not user_key or not gift_name or reported_count < 1:
         return jsonify({
             "ok": False,
-            "error": "user and count (>=1) are required"
+            "error": "user, gift, and count (>=1) are required"
         }), 400
 
     key = combo_key(user_key, gift_name)
@@ -2028,41 +2028,10 @@ def combo_live_update():
         entry = combo_tracker.get(key)
 
         if entry is None:
-            # Exact (user, gift) match failed - this can happen when
-            # the browser extension can't parse the gift's name from
-            # YouTube's own DOM (alt-text phrasing isn't identical
-            # for every gift). Before giving up, check whether this
-            # SAME USER already has ANY other combo actively running
-            # right now (within the combo window) - if so, this
-            # update almost certainly belongs to THAT combo, just
-            # reported under a slightly different gift-name spelling.
-            # This keeps combo crediting working correctly even when
-            # gift-name extraction isn't perfect.
-            norm_user, _ = key
-            now = time.time()
-            best_match_key = None
-            best_match_time = -1
-
-            for existing_key, existing_entry in combo_tracker.items():
-                if existing_key[0] != norm_user:
-                    continue
-                if (now - existing_entry["last_time"]) > COMBO_GROUP_WINDOW_SECONDS:
-                    continue
-                if existing_entry["last_time"] > best_match_time:
-                    best_match_time = existing_entry["last_time"]
-                    best_match_key = existing_key
-
-            if best_match_key is not None:
-                key = best_match_key
-                entry = combo_tracker[key]
-
-        if entry is None:
-            # Still nothing - SSN's first-tap event for this combo
-            # hasn't arrived (or never will), and there's no other
-            # active combo for this user to attach to either. Fall
-            # back to the gift-name lookup table so we can still
-            # credit time, using this update as a brand-new baseline
-            # entry.
+            # SSN's first-tap event for this combo hasn't arrived (or
+            # never will) - fall back to the gift-name lookup table so
+            # we can still credit time, using this update as the new
+            # baseline entry.
             normalized_name = normalize_gift_name_key(gift_name)
             jewels_per_tap = GIFT_JEWEL_VALUES_NORMALIZED.get(normalized_name)
 
@@ -2101,15 +2070,6 @@ def combo_live_update():
 
         entry["last_time"] = time.time()
 
-        # Use the entry's own authoritative display name/gift (set
-        # when the combo was first created, usually from SSN's own
-        # accurate first-tap data) for everything shown to the user
-        # from here on - NOT the possibly-mis-extracted name reported
-        # in this specific update, in case the fuzzy same-user
-        # fallback above kicked in.
-        display_user = entry["display_user"]
-        display_gift = entry["display_gift"]
-
     if delta <= 0:
         # Nothing new (YouTube hasn't incremented past what we
         # already know) - last_time was still refreshed above so the
@@ -2120,22 +2080,22 @@ def combo_live_update():
 
     push_event(
         "gift",
-        display_gift,
+        gift_name,
         reused_jewels_per_tap * delta,
         add_seconds,
         combo_count=combo_count_for_badge
     )
 
     print(
-        f"COMBO LIVE UPDATE: {display_user} / {display_gift} -> "
+        f"COMBO LIVE UPDATE: {user_key} / {gift_name} -> "
         f"now x{reported_count} (+{delta} tap(s) from DOM) -> "
         f"+{add_seconds:.2f} seconds"
     )
 
     log_donation(
         f"EVENT: GIFT COMBO LIVE UPDATE\n"
-        f"USER: {display_user}\n"
-        f"GIFT: {display_gift}\n"
+        f"USER: {user_key}\n"
+        f"GIFT: {gift_name}\n"
         f"NEW COMBO COUNT: {reported_count}\n"
         f"TAPS CREDITED THIS UPDATE: {delta}\n"
         f"TIME ADDED THIS UPDATE: +{add_seconds:.2f} seconds\n"

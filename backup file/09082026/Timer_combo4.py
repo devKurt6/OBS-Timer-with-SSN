@@ -28,38 +28,18 @@ except ImportError:
 app = Flask(__name__)
 
 
-@app.after_request
-def _allow_extension_requests(response):
-    """Permit the browser-extension overlay (running on youtube.com,
-    relaying through its background service worker) to POST combo
-    updates to this local server. Harmless for a personal/local-only
-    tool - this server only listens on 127.0.0.1 to begin with.
-
-    Access-Control-Allow-Private-Network answers Chrome's newer
-    Private Network Access preflight, which can otherwise block a
-    request originating from a public https:// page/extension context
-    toward a private/loopback address like 127.0.0.1.
-    """
-
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    response.headers["Access-Control-Allow-Private-Network"] = "true"
-    return response
-
-
 # ============================================================
 # CONFIG
 # ============================================================
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -288,15 +268,8 @@ recent_events = []
 next_event_id = 1
 
 
-def push_event(event_type, name, value, seconds, image_url=None, combo_count=1):
-    """Record a gift/superchat event so the overlay can animate it.
-
-    combo_count is which tap this is within an in-progress Gift Combo
-    (1 for a normal, non-combo gift/superchat; 2, 3, 4... for the
-    2nd, 3rd, 4th... rapid tap of the SAME gift by the SAME user).
-    The overlay uses this to stamp an "xN" badge on the gift image
-    instead of just replaying the same plain image every tap.
-    """
+def push_event(event_type, name, value, seconds, image_url=None):
+    """Record a gift/superchat event so the overlay can animate it."""
 
     global next_event_id
 
@@ -309,7 +282,6 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1):
             "seconds": seconds,
             "ts": time.time(),
             "image_url": image_url or None,
-            "combo_count": int(combo_count) if combo_count else 1,
         }
 
         next_event_id += 1
@@ -1391,72 +1363,32 @@ ssn_recent_events = OrderedDict()
 # can check the log file afterward instead of watching live.
 COMBO_GROUP_WINDOW_SECONDS = 6
 
-# key: (normalized_user, normalized_gift) -> {
-#     "display_user", "display_gift",   - original casing, for logs/UI
-#     "count", "jewels", "seconds",     - running totals
-#     "seconds_per_tap", "jewels_per_tap",  - value of ONE tap, fixed
-#         at creation time from SSN's real first-tap data. Used to
-#         credit additional taps later that only the DOM-based combo
-#         counter (see /combo/live-update) can see.
-#     "last_time",
-# }
+# key: (user_key, gift_name) -> {"count", "jewels", "seconds", "last_time"}
 combo_tracker = {}
-
-
-def combo_key(user_key, gift_name):
-    """Normalize a (user, gift) pair into a case/punctuation/@-
-    insensitive lookup key, so the SAME combo is recognized whether
-    it comes from SSN's webhook (e.g. user_key="ParasocialwithDon
-    Benitez", gift_name="Go Team!") or from the browser extension
-    reading YouTube's own pinned combo-counter DOM element (which may
-    report slightly different casing/punctuation, e.g.
-    "@ParasocialwithDonBenitez" / "go team").
-
-    Reuses normalize_gift_name_key() for the gift side, since it
-    already strips punctuation differences like "Go Team!" vs
-    "Go Team" - the exact same mismatch that can happen between SSN
-    and the DOM-based extension reading.
-    """
-
-    norm_user = (user_key or "").strip().lstrip("@").lower()
-    norm_gift = normalize_gift_name_key(gift_name)
-    return (norm_user, norm_gift)
 
 
 def track_gift_combo(user_key, gift_name, jewels, seconds):
     """Record one gift tap toward a possible combo. Actual combo
     detection/logging happens later in combo_watcher(), once the
-    burst of taps has gone quiet.
-
-    Returns the tap's position within this combo so far (1 for the
-    first tap, 2 for the second, etc.), so the caller can pass it
-    along to push_event() for the overlay's "xN" combo badge.
-    """
+    burst of taps has gone quiet."""
 
     now = time.time()
-    key = combo_key(user_key, gift_name)
 
     with lock:
-        entry = combo_tracker.get(key)
+        entry = combo_tracker.get((user_key, gift_name))
 
         if entry is None:
-            combo_tracker[key] = {
-                "display_user": user_key,
-                "display_gift": gift_name,
+            combo_tracker[(user_key, gift_name)] = {
                 "count": 1,
                 "jewels": jewels,
                 "seconds": seconds,
-                "jewels_per_tap": jewels,
-                "seconds_per_tap": seconds,
                 "last_time": now,
             }
-            return 1
         else:
             entry["count"] += 1
             entry["jewels"] += jewels
             entry["seconds"] += seconds
             entry["last_time"] = now
-            return entry["count"]
 
 
 def combo_watcher():
@@ -1478,12 +1410,9 @@ def combo_watcher():
                     finished.append((key, entry))
                     del combo_tracker[key]
 
-        for key, entry in finished:
+        for (user_key, gift_name), entry in finished:
             if entry["count"] <= 1:
                 continue
-
-            user_key = entry["display_user"]
-            gift_name = entry["display_gift"]
 
             print(
                 f"COMBO GIFT DETECTED: "
@@ -1637,7 +1566,7 @@ def process_ssn_paid_event(data):
             # mid-combo), reuse that combo's per-tap jewel amount
             # instead of dropping this tap entirely.
             with lock:
-                combo_entry = combo_tracker.get(combo_key(user_key, gift_name))
+                combo_entry = combo_tracker.get((user_key, gift_name))
 
             if (
                 combo_entry
@@ -1679,12 +1608,9 @@ def process_ssn_paid_event(data):
         image_url = data.get("contentimg") or None
         image_source = "SSN" if image_url else "no image from SSN"
 
-        # Track this tap FIRST so we know its position within the
-        # combo (1st, 2nd, 3rd...) and can pass that along to the
-        # overlay for the "xN" combo badge on the gift image.
-        combo_count = track_gift_combo(user_key, gift_name, jewels, seconds)
+        push_event("gift", gift_name, jewels, seconds, image_url)
 
-        push_event("gift", gift_name, jewels, seconds, image_url, combo_count)
+        track_gift_combo(user_key, gift_name, jewels, seconds)
 
         print(
             f"JEWEL DONATION: "
@@ -1692,20 +1618,6 @@ def process_ssn_paid_event(data):
             f"{jewels:g} Jewels ({source}) -> "
             f"+{seconds:.2f} seconds "
             f"[image: {image_source}]"
-        )
-
-        # TEMP DEBUG: dump the full raw SSN payload for every jewel
-        # gift, so we can inspect - especially for a real YouTube Gift
-        # Combo - whether SSN includes any hidden count/quantity/combo
-        # field we aren't reading yet (e.g. inside meta.youtubeGift,
-        # or in hasDonation's exact wording). Safe to remove this
-        # log_donation call once we've confirmed what SSN actually
-        # sends for a combo.
-        log_donation(
-            f"EVENT: JEWEL GIFT (RAW DEBUG)\n"
-            f"RAW hasDonation: {data.get('hasDonation')!r}\n"
-            f"RAW meta.youtubeGift: {json.dumps((data.get('meta') or {}).get('youtubeGift') or {}, ensure_ascii=False)}\n"
-            f"RAW full payload: {json.dumps(data, ensure_ascii=False)}"
         )
 
         log_donation(
@@ -1805,9 +1717,7 @@ async def listen_to_ssn():
 
                     if not isinstance(data, dict):
                         continue
-                    event_type_lc = str(data.get("event") or "").lower()
-
-                    if event_type_lc not in {
+                    if str(data.get("event") or "").lower() not in {
                         "jeweldonation", "superchat"
                     }:
                         continue
@@ -1815,18 +1725,7 @@ async def listen_to_ssn():
                         print("Ignored duplicate SSN event.")
                         continue
 
-                    # IMPORTANT: only run the content-hash duplicate check
-                    # on superchats, NOT on gifts. A rapid Gift Combo
-                    # (same user tapping the same gift several times in
-                    # under a couple seconds) legitimately produces
-                    # several events with IDENTICAL fields - SSN often
-                    # doesn't vary anything between taps. The hash check
-                    # can't tell that apart from a true duplicate, so it
-                    # was silently swallowing every tap after the 1st one
-                    # in a combo. True duplicate deliveries are already
-                    # caught above by is_duplicate_event() using SSN's
-                    # real messageId/id, which IS unique per tap.
-                    if event_type_lc == "superchat" and is_duplicate_ssn_event(data):
+                    if is_duplicate_ssn_event(data):
                         print("Ignored duplicate SSN paid event.")
                         continue
 
@@ -1957,197 +1856,9 @@ def test_gift():
     seconds = jewels * GIFT_SECONDS_PER_JEWEL
 
     add_time(seconds)
+    push_event("gift", name, jewels, seconds)
 
-    # Route this through the SAME combo-tracking path a real gift tap
-    # uses. This means rapidly clicking this same button several times
-    # in a row (within COMBO_GROUP_WINDOW_SECONDS) is ALSO a valid way
-    # to test combo detection - not just the dedicated "Combo x5"
-    # button below. Uses the shared TEST_COMBO_USER so it's easy to
-    # spot in the logs afterward.
-    combo_count = track_gift_combo(TEST_COMBO_USER, name, jewels, seconds)
-    push_event("gift", name, jewels, seconds, combo_count=combo_count)
-
-    return jsonify({
-        "ok": True,
-        "name": name,
-        "jewels": jewels,
-        "seconds": seconds,
-        "combo_count": combo_count
-    })
-
-
-@app.route("/combo/live-update", methods=["POST", "OPTIONS"])
-def combo_live_update():
-    """Receive a live combo-count update from the browser extension,
-    which reads YouTube's own PINNED combo-counter DOM element
-    (`.ytlsGiftAttributionItemViewModelComboCountText`, aria-label
-    like "2 gift combo") directly off the popout live chat page.
-
-    This exists because SSN's own webhook only ever sends ONE event
-    for an entire real YouTube Gift Combo (confirmed via testing -
-    see COMBO_GROUP_WINDOW_SECONDS notes above): YouTube hides the
-    true tap count from SSN's data feed entirely. The extension,
-    however, can see the REAL, live-updating count straight from
-    YouTube's own UI - so we use it here to credit any additional
-    taps SSN never told us about.
-
-    Expects JSON body: {"user": "...", "gift": "...", "count": N}
-    where N is the CURRENT total tap count YouTube is showing for
-    this combo right now (e.g. 2 for "x2", 3 for "x3", ...). Safe to
-    call repeatedly with the same or a stale/lower count - only the
-    DELTA above what we've already credited is ever added.
-    """
-
-    if request.method == "OPTIONS":
-        # CORS preflight - the after_request hook above adds the
-        # actual allow-headers; just return an empty 204 here.
-        return ("", 204)
-
-    data = request.get_json(silent=True) or {}
-
-    user_key = str(data.get("user") or "").strip()
-    gift_name = str(data.get("gift") or "").strip()
-    try:
-        reported_count = int(data.get("count") or 0)
-    except (TypeError, ValueError):
-        reported_count = 0
-
-    if not user_key or reported_count < 1:
-        return jsonify({
-            "ok": False,
-            "error": "user and count (>=1) are required"
-        }), 400
-
-    key = combo_key(user_key, gift_name)
-    delta = 0
-    add_seconds = 0.0
-    combo_count_for_badge = reported_count
-    reused_jewels_per_tap = 0.0
-
-    with lock:
-        entry = combo_tracker.get(key)
-
-        if entry is None:
-            # Exact (user, gift) match failed - this can happen when
-            # the browser extension can't parse the gift's name from
-            # YouTube's own DOM (alt-text phrasing isn't identical
-            # for every gift). Before giving up, check whether this
-            # SAME USER already has ANY other combo actively running
-            # right now (within the combo window) - if so, this
-            # update almost certainly belongs to THAT combo, just
-            # reported under a slightly different gift-name spelling.
-            # This keeps combo crediting working correctly even when
-            # gift-name extraction isn't perfect.
-            norm_user, _ = key
-            now = time.time()
-            best_match_key = None
-            best_match_time = -1
-
-            for existing_key, existing_entry in combo_tracker.items():
-                if existing_key[0] != norm_user:
-                    continue
-                if (now - existing_entry["last_time"]) > COMBO_GROUP_WINDOW_SECONDS:
-                    continue
-                if existing_entry["last_time"] > best_match_time:
-                    best_match_time = existing_entry["last_time"]
-                    best_match_key = existing_key
-
-            if best_match_key is not None:
-                key = best_match_key
-                entry = combo_tracker[key]
-
-        if entry is None:
-            # Still nothing - SSN's first-tap event for this combo
-            # hasn't arrived (or never will), and there's no other
-            # active combo for this user to attach to either. Fall
-            # back to the gift-name lookup table so we can still
-            # credit time, using this update as a brand-new baseline
-            # entry.
-            normalized_name = normalize_gift_name_key(gift_name)
-            jewels_per_tap = GIFT_JEWEL_VALUES_NORMALIZED.get(normalized_name)
-
-            if jewels_per_tap is None:
-                return jsonify({
-                    "ok": False,
-                    "error": (
-                        f"No baseline value known yet for gift "
-                        f"'{gift_name}' - waiting for SSN's own event "
-                        f"first, or add it to GIFT_JEWEL_VALUES."
-                    )
-                }), 202
-
-            seconds_per_tap = float(jewels_per_tap) * GIFT_SECONDS_PER_JEWEL
-            entry = combo_tracker[key] = {
-                "display_user": user_key,
-                "display_gift": gift_name,
-                "count": 0,
-                "jewels": 0,
-                "seconds": 0,
-                "jewels_per_tap": jewels_per_tap,
-                "seconds_per_tap": seconds_per_tap,
-                "last_time": time.time(),
-            }
-
-        delta = reported_count - entry["count"]
-
-        if delta > 0:
-            add_seconds = delta * entry["seconds_per_tap"]
-            reused_jewels_per_tap = entry["jewels_per_tap"]
-
-            entry["count"] = reported_count
-            entry["jewels"] += delta * entry["jewels_per_tap"]
-            entry["seconds"] += add_seconds
-            combo_count_for_badge = entry["count"]
-
-        entry["last_time"] = time.time()
-
-        # Use the entry's own authoritative display name/gift (set
-        # when the combo was first created, usually from SSN's own
-        # accurate first-tap data) for everything shown to the user
-        # from here on - NOT the possibly-mis-extracted name reported
-        # in this specific update, in case the fuzzy same-user
-        # fallback above kicked in.
-        display_user = entry["display_user"]
-        display_gift = entry["display_gift"]
-
-    if delta <= 0:
-        # Nothing new (YouTube hasn't incremented past what we
-        # already know) - last_time was still refreshed above so the
-        # combo doesn't get closed out as "quiet" prematurely.
-        return jsonify({"ok": True, "added_taps": 0, "count": reported_count})
-
-    add_time(add_seconds)
-
-    push_event(
-        "gift",
-        display_gift,
-        reused_jewels_per_tap * delta,
-        add_seconds,
-        combo_count=combo_count_for_badge
-    )
-
-    print(
-        f"COMBO LIVE UPDATE: {display_user} / {display_gift} -> "
-        f"now x{reported_count} (+{delta} tap(s) from DOM) -> "
-        f"+{add_seconds:.2f} seconds"
-    )
-
-    log_donation(
-        f"EVENT: GIFT COMBO LIVE UPDATE\n"
-        f"USER: {display_user}\n"
-        f"GIFT: {display_gift}\n"
-        f"NEW COMBO COUNT: {reported_count}\n"
-        f"TAPS CREDITED THIS UPDATE: {delta}\n"
-        f"TIME ADDED THIS UPDATE: +{add_seconds:.2f} seconds\n"
-        f"RESULT: SUCCESS"
-    )
-
-    return jsonify({
-        "ok": True,
-        "added_taps": delta,
-        "count": reported_count,
-        "seconds_added": add_seconds
-    })
+    return jsonify({"ok": True, "name": name, "jewels": jewels, "seconds": seconds})
 
 
 @app.route("/test/superchat")
@@ -2188,8 +1899,8 @@ def run_test_combo(name, jewels, count, gap):
 
     for _ in range(count):
         add_time(seconds)
-        combo_count = track_gift_combo(TEST_COMBO_USER, name, jewels, seconds)
-        push_event("gift", name, jewels, seconds, combo_count=combo_count)
+        push_event("gift", name, jewels, seconds)
+        track_gift_combo(TEST_COMBO_USER, name, jewels, seconds)
         time.sleep(gap)
 
 
@@ -2822,7 +2533,6 @@ html, body {
 
 .confetti-piece,
 .gift-image-fly,
-.gift-image-wrap,
 .superchat-wrap,
 .superchat-emoji {
     position: absolute;
@@ -2838,21 +2548,6 @@ html, body {
        1) appearAtStart  2) flyOnly - with a pause in between. */
 }
 
-/* Wraps a flying gift image so a combo "xN" badge can be stamped on
-   top of it and travel/fade together as ONE unit (same pattern the
-   Super Chat ticket + $ label already use). The wrap itself gets the
-   position/animation treatment above; the image and badge inside are
-   just normal, statically-positioned children. */
-.gift-image-wrap {
-    pointer-events: none;
-}
-
-.gift-image-wrap .gift-image-fly {
-    position: static;
-    display: block;
-    opacity: 1;
-}
-
 .confetti-piece.shape-circle {
     border-radius: 50%;
 }
@@ -2865,48 +2560,6 @@ html, body {
     object-fit: contain;
     pointer-events: none;
     filter: drop-shadow(0 0 14px var(--glow, #FFD700));
-}
-
-/* ---------------- COMBO COUNT BADGE ("xN") ---------------- */
-/* Stamped on the bottom-right corner of a gift image whenever it's
-   the 2nd (or later) rapid tap of a YouTube Gift Combo, so repeated
-   taps of the same gift read as "x2", "x3", "x4"... instead of just
-   looking like the same plain gift image over and over. Pops in with
-   a little bounce right as the image itself appears. */
-.gift-combo-badge {
-    position: absolute;
-    right: -6px;
-    bottom: -2px;
-
-    padding: 3px 9px;
-    border-radius: 999px;
-
-    background: linear-gradient(135deg, #FF5C5C, #B23B3B);
-    color: #FFFFFF;
-
-    font-weight: 800;
-    white-space: nowrap;
-
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35), 0 0 8px rgba(255, 92, 92, 0.7);
-
-    pointer-events: none;
-    animation: comboBadgePop 0.35s ease;
-}
-
-@keyframes comboBadgePop {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    60% {
-        opacity: 1;
-        transform: scale(1.25);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
 }
 
 .superchat-emoji {
@@ -3959,14 +3612,6 @@ function spawnGiftImageAnimation(ev, imageSrc){
 
     const fx = document.getElementById('fx-layer');
 
-    // The wrap is what actually flies/fades (see .gift-image-wrap in
-    // the CSS) - the image and, for combo taps, the "xN" badge are
-    // just plain children riding along inside it as one unit.
-    const wrap = document.createElement('div');
-    wrap.className = 'gift-image-wrap';
-    wrap.style.width = size + 'px';
-    wrap.style.height = size + 'px';
-
     const img = document.createElement('img');
     img.className = 'gift-image-fly';
     // imageSrc is either SSN's own real gift image URL (ev.image_url,
@@ -3974,53 +3619,35 @@ function spawnGiftImageAnimation(ev, imageSrc){
     // /gift-image/<file> fallback from gift_images/_manifest.json.
     img.src = imageSrc;
     img.alt = ev.name || 'gift';
-    img.style.width = '100%';
-    img.style.height = '100%';
 
-    // If the image fails to load (missing/renamed file), fall
-    // back to confetti instead of showing a broken image icon.
-    img.addEventListener('error', () => {
-        wrap.remove();
-        spawnGiftConfettiAnimation(ev);
-    });
+    img.style.width = size + 'px';
+    img.style.height = size + 'px';
 
-    wrap.appendChild(img);
-
-    // ---------------- COMBO COUNT BADGE ----------------
-    // combo_count is set by the backend (see push_event/track_gift_combo)
-    // to this tap's position within an in-progress Gift Combo. The very
-    // first tap (1) shows the plain gift image, same as always - only
-    // the 2nd, 3rd, 4th... taps get an "xN" badge stamped on them, so a
-    // rapid combo visibly counts up instead of replaying an identical
-    // gift image every time.
-    const comboCount = Number(ev.combo_count) || 1;
-
-    if (comboCount > 1){
-        const badge = document.createElement('div');
-        badge.className = 'gift-combo-badge';
-        badge.textContent = 'x' + comboCount;
-        badge.style.fontSize = Math.round(size * 0.22) + 'px';
-        wrap.appendChild(badge);
-    }
-
-    wrap.style.setProperty('--start-x', target.startX + 'px');
-    wrap.style.setProperty('--start-y', target.startY + 'px');
-    wrap.style.setProperty('--end-x', target.endX + 'px');
-    wrap.style.setProperty('--end-y', target.endY + 'px');
-    wrap.style.setProperty('--start-rot', startRot + 'deg');
-    wrap.style.setProperty('--end-rot', '0deg');
+    img.style.setProperty('--start-x', target.startX + 'px');
+    img.style.setProperty('--start-y', target.startY + 'px');
+    img.style.setProperty('--end-x', target.endX + 'px');
+    img.style.setProperty('--end-y', target.endY + 'px');
+    img.style.setProperty('--start-rot', startRot + 'deg');
+    img.style.setProperty('--end-rot', '0deg');
 
     // Keep the gift a STEADY size the whole time it flies -
     // peak-scale matches start-scale, so it never grows mid-flight.
     // It only shrinks away at the very end, right as it lands.
-    wrap.style.setProperty('--start-scale', '0.5');
-    wrap.style.setProperty('--peak-scale', '0.5');
-    wrap.style.setProperty('--end-scale', '0.12');
-    wrap.style.setProperty('--glow', 'hsl(270, 90%, 65%)');
+    img.style.setProperty('--start-scale', '0.5');
+    img.style.setProperty('--peak-scale', '0.5');
+    img.style.setProperty('--end-scale', '0.12');
+    img.style.setProperty('--glow', 'hsl(270, 90%, 65%)');
 
-    fx.appendChild(wrap);
+    // If the image fails to load (missing/renamed file), fall
+    // back to confetti instead of showing a broken image icon.
+    img.addEventListener('error', () => {
+        img.remove();
+        spawnGiftConfettiAnimation(ev);
+    });
 
-    const totalDuration = playHoldThenFly(wrap, duration, 0, {
+    fx.appendChild(img);
+
+    const totalDuration = playHoldThenFly(img, duration, 0, {
         // popOnArrival removed - that's what caused the extra
         // inflate/grow right as it arrived. Now it just shrinks
         // away smoothly.
