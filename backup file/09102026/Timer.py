@@ -54,12 +54,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 0.5 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = 0.5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 30 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -267,41 +267,6 @@ last_tick = time.time()
 lock = threading.RLock()
 
 
-# ---------------- SUPER CHAT COLOR (from browser extension) ----------------
-# Most recent YouTube tier color reported by youtube.js/background.js
-# for a Super Chat that just appeared in chat (see
-# /superchat/color-update below). process_super_chat() - fired a
-# moment later by SSN's webhook - picks this up if it arrives within
-# SUPERCHAT_COLOR_MATCH_WINDOW_SECONDS, so the flying animation can be
-# colored to match the real donation tier instead of a fixed color.
-#
-# Only the single most recent color is kept (not a queue matched by
-# amount) because Super Chats normally land one at a time - unlike
-# Gift Combos, they don't repeat rapidly for the same user.
-last_superchat_color = {"color": None, "ts": 0.0}
-superchat_color_lock = threading.Lock()
-
-SUPERCHAT_COLOR_MATCH_WINDOW_SECONDS = 12
-
-
-def take_recent_superchat_color():
-    """Returns the most recently reported Super Chat tier color if it
-    arrived within SUPERCHAT_COLOR_MATCH_WINDOW_SECONDS, then clears
-    it so a later, unrelated Super Chat doesn't accidentally reuse it.
-    Returns None if no recent color is available.
-    """
-
-    with superchat_color_lock:
-        color = last_superchat_color["color"]
-        ts = last_superchat_color["ts"]
-
-        if color and (time.time() - ts) <= SUPERCHAT_COLOR_MATCH_WINDOW_SECONDS:
-            last_superchat_color["color"] = None
-            return color
-
-        return None
-
-
 # ---------------- GIFT / SUPERCHAT EVENT FEED ----------------
 # Used by the browser overlay to show a per-gift / per-superchat
 # animation (instead of just a generic "+time" popup).
@@ -323,7 +288,7 @@ recent_events = []
 next_event_id = 1
 
 
-def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, color=None):
+def push_event(event_type, name, value, seconds, image_url=None, combo_count=1):
     """Record a gift/superchat event so the overlay can animate it.
 
     combo_count is which tap this is within an in-progress Gift Combo
@@ -331,23 +296,11 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
     2nd, 3rd, 4th... rapid tap of the SAME gift by the SAME user).
     The overlay uses this to stamp an "xN" badge on the gift image
     instead of just replaying the same plain image every tap.
-
-    color, when provided (currently only for Super Chats - see
-    take_recent_superchat_color()), is YouTube's own tier color for
-    this donation, e.g. "#F57F17". The overlay uses it to color the
-    flying Super Chat animation instead of a fixed color.
     """
 
     global next_event_id
 
     with lock:
-        if timer_locked and event_type in ("gift", "superchat"):
-            # While the timer is locked, gifts/Super Chats still bank
-            # their time (add_time() routes it into bank_seconds), but
-            # the overlay should NOT play the gift/Super Chat image
-            # animation for them - so just skip recording the event.
-            return None
-
         event = {
             "id": next_event_id,
             "type": event_type,
@@ -357,7 +310,6 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
             "ts": time.time(),
             "image_url": image_url or None,
             "combo_count": int(combo_count) if combo_count else 1,
-            "color": color or None,
         }
 
         next_event_id += 1
@@ -878,19 +830,10 @@ def parse_monetary_amount(amount_text):
             value = value.replace(",", "")
     elif "," in value:
         whole, fraction = value.rsplit(",", 1)
-        # len(fraction) == 3 means the comma is a THOUSANDS separator
-        # (e.g. "4,910" -> whole="4", fraction="910"), so the comma
-        # needs to be stripped from the FULL value ("4910"), not just
-        # from `whole` (which would silently throw the "910" away and
-        # leave "4" - this was the bug that turned real Super Chats
-        # like JPY 4,910 into 4.00). Any other fraction length means
-        # it's a decimal comma instead (e.g. "4,91" -> "4.91").
-        value = value.replace(",", "") if len(fraction) == 3 else value.replace(",", ".")
+        value = whole.replace(",", "") if len(fraction) == 3 else value.replace(",", ".")
     elif "." in value:
         whole, fraction = value.rsplit(".", 1)
-        # Same fix as above, mirrored for repeated dot-as-thousands
-        # separators (e.g. "1.234.567" -> "1234567", not "1234").
-        value = value.replace(".", "") if len(fraction) == 3 and value.count(".") > 1 else value
+        value = whole.replace(".", "") if len(fraction) == 3 and value.count(".") > 1 else value
 
     amount = float(value)
     return amount if amount > 0 else None
@@ -1150,9 +1093,7 @@ def process_super_chat(donation_text, image_url=None):
 
     add_time(seconds)
 
-    color = take_recent_superchat_color()
-
-    push_event("superchat", None, usd_amount, seconds, image_url, color=color)
+    push_event("superchat", None, usd_amount, seconds, image_url)
 
     print(
         "SUPER CHAT:",
@@ -1746,16 +1687,29 @@ def process_ssn_paid_event(data):
         push_event("gift", gift_name, jewels, seconds, image_url, combo_count)
 
         print(
-            f"JEWEL DONATION [SSN]: "
+            f"JEWEL DONATION: "
             f"{gift_name} -> "
             f"{jewels:g} Jewels ({source}) -> "
             f"+{seconds:.2f} seconds "
             f"[image: {image_source}]"
         )
 
+        # TEMP DEBUG: dump the full raw SSN payload for every jewel
+        # gift, so we can inspect - especially for a real YouTube Gift
+        # Combo - whether SSN includes any hidden count/quantity/combo
+        # field we aren't reading yet (e.g. inside meta.youtubeGift,
+        # or in hasDonation's exact wording). Safe to remove this
+        # log_donation call once we've confirmed what SSN actually
+        # sends for a combo.
+        log_donation(
+            f"EVENT: JEWEL GIFT (RAW DEBUG)\n"
+            f"RAW hasDonation: {data.get('hasDonation')!r}\n"
+            f"RAW meta.youtubeGift: {json.dumps((data.get('meta') or {}).get('youtubeGift') or {}, ensure_ascii=False)}\n"
+            f"RAW full payload: {json.dumps(data, ensure_ascii=False)}"
+        )
+
         log_donation(
             f"EVENT: JEWEL GIFT\n"
-            f"DETECTED VIA: SSN webhook\n"
             f"GIFT: {gift_name}\n"
             f"JEWELS: {jewels:g}\n"
             f"SOURCE: {source}\n"
@@ -2173,14 +2127,13 @@ def combo_live_update():
     )
 
     print(
-        f"COMBO LIVE UPDATE [OVERLAY EXTENSION]: {display_user} / {display_gift} -> "
+        f"COMBO LIVE UPDATE: {display_user} / {display_gift} -> "
         f"now x{reported_count} (+{delta} tap(s) from DOM) -> "
         f"+{add_seconds:.2f} seconds"
     )
 
     log_donation(
         f"EVENT: GIFT COMBO LIVE UPDATE\n"
-        f"DETECTED VIA: Overlay extension (DOM combo counter)\n"
         f"USER: {display_user}\n"
         f"GIFT: {display_gift}\n"
         f"NEW COMBO COUNT: {reported_count}\n"
@@ -2197,44 +2150,6 @@ def combo_live_update():
     })
 
 
-@app.route("/superchat/color-update", methods=["POST", "OPTIONS"])
-def superchat_color_update():
-    """Receive YouTube's own tier color for a Super Chat that just
-    appeared in chat, sent automatically by youtube.js via
-    background.js the instant the message lands (no click required -
-    see the "LIVE SUPER CHAT COLOR DETECTION" section of youtube.js).
-
-    Stored here so process_super_chat() - triggered a moment later by
-    SSN's webhook, which is what actually adds the time and plays the
-    animation - can pick it up via take_recent_superchat_color() and
-    color the flying Super Chat animation to match.
-
-    Expects JSON body: {"color": "#RRGGBB", "amount": "$5.00"}
-    ("amount" is optional and only used for logging here.)
-    """
-
-    if request.method == "OPTIONS":
-        # CORS preflight - the after_request hook above adds the
-        # actual allow-headers; just return an empty 204 here.
-        return ("", 204)
-
-    data = request.get_json(silent=True) or {}
-
-    color = str(data.get("color") or "").strip()
-    amount = str(data.get("amount") or "").strip()
-
-    if not color:
-        return jsonify({"ok": False, "error": "color is required"}), 400
-
-    with superchat_color_lock:
-        last_superchat_color["color"] = color
-        last_superchat_color["ts"] = time.time()
-
-    print(f"[SUPERCHAT COLOR] Received {color} (amount: {amount or 'unknown'})")
-
-    return jsonify({"ok": True})
-
-
 @app.route("/test/superchat")
 def test_superchat():
 
@@ -2243,77 +2158,12 @@ def test_superchat():
 
     usd = request.args.get("usd", default=5, type=float)
 
-    # Optional: preview with a specific tier color (hex, e.g.
-    # "#F57C00"), same as what youtube.js would report for a real
-    # Super Chat. Lets you test the colored animation on demand
-    # instead of waiting for an actual donor - see the "Super Chat
-    # tiers" and "Custom color" sections of /test-panel.
-    color = request.args.get("color", default=None, type=str)
-
     seconds = usd * SUPERCHAT_SECONDS_PER_USD
 
     add_time(seconds)
-    push_event("superchat", None, usd, seconds, color=color)
+    push_event("superchat", None, usd, seconds)
 
-    return jsonify({"ok": True, "usd": usd, "seconds": seconds, "color": color})
-
-
-@app.route("/test/superchat-currency")
-def test_superchat_currency():
-    """Test the REAL currency pipeline end-to-end: parse_donation()
-    -> get_exchange_rate() -> process_super_chat(), using raw donation
-    text exactly like what SSN's webhook would send (e.g. "¥4,910").
-
-    Unlike /test/superchat (which just takes a USD amount directly),
-    this exercises parse_monetary_amount()'s thousands-separator
-    handling, so it's the right one to use when checking a currency
-    conversion bug/fix.
-    """
-
-    if not ENABLE_TEST_PANEL:
-        return jsonify({"ok": False, "error": "Test panel disabled"}), 403
-
-    raw = request.args.get("raw", default="", type=str)
-
-    if not raw:
-        return jsonify({"ok": False, "error": "raw is required"}), 400
-
-    # Optional: also test that a color received just before this
-    # (like background.js would send) gets picked up by
-    # process_super_chat() -> take_recent_superchat_color().
-    color = request.args.get("color", default=None, type=str)
-    if color:
-        with superchat_color_lock:
-            last_superchat_color["color"] = color
-            last_superchat_color["ts"] = time.time()
-
-    # Parse here too (read-only, no side effects) purely so we can
-    # report back exactly what it resolved to - process_super_chat()
-    # below does the actual work (adds time, pushes the animation
-    # event, writes the log line).
-    parsed = parse_donation(raw)
-
-    if not parsed:
-        return jsonify({"ok": False, "error": "Could not parse: " + raw}), 400
-
-    usd_rate = get_exchange_rate(parsed["currency"])
-
-    if usd_rate is None:
-        return jsonify({
-            "ok": False,
-            "error": f"No exchange rate available for {parsed['currency']}"
-        }), 400
-
-    ok = process_super_chat(raw)
-
-    return jsonify({
-        "ok": ok,
-        "raw": raw,
-        "currency": parsed["currency"],
-        "amount": parsed["amount"],
-        "usd_rate": usd_rate,
-        "usd_amount": parsed["amount"] * usd_rate,
-    })
+    return jsonify({"ok": True, "usd": usd, "seconds": seconds})
 
 
 # A fixed, easy-to-spot "user" name for combo test fires, so they're
@@ -2504,40 +2354,6 @@ def test_panel():
         .combo-btn:active { background: #ff5c5c; }
         .sc-btn { background: #2b6b3a; min-width: 90px; }
         .sc-btn:active { background: #4CAF50; }
-        .custom-sc {
-            background: #2c2c2e;
-            border-radius: 10px;
-            padding: 12px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-        }
-        .custom-sc label {
-            font-size: 13px;
-            color: #aaa;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .custom-sc input[type="number"] {
-            width: 70px;
-            padding: 6px 8px;
-            border-radius: 6px;
-            border: none;
-            font-size: 14px;
-        }
-        .custom-sc input[type="color"] {
-            width: 44px;
-            height: 32px;
-            padding: 0;
-            border: none;
-            border-radius: 6px;
-            background: none;
-            cursor: pointer;
-        }
-        .custom-sc button { background: #a34ed1; }
-        .custom-sc button:active { background: #c46bff; }
         .sim-btn {
             background: #a34ed1;
             font-size: 16px;
@@ -2563,9 +2379,7 @@ def test_panel():
             "🔥 Combo x5" button on a gift to simulate a YouTube Gift
             Combo (5 rapid taps of that same gift) - watch the console
             or your logs/ folder a few seconds after it finishes for a
-            "COMBO GIFT DETECTED" summary. The Super Chat buttons below
-            fire with a real tier color baked in, so you can see the
-            colored animation without needing an actual donor.
+            "COMBO GIFT DETECTED" summary.
         </p>
 
         <h2>Simulate a busy stream</h2>
@@ -2578,66 +2392,13 @@ def test_panel():
             </button>
         </div>
 
-        <h2>Super Chat tiers <span style="color:#777; font-weight:normal;">(YouTube's real tier colors)</span></h2>
+        <h2>Super Chat tiers</h2>
         <div class="row">
-            <button class="sc-btn" style="background:#1565C0" onclick="fireSuperchat(1, '#1565C0')">💙 $1 (blue)</button>
-            <button class="sc-btn" style="background:#00B8D4" onclick="fireSuperchat(2, '#00B8D4')">💵 $2 (light blue)</button>
-            <button class="sc-btn" style="background:#00A572; color:#111" onclick="fireSuperchat(5, '#00A572')">💚 $5 (green)</button>
-            <button class="sc-btn" style="background:#F9A825; color:#111" onclick="fireSuperchat(10, '#F9A825')">💰 $10 (yellow)</button>
-            <button class="sc-btn" style="background:#EF6C00" onclick="fireSuperchat(20, '#EF6C00')">🧡 $20 (orange)</button>
-            <button class="sc-btn" style="background:#E91E8C" onclick="fireSuperchat(50, '#E91E8C')">🤑 $50 (magenta)</button>
-            <button class="sc-btn" style="background:#D32F2F" onclick="fireSuperchat(150, '#D32F2F')">💸 $150 (red)</button>
+            <button class="sc-btn" onclick="fireSuperchat(2)">💵 $2 (small)</button>
+            <button class="sc-btn" onclick="fireSuperchat(10)">💰 $10 (medium)</button>
+            <button class="sc-btn" onclick="fireSuperchat(50)">🤑 $50 (large)</button>
+            <button class="sc-btn" onclick="fireSuperchat(150)">💸 $150 (huge)</button>
         </div>
-        <p class="hint" style="margin-top:8px;">
-            These are approximations of YouTube's real per-tier colors,
-            so you can preview the colored animation without needing
-            an actual donor. Once your extension starts relaying real
-            Super Chats, the ACTUAL color YouTube used for that
-            specific donation will be used instead.
-        </p>
-
-        <h2>Custom color</h2>
-        <div class="custom-sc">
-            <label>Amount ($)
-                <input type="number" id="customUsd" value="25" min="0.01" step="0.01">
-            </label>
-            <label>Color
-                <input type="color" id="customColor" value="#F06292">
-            </label>
-            <button onclick="fireCustomSuperchat()">🎨 Fire custom Super Chat</button>
-        </div>
-
-        <h2>Currency testing <span style="color:#777; font-weight:normal;">(real parser + live exchange rate)</span></h2>
-        <p class="hint">
-            These go through the SAME parse_donation() / get_exchange_rate()
-            pipeline a real Super Chat webhook uses - not a shortcut -
-            so this is the place to check that a currency with
-            comma/dot thousands separators (like ¥4,910) converts
-            correctly. The result box below each button shows exactly
-            what it was parsed as and converted to.
-        </p>
-        <div class="row">
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('¥4,910')">🇯🇵 ¥4,910 (JPY)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('₱12,500')">🇵🇭 ₱12,500 (PHP)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('€1.234,56')">🇪🇺 €1.234,56 (EUR)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('£2,500.75')">🇬🇧 £2,500.75 (GBP)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('₩150,000')">🇰🇷 ₩150,000 (KRW)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('₹25,000')">🇮🇳 ₹25,000 (INR)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('IDR 1.000.000')">🇮🇩 Rp1.000.000 (IDR)</button>
-            <button class="sc-btn" style="background:#333" onclick="fireCurrency('$10.50')">🇺🇸 $10.50 (USD)</button>
-        </div>
-        <div class="custom-sc" style="margin-top:10px;">
-            <label style="min-width:140px;">Amount
-                <input type="number" id="customAmount" value="10.50" min="0" step="0.01" style="width:100%; padding:6px 8px; border-radius:6px; border:none; font-size:14px;">
-            </label>
-            <label style="min-width:160px;">Currency
-                <select id="customCurrency" style="width:100%; padding:6px 8px; border-radius:6px; border:none; font-size:14px;">
-                    __CURRENCY_OPTIONS__
-                </select>
-            </label>
-            <button onclick="fireCustomCurrency()">🌐 Fire</button>
-        </div>
-        <div id="currencyResult" class="hint" style="margin-top:8px; white-space:pre-wrap;"></div>
 
         <h2>Every gift (smallest → biggest)</h2>
         <div class="row">
@@ -2664,45 +2425,9 @@ def test_panel():
                         '&count=5&gap=0.6');
         }
 
-        async function fireSuperchat(usd, color){
-            setStatus('Fired Super Chat: $' + usd + (color ? ' (' + color + ')' : ''));
-            let url = '/test/superchat?usd=' + encodeURIComponent(usd);
-            if (color) url += '&color=' + encodeURIComponent(color);
-            await fetch(url);
-        }
-
-        async function fireCustomSuperchat(){
-            const usd = document.getElementById('customUsd').value || 5;
-            const color = document.getElementById('customColor').value;
-            await fireSuperchat(usd, color);
-        }
-
-        async function fireCurrency(raw){
-            setStatus('Fired Super Chat: ' + raw);
-            const resultBox = document.getElementById('currencyResult');
-            resultBox.textContent = 'Converting ' + raw + ' ...';
-            try {
-                const res = await fetch('/test/superchat-currency?raw=' + encodeURIComponent(raw));
-                const data = await res.json();
-                if (!data.ok){
-                    resultBox.textContent = '❌ ' + raw + ' -> ' + (data.error || 'failed');
-                    return;
-                }
-                resultBox.textContent =
-                    '✅ ' + raw + '  ->  ' +
-                    data.amount.toFixed(2) + ' ' + data.currency +
-                    '  ->  $' + data.usd_amount.toFixed(2) + ' USD' +
-                    '  (rate: ' + data.usd_rate.toFixed(8) + ')';
-            } catch (e){
-                resultBox.textContent = '❌ ' + raw + ' -> request failed: ' + e;
-            }
-        }
-
-        async function fireCustomCurrency(){
-            const amount = document.getElementById('customAmount').value || 0;
-            const currency = document.getElementById('customCurrency').value;
-            const raw = amount + ' ' + currency;
-            await fireCurrency(raw);
+        async function fireSuperchat(usd){
+            setStatus('Fired Super Chat: $' + usd);
+            await fetch('/test/superchat?usd=' + encodeURIComponent(usd));
         }
 
         async function fireSimulate(count){
@@ -2715,15 +2440,7 @@ def test_panel():
     </html>
     """
 
-    currency_codes = list(OrderedDict.fromkeys(CURRENCY_SYMBOLS.values()))
-
-    currency_options = "".join(
-        f'<option value="{code}"{" selected" if code == "USD" else ""}>{code}</option>'
-        for code in currency_codes
-    )
-
     html = html.replace("__GIFT_ROWS__", gift_rows)
-    html = html.replace("__CURRENCY_OPTIONS__", currency_options)
 
     return html
 
@@ -3192,78 +2909,55 @@ html, body {
     }
 }
 
-/* Super Chat flies in as a pure CSS "badge" - no ticket image at all -
-   styled to match the same donation badge already built in
-   youtube.js's donationHTML: a "SUPERCHAT" label bar with the
-   YouTube play-button icon, on top of a $ amount bar underneath,
-   both on a gradient built from the real tier color (ev.color).
-   See spawnSuperchatAnimation() and buildSuperchatIconSvg() in the
-   JS. Both bars are normal children of .superchat-wrap, which is
-   what actually gets the appearAtStart/flyOnly animation - no
-   separate animation needed for them. */
+.superchat-emoji {
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Super Chat now flies in as ONE unit - the ticket image (or a
+   fallback emoji, see buildSuperchatEmojiIcon() in the JS) with the
+   dollar amount printed right below the "SUPERCHAT" wording, INSIDE
+   the same box. Both move/fade together automatically since they're
+   just normal children of .superchat-wrap, which is what actually
+   gets the appearAtStart/flyOnly animation - no separate animation
+   needed for the text. */
 .superchat-wrap {
+    pointer-events: none;
+}
+
+.superchat-image {
+    display: block;
+    width: 100%;
+    height: auto;
     pointer-events: none;
     filter: drop-shadow(0 0 14px var(--glow, #FFD700));
 }
 
-.superchat-card {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-    pointer-events: none;
-
-    /* Same font stack + weight as the SUPERCHAT badge in
-       youtube.js/youtube.css - see --font-family and
-       --highlight-chat-font-weight in youtube.css's :root, which is
-       what the donationHTML badge actually inherits from its
-       highlight-chat container. Kept here so both places render the
-       exact same font/weight instead of Timer5.py falling back to
-       its own page-wide "Arial, sans-serif" + bolder weights. */
-    font-family: Arial, Helvetica, Geneva, Verdana, sans-serif;
-}
-
-.superchat-label-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    padding: 9px 14px 8px;
-
-    font-size: 25px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-}
-
-.superchat-icon-box {
-    background: #fff;
-    border-radius: 6px;
-    padding: 2px 3px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
-    flex-shrink: 0;
-}
-
-.superchat-amount {
-    padding: 10px 14px 14px;
+.superchat-emoji-icon {
+    display: block;
     text-align: center;
+    line-height: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 0 14px var(--glow, #FFD700));
+}
+
+.superchat-value-text {
+    position: absolute;
+    left: 50%;
+    top: 68%;
+    transform: translate(-50%, -50%);
 
     white-space: nowrap;
     pointer-events: none;
 
-    font-weight: 600;
-    color: #111111;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.6),
+        0 0 6px rgba(0, 0, 0, 0.45);
 }
 
 @keyframes flyToDigit {
-
     0% {
         opacity: 0;
         transform:
@@ -4223,33 +3917,18 @@ function getGiftPopColors(giftName){
 // Flip this to compare the two looks - no other code needs to change.
 const EXPAND_TIMER_ON_INCREASE = true;
 
-function applyTimerPop(big, giftName, explicitColor){
+function applyTimerPop(big, giftName){
     const timeEl = document.getElementById('time');
 
-    // explicitColor (used for Super Chats) takes priority over the
-    // gift-name color lookup below - it's YouTube's own real tier
-    // color for that specific donation (ev.color, same one used for
-    // the flying Super Chat badge), so the digit "pop" flashes the
-    // SAME color that triggered it (e.g. a red Super Chat -> red
-    // digit pop). Gifts still use their own per-gift colors from
-    // gift_images/_manifest.json, unaffected.
-    let popColor = null;
-    let popGlow = null;
+    // Same animation as always (timeIncreasePop / timeIncreasePopHuge) -
+    // only the two colors it flashes through change, based on which
+    // gift triggered it. No matching gift (e.g. Super Chat, numpad
+    // hotkey) -> falls back to the original green/gold.
+    const colors = getGiftPopColors(giftName);
 
-    if (explicitColor){
-        popColor = explicitColor;
-        popGlow = explicitColor;
-    } else {
-        const colors = getGiftPopColors(giftName);
-        if (colors){
-            popColor = colors[0];
-            popGlow = colors[1];
-        }
-    }
-
-    if (popColor){
-        timeEl.style.setProperty('--pop-color', popColor);
-        timeEl.style.setProperty('--pop-glow', popGlow);
+    if (colors){
+        timeEl.style.setProperty('--pop-color', colors[0]);
+        timeEl.style.setProperty('--pop-glow', colors[1]);
     } else {
         timeEl.style.removeProperty('--pop-color');
         timeEl.style.removeProperty('--pop-glow');
@@ -4375,23 +4054,32 @@ function spawnGiftAnimation(ev){
 }
 
 
-// ---------------- SUPER CHAT: PURE CSS BADGE (NO IMAGE) ----------------
-// The flying Super Chat animation is a pure CSS/SVG badge, built to
-// match the same donation badge already used in youtube.js's
-// donationHTML: a "SUPERCHAT" label bar (with the YouTube play-button
-// icon) on top of a $ amount bar underneath, both colored from the
-// real tier color (ev.color) using the exact same color-mix recipe
-// youtube.js uses. No ticket image/artwork is used at all.
-//
-// Same size for every tier (small/medium/large/huge no longer change
-// how big the badge is - only the label bar color changes based on
-// ev.color). Bump SUPERCHAT_BADGE_WIDTH / SUPERCHAT_VALUE_FONT_SIZE
-// below to make it bigger or smaller.
-const SUPERCHAT_BADGE_WIDTH = 240;
-const SUPERCHAT_VALUE_FONT_SIZE = 44;
+// ---------------- SUPER CHAT: REAL ARTWORK + $ VALUE ON THE TICKET ----------------
+// If gift_images/_manifest.json has a "superchat" entry (see
+// GIFT_IMAGE_FILES, loaded from /gift-images-manifest, same as
+// gifts use), the overlay flies in that actual Super Chat ticket
+// image - ONE copy, same as a real gift - with the exact dollar
+// amount printed right below the "SUPERCHAT" wording, baked into
+// the same box so it travels and fades together with the ticket.
+// No matching image -> falls back to a single emoji instead, so
+// nothing ever shows blank.
+const SUPERCHAT_EMOJI = {
+    small: "💵",
+    medium: "💰",
+    large: "🤑",
+    huge: "💸"
+};
 
+// Width in px of the flying ticket/emoji box, scaled by tier.
+// Height follows automatically from the image's own aspect ratio
+// (or a fixed ratio for the emoji fallback - see buildSuperchatIcon).
+const SUPERCHAT_TIER_WIDTH = { small: 120, medium: 165, large: 210, huge: 260 };
 const SUPERCHAT_TIER_DURATION = { small: 0.7, medium: 0.7, large: 0.7, huge: 0.7 };
 
+// Font size for the "$12.50" printed below the ticket text, scaled
+// with tier so it stays readable without overflowing the ticket.
+//const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 48, large: 52, huge: 55 };
+const SUPERCHAT_VALUE_FONT_SIZE = { small: 46, medium: 46, large: 46, huge: 46 };
 function tierFromUsd(usd){
     usd = Number(usd) || 0;
     if (usd < 5) return "small";
@@ -4417,94 +4105,73 @@ function formatSuperchatValue(usd){
     }
 }
 
-// The same small YouTube "play button" icon used in youtube.js's
-// donationHTML, next to the "SUPERCHAT" label. idSuffix keeps each
-// flying badge's <defs> ids unique so multiple Super Chats flying in
-// at once don't fight over the same gradient/filter ids.
-function buildSuperchatIconSvg(idSuffix){
-    return `
-    <svg width="33" height="24" viewBox="0 0 22 16" style="flex-shrink:0; display:block;">
-        <defs>
-            <linearGradient id="ytGrad${idSuffix}" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#ff4d4d"/>
-                <stop offset="55%" stop-color="#e50000"/>
-                <stop offset="100%" stop-color="#a80000"/>
-            </linearGradient>
-            <linearGradient id="ytShine${idSuffix}" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>
-                <stop offset="45%" stop-color="#fff" stop-opacity="0"/>
-            </linearGradient>
-            <filter id="ytDrop${idSuffix}" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#000" flood-opacity="0.45"/>
-            </filter>
-        </defs>
-        <rect width="22" height="16" rx="4" fill="url(#ytGrad${idSuffix})" filter="url(#ytDrop${idSuffix})"/>
-        <rect x="0.6" y="0.6" width="20.8" height="14.8" rx="3.4" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
-        <rect width="22" height="8" rx="4" fill="url(#ytShine${idSuffix})"/>
-        <polygon points="9,5 9,11 14.5,8" fill="#8c0000" opacity="0.4" transform="translate(0.4,0.6)"/>
-        <polygon points="9,5 9,11 14.5,8" fill="#fff"/>
-        <polygon points="9,5 9,7.6 11.8,6.3" fill="#ffffff" opacity="0.55"/>
-    </svg>`;
+// Builds the fallback emoji icon used when no "superchat" image is
+// in the manifest (or the real image fails to load).
+function buildSuperchatEmojiIcon(tier, width){
+    const span = document.createElement('span');
+    span.className = 'superchat-emoji-icon';
+    span.textContent = SUPERCHAT_EMOJI[tier];
+    span.style.fontSize = Math.round(width * 0.7) + 'px';
+    return span;
 }
 
 function spawnSuperchatAnimation(ev){
 
     const tier = tierFromUsd(ev.value);
-    const width = SUPERCHAT_BADGE_WIDTH;
+
+    // Super Chat image is always the same size as the digit timer
+    // box (115px) - no more tier-based width. Duration and the $
+    // label font size still scale with tier.
+    const width = 295;
     const duration = SUPERCHAT_TIER_DURATION[tier];
 
-    // ev.color, when present, is YouTube's own real tier color for
-    // THIS Super Chat (reported live by youtube.js/background.js -
-    // see /superchat/color-update and take_recent_superchat_color()
-    // on the Python side). Falls back to gold when it's missing,
-    // e.g. for the /test/superchat and hotkey previews, which don't
-    // go through the browser extension at all.
-    const superchatColor = ev.color || '#FFD700';
-
-    // Same color-mix recipe as youtube.js's donationHTML: a darker
-    // shade for the "SUPERCHAT" label bar, a lighter metallic sheen
-    // for the $ amount bar underneath.
-    const topColor = `color-mix(in srgb, ${superchatColor} 65%, black)`;
-    const shineTop = `color-mix(in srgb, ${superchatColor} 85%, white)`;
-    const shineBottom = `color-mix(in srgb, ${superchatColor} 25%, white)`;
-    const topGrad = `linear-gradient(270deg, ${topColor} 0%, ${shineTop} 49%, ${topColor} 100%)`;
-    const bottomGrad = `linear-gradient(270deg, ${superchatColor} 0%, ${shineBottom} 49%, ${superchatColor} 100%)`;
+    // Real Super Chat artwork: prefer SSN's own image (ev.image_url),
+    // then fall back to the local "superchat" entry in
+    // gift_images/_manifest.json - same lookup gifts already use.
+    const imageEntry = GIFT_IMAGE_FILES['superchat'];
+    const localFile = imageEntry && imageEntry.file;
+    const imageSrc = ev.image_url || (localFile ? ('/gift-image/' + localFile) : null);
 
     const fx = document.getElementById('fx-layer');
     const target = getFlyPositions();
     const startRot = Math.round((Math.random() - 0.5) * 20);
 
+    // Single flying box - the ticket image (or emoji) plus the $
+    // value both live inside it, so they move/fade as ONE unit.
     const wrap = document.createElement('div');
     wrap.className = 'superchat-wrap';
     wrap.style.width = width + 'px';
-    wrap.style.setProperty('--glow', superchatColor);
+    wrap.style.setProperty('--glow', '#FFD700');
 
-    const card = document.createElement('div');
-    card.className = 'superchat-card';
-    card.style.background = bottomGrad;
+    if (imageSrc){
+        const img = document.createElement('img');
+        img.className = 'superchat-image';
+        img.src = imageSrc;
+        img.alt = 'Super Chat';
 
-    const labelBar = document.createElement('div');
-    labelBar.className = 'superchat-label-bar';
-    labelBar.style.background = topGrad;
+        // If the real image fails to load (missing/renamed file),
+        // swap in the emoji instead of a broken image icon.
+        img.addEventListener('error', () => {
+            img.remove();
+            wrap.insertBefore(
+                buildSuperchatEmojiIcon(tier, width),
+                wrap.firstChild
+            );
+        });
 
-    const iconBox = document.createElement('div');
-    iconBox.className = 'superchat-icon-box';
-    iconBox.innerHTML = buildSuperchatIconSvg('SC' + ev.id);
+        wrap.appendChild(img);
+    } else {
+        // No ticket-shaped box to measure, so give the wrap a fixed
+        // height itself, tall enough for the emoji + label below it.
+        wrap.style.height = Math.round(width * 0.85) + 'px';
+        wrap.appendChild(buildSuperchatEmojiIcon(tier, width));
+    }
 
-    const labelText = document.createElement('span');
-    labelText.textContent = 'SUPERCHAT';
-
-    labelBar.appendChild(iconBox);
-    labelBar.appendChild(labelText);
-
-    const amount = document.createElement('div');
-    amount.className = 'superchat-amount';
-    amount.textContent = formatSuperchatValue(ev.value);
-    amount.style.fontSize = SUPERCHAT_VALUE_FONT_SIZE + 'px';
-
-    card.appendChild(labelBar);
-    card.appendChild(amount);
-    wrap.appendChild(card);
+    const label = document.createElement('div');
+    label.className = 'superchat-value-text';
+    label.textContent = formatSuperchatValue(ev.value);
+    label.style.fontSize = SUPERCHAT_VALUE_FONT_SIZE[tier] + 'px';
+    wrap.appendChild(label);
 
     wrap.style.setProperty('--start-x', target.startX + 'px');
     wrap.style.setProperty('--start-y', target.startY + 'px');
@@ -4513,10 +4180,9 @@ function spawnSuperchatAnimation(ev){
     wrap.style.setProperty('--start-rot', startRot + 'deg');
     wrap.style.setProperty('--end-rot', '0deg');
 
-    // Keep the Super Chat badge a STEADY size the whole time it
-    // flies - peak-scale matches start-scale, so it never grows
-    // mid-flight. It only shrinks away at the very end, right as it
-    // lands.
+    // Keep the Super Chat box a STEADY size the whole time it flies -
+    // peak-scale matches start-scale, so it never grows mid-flight.
+    // It only shrinks away at the very end, right as it lands.
     wrap.style.setProperty('--start-scale', '0.5');
     wrap.style.setProperty('--peak-scale', '0.5');
     wrap.style.setProperty('--end-scale', '0.12');
@@ -4527,10 +4193,10 @@ function spawnSuperchatAnimation(ev){
         // popOnArrival removed - that's what caused the extra
         // inflate/grow right as it arrived. Now it just shrinks
         // away smoothly, same steady feel as gifts.
-        burstColor: superchatColor,
+        burstColor: '#FFD700',
         countdownText: 'Super Chat arriving',
         glitterTrail: true,
-        glitterColor: superchatColor
+        glitterColor: '#FFD700'
     });
 
     return { duration: totalDuration, big: (tier === 'large' || tier === 'huge') };
@@ -4555,7 +4221,7 @@ function renderDisplayedSeconds(){
     document.getElementById('time').innerText = fmt(displayedSeconds);
 }
 
-function scheduleLanding(anim, giftName, explicitColor){
+function scheduleLanding(anim, giftName){
     if (!anim) return;
 
     pendingLandings++;
@@ -4569,7 +4235,7 @@ function scheduleLanding(anim, giftName, explicitColor){
         }
 
         if (EXPAND_TIMER_ON_INCREASE){
-            applyTimerPop(!!anim.big, giftName, explicitColor);
+            applyTimerPop(!!anim.big, giftName);
         }
     }, Math.max(0, anim.duration) * 1000);
 }
@@ -4595,11 +4261,7 @@ async function update(){
                 ? spawnSuperchatAnimation(ev)
                 : spawnGiftAnimation(ev);
 
-            scheduleLanding(
-                anim,
-                ev.type === "superchat" ? null : ev.name,
-                ev.type === "superchat" ? (ev.color || '#FFD700') : null
-            );
+            scheduleLanding(anim, ev.type === "superchat" ? null : ev.name);
         }
         handledByEvent = true;
     }
