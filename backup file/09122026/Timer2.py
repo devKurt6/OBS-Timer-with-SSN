@@ -3231,8 +3231,7 @@ html, body {
 
     padding: 9px 14px 8px;
 
-    /* font-size is set from JS - see SUPERCHAT_LABEL_FONT_SIZE in
-       the SIZE CONFIG block near the top of the <script> below. */
+    font-size: 25px;
     font-weight: 600;
     letter-spacing: 0.3px;
     color: #fff;
@@ -3374,7 +3373,7 @@ html, body {
     justify-content: center;
     align-items: center;
 
-    font-size: 26px;
+    font-size: 20px;
     font-weight: 650;
     line-height: 1.2;
 
@@ -3709,37 +3708,6 @@ html, body {
 
 
 <script>
-
-// ============================================================
-// SIZE CONFIG (animation sizes - safe to tweak)
-// ============================================================
-// Change the numbers below to resize things. Everything else in
-// this file reads from these - you shouldn't need to touch
-// anything past this block just to make things bigger/smaller.
-
-// ---------------- GIFT IMAGE ----------------
-// Width & height (in px) of the flying gift image.
-const GIFT_IMAGE_SIZE = 201;
-
-// ---------------- SUPER CHAT ----------------
-// Overall width (in px) of the flying Super Chat card. The label
-// bar and $ amount bar both stretch to match this automatically.
-const SUPERCHAT_BADGE_WIDTH = 312;
-
-// Everything below this line auto-scales with SUPERCHAT_BADGE_WIDTH
-// above (same proportions they had at the original width=240) - you
-// don't need to edit these directly, just change the width above.
-
-// "SUPERCHAT" label text (25px at width=240).
-const SUPERCHAT_LABEL_FONT_SIZE = SUPERCHAT_BADGE_WIDTH * (25 / 240);
-
-// $ money value text, e.g. "$10.00" (44px at width=240).
-const SUPERCHAT_VALUE_FONT_SIZE = SUPERCHAT_BADGE_WIDTH * (44 / 240);
-
-// YouTube play-button icon (33x24px at width=240).
-const SUPERCHAT_ICON_WIDTH = SUPERCHAT_BADGE_WIDTH * (33 / 240);
-const SUPERCHAT_ICON_HEIGHT = SUPERCHAT_ICON_WIDTH * (24 / 33);
-
 
 function fmt(s){
 
@@ -4304,9 +4272,7 @@ function spawnGiftImageAnimation(ev, imageSrc){
     // Gift image is always the same size as the digit timer box
     // (115px) - no more jewel-based size scaling. Duration still
     // scales with jewel value so bigger gifts still feel bigger.
-    // Size is set in the SIZE CONFIG block near the top of this
-    // <script> - see GIFT_IMAGE_SIZE.
-    const size = GIFT_IMAGE_SIZE;
+    const size = 155;
     const duration = lerp(0.7, 0.7, intensity);
 
     const target = getFlyPositions();
@@ -4419,8 +4385,10 @@ function spawnGiftAnimation(ev){
 //
 // Same size for every tier (small/medium/large/huge no longer change
 // how big the badge is - only the label bar color changes based on
-// ev.color). Sizes are set in the SIZE CONFIG block near the top of
-// this <script> - see SUPERCHAT_BADGE_WIDTH / SUPERCHAT_VALUE_FONT_SIZE.
+// ev.color). Bump SUPERCHAT_BADGE_WIDTH / SUPERCHAT_VALUE_FONT_SIZE
+// below to make it bigger or smaller.
+const SUPERCHAT_BADGE_WIDTH = 240;
+const SUPERCHAT_VALUE_FONT_SIZE = 44;
 
 const SUPERCHAT_TIER_DURATION = { small: 0.7, medium: 0.7, large: 0.7, huge: 0.7 };
 
@@ -4455,7 +4423,7 @@ function formatSuperchatValue(usd){
 // at once don't fight over the same gradient/filter ids.
 function buildSuperchatIconSvg(idSuffix){
     return `
-    <svg width="${SUPERCHAT_ICON_WIDTH}" height="${SUPERCHAT_ICON_HEIGHT}" viewBox="0 0 22 16" style="flex-shrink:0; display:block;">
+    <svg width="33" height="24" viewBox="0 0 22 16" style="flex-shrink:0; display:block;">
         <defs>
             <linearGradient id="ytGrad${idSuffix}" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stop-color="#ff4d4d"/>
@@ -4518,7 +4486,6 @@ function spawnSuperchatAnimation(ev){
     const labelBar = document.createElement('div');
     labelBar.className = 'superchat-label-bar';
     labelBar.style.background = topGrad;
-    labelBar.style.fontSize = SUPERCHAT_LABEL_FONT_SIZE + 'px';
 
     const iconBox = document.createElement('div');
     iconBox.className = 'superchat-icon-box';
@@ -4688,7 +4655,7 @@ function getFadeTexts(isLocked){
     if (isLocked){
 
         return [
-            "Raiding streamer in...",
+            "Definitely ending/raiding streamer in...",
             "Timer locked."
         ];
 

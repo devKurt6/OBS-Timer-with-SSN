@@ -1,0 +1,142 @@
+
+**********************************************************************
+[2026-09-11 01:50:03]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+IMAGE: no image from SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:51:57]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+IMAGE: no image from SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:52:39]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Star
+JEWELS: 2
+SOURCE: gift-name fallback
+IMAGE: SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:52:45]
+EVENT: GIFT COMBO LIVE UPDATE
+DETECTED VIA: Overlay extension (DOM combo counter)
+USER: blabbler
+GIFT: Star
+NEW COMBO COUNT: 2
+TAPS CREDITED THIS UPDATE: 1
+TIME ADDED THIS UPDATE: +1.00 seconds
+RESULT: SUCCESS
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:52:49]
+EVENT: GIFT COMBO LIVE UPDATE
+DETECTED VIA: Overlay extension (DOM combo counter)
+USER: blabbler
+GIFT: Star
+NEW COMBO COUNT: 3
+TAPS CREDITED THIS UPDATE: 1
+TIME ADDED THIS UPDATE: +1.00 seconds
+RESULT: SUCCESS
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:52:56]
+EVENT: GIFT COMBO
+USER: blabbler
+GIFT: Star
+COMBO COUNT: 3
+TOTAL JEWELS: 6
+TOTAL TIME ADDED: +3.00 seconds
+RESULT: SUCCESS
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:53:03]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: 100
+JEWELS: 2
+SOURCE: gift-name fallback
+IMAGE: SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:53:07]
+EVENT: GIFT COMBO LIVE UPDATE
+DETECTED VIA: Overlay extension (DOM combo counter)
+USER: blabbler
+GIFT: 100
+NEW COMBO COUNT: 2
+TAPS CREDITED THIS UPDATE: 1
+TIME ADDED THIS UPDATE: +1.00 seconds
+RESULT: SUCCESS
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:53:14]
+EVENT: GIFT COMBO
+USER: blabbler
+GIFT: 100
+COMBO COUNT: 2
+TOTAL JEWELS: 4
+TOTAL TIME ADDED: +2.00 seconds
+RESULT: SUCCESS
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:54:49]
+EVENT: SUPER CHAT
+ORIGINAL: 4910 JPY
+CURRENCY: JPY
+AMOUNT: 4910.00
+USD RATE: 0.00650000
+USD AMOUNT: $31.91
+RESULT: SUCCESS
+TIME ADDED: +957.45 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:58:47]
+EVENT: SUPER CHAT
+ORIGINAL: £2,500.75
+CURRENCY: GBP
+AMOUNT: 2500.75
+USD RATE: 1.35580000
+USD AMOUNT: $3390.52
+RESULT: SUCCESS
+TIME ADDED: +101715.51 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-11 01:58:58]
+EVENT: SUPER CHAT
+ORIGINAL: 4910 JPY
+CURRENCY: JPY
+AMOUNT: 4910.00
+USD RATE: 0.00650000
+USD AMOUNT: $31.91
+RESULT: SUCCESS
+TIME ADDED: +957.45 seconds
+**********************************************************************
