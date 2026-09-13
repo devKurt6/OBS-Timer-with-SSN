@@ -4272,20 +4272,11 @@ function applyTimerPop(big, giftName, explicitColor){
         popColor = explicitColor;
         popGlow = explicitColor;
     } else {
-        // ---- CURRENT: all gifts pop purple on the timer digits ----
-        popColor = "#A020F0";
-        popGlow = "#A020F0";
-
-        // ---- OLD WAY (commented out, not deleted): pop color matched
-        // each gift's own color(s) from gift_images/_manifest.json.
-        // To restore this behavior later, delete/comment the 2 lines
-        // above and uncomment the block below.
-        //
-        // const colors = getGiftPopColors(giftName);
-        // if (colors){
-        //     popColor = colors[0];
-        //     popGlow = colors[1];
-        // }
+        const colors = getGiftPopColors(giftName);
+        if (colors){
+            popColor = colors[0];
+            popGlow = colors[1];
+        }
     }
 
     if (popColor){
