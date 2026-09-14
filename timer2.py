@@ -24,6 +24,17 @@ try:
 except ImportError:
     keyboard = None
 
+try:
+    from cuesdk import (
+        CueSdk,
+        CorsairDeviceFilter,
+        CorsairDeviceType,
+        CorsairError,
+        CorsairLedColor,
+    )
+except ImportError:
+    CueSdk = None
+
 
 app = Flask(__name__)
 
@@ -90,6 +101,30 @@ exchange_rate_cache = {}
 # Protect the exchange-rate cache because the Flask server
 # and SSN listener run in different threads.
 exchange_rate_lock = threading.Lock()
+
+
+# ---------------- ICUE (KEYBOARD LIGHTING) ----------------
+# Lights up your Corsair keyboard (via iCUE's SDK) to match the
+# color of the most recent gift / Super Chat.
+#
+# Requirements:
+#   - iCUE 4.31+ installed and running
+#   - "Enable SDK" / third-party device control turned on in
+#     iCUE's Settings -> General
+#   - `pip install cuesdk`
+#
+# Set to False to disable this feature entirely (e.g. if iCUE
+# or the cuesdk package isn't installed - the rest of the timer
+# still works fine either way).
+ICUE_ENABLED = True
+
+# Gifts only carry a color if gift_images/_manifest.json has a
+# "colors" entry for that gift name (see load_gift_image_manifest()
+# above). Gifts with no manifest color simply don't touch the
+# keyboard - nothing breaks.
+#
+# Super Chats get their color from YouTube's own tier color
+# (reported by the browser extension - see last_superchat_color).
 
 
 # ---------------- NUMPAD HOTKEYS ----------------
@@ -302,6 +337,162 @@ def take_recent_superchat_color():
         return None
 
 
+# ---------------- ICUE (KEYBOARD LIGHTING) ----------------
+
+icue_sdk = None
+icue_keyboard_device_id = None
+icue_lock = threading.Lock()
+
+# Cached per-device LED layout, fetched once at connect time so we
+# don't re-query it on every single color change.
+icue_led_positions = None
+
+
+def _icue_state_changed(evt):
+    print(f"[ICUE] Session state -> {evt.state}")
+
+
+def init_icue():
+    """Connects to iCUE's SDK and finds the first keyboard.
+
+    Safe to call even if iCUE isn't running or the cuesdk package
+    isn't installed - it just prints a warning and leaves the
+    keyboard-lighting feature inactive. Nothing else in the timer
+    depends on this succeeding.
+    """
+
+    global icue_sdk, icue_keyboard_device_id, icue_led_positions
+
+    if not ICUE_ENABLED:
+        print("[ICUE] Disabled (ICUE_ENABLED = False).")
+        return
+
+    if CueSdk is None:
+        print(
+            "[ICUE] 'cuesdk' package not installed - "
+            "keyboard lighting disabled. Run: pip install cuesdk"
+        )
+        return
+
+    try:
+        sdk = CueSdk()
+        err = sdk.connect(_icue_state_changed)
+
+        if err != CorsairError.CE_Success:
+            print(f"[ICUE] connect() failed: {err}")
+            return
+
+        # Give iCUE a moment to finish the handshake before we ask
+        # it for devices.
+        devices = None
+        for _ in range(20):
+            devices, err = sdk.get_devices(
+                CorsairDeviceFilter(
+                    device_type_mask=CorsairDeviceType.CDT_Keyboard
+                )
+            )
+            if err == CorsairError.CE_Success and devices:
+                break
+            time.sleep(0.25)
+
+        if not devices:
+            print(
+                "[ICUE] No keyboard found. Make sure iCUE is running "
+                "and 'Enable SDK' is turned on in iCUE Settings -> "
+                "General."
+            )
+            return
+
+        device_id = devices[0].device_id
+
+        leds, err = sdk.get_led_positions_by_device_index(0)
+        if err != CorsairError.CE_Success or not leds:
+            print(f"[ICUE] Could not read LED positions: {err}")
+            return
+
+        with icue_lock:
+            icue_sdk = sdk
+            icue_keyboard_device_id = device_id
+            icue_led_positions = leds
+
+        print(f"[ICUE] Connected. Keyboard device_id={device_id}")
+
+    except Exception as e:
+        print("[ICUE] Failed to initialize:", e)
+
+
+def set_keyboard_color(hex_color):
+    """Sets every LED on the keyboard to hex_color (e.g. '#F57F17').
+
+    Runs whatever color was most recently reported for a gift or
+    Super Chat, and leaves the keyboard on that color until the
+    next one comes in (matches "keyboard shows the color of the
+    last super chat / gift").
+    """
+
+    if not ICUE_ENABLED or icue_sdk is None or icue_led_positions is None:
+        return
+
+    try:
+        hex_color = (hex_color or "").lstrip("#")
+        if len(hex_color) != 6:
+            return
+
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+
+        with icue_lock:
+            colors = [
+                CorsairLedColor(led.led_id, r, g, b)
+                for led in icue_led_positions
+            ]
+            icue_sdk.set_led_colors_buffer_by_device_index(0, colors)
+            icue_sdk.set_led_colors_flush_buffer()
+
+    except Exception as e:
+        print("[ICUE] Failed to set keyboard color:", e)
+
+
+def apply_keyboard_color_async(hex_color):
+    """Fire-and-forget wrapper so a slow/blocked SDK call never
+    delays the Flask request or SSN listener thread that triggered
+    it."""
+
+    if not ICUE_ENABLED or not hex_color:
+        return
+
+    threading.Thread(
+        target=set_keyboard_color,
+        args=(hex_color,),
+        daemon=True,
+    ).start()
+
+
+_gift_image_manifest_cache = None
+
+
+def get_gift_color(gift_name):
+    """Looks up the first color listed for this gift in
+    gift_images/_manifest.json (see load_gift_image_manifest()).
+    Returns None if the gift has no manifest entry or no colors.
+    """
+
+    global _gift_image_manifest_cache
+
+    if _gift_image_manifest_cache is None:
+        _gift_image_manifest_cache = load_gift_image_manifest()
+
+    entry = _gift_image_manifest_cache.get(
+        normalize_gift_name_key(gift_name)
+    )
+
+    if entry and entry.get("colors"):
+        return entry["colors"][0]
+
+    return None
+
+
 # ---------------- GIFT / SUPERCHAT EVENT FEED ----------------
 # Used by the browser overlay to show a per-gift / per-superchat
 # animation (instead of just a generic "+time" popup).
@@ -367,6 +558,12 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
         # Keep only the most recent events so this never grows forever.
         if len(recent_events) > 200:
             del recent_events[: len(recent_events) - 200]
+
+    # Mirror this event's color onto the Corsair keyboard via iCUE.
+    # Done outside the lock, and on its own thread, so a slow SDK
+    # call never blocks the Flask request or SSN listener thread.
+    if color:
+        apply_keyboard_color_async(color)
 
     return event
 
@@ -1743,7 +1940,10 @@ def process_ssn_paid_event(data):
         # overlay for the "xN" combo badge on the gift image.
         combo_count = track_gift_combo(user_key, gift_name, jewels, seconds)
 
-        push_event("gift", gift_name, jewels, seconds, image_url, combo_count)
+        push_event(
+            "gift", gift_name, jewels, seconds, image_url, combo_count,
+            color=get_gift_color(gift_name),
+        )
 
         print(
             f"JEWEL DONATION [SSN]: "
@@ -2011,7 +2211,10 @@ def test_gift():
     # button below. Uses the shared TEST_COMBO_USER so it's easy to
     # spot in the logs afterward.
     combo_count = track_gift_combo(TEST_COMBO_USER, name, jewels, seconds)
-    push_event("gift", name, jewels, seconds, combo_count=combo_count)
+    push_event(
+        "gift", name, jewels, seconds, combo_count=combo_count,
+        color=get_gift_color(name),
+    )
 
     return jsonify({
         "ok": True,
@@ -2339,7 +2542,10 @@ def run_test_combo(name, jewels, count, gap):
     for _ in range(count):
         add_time(seconds)
         combo_count = track_gift_combo(TEST_COMBO_USER, name, jewels, seconds)
-        push_event("gift", name, jewels, seconds, combo_count=combo_count)
+        push_event(
+            "gift", name, jewels, seconds, combo_count=combo_count,
+            color=get_gift_color(name),
+        )
         time.sleep(gap)
 
 
@@ -2391,7 +2597,7 @@ def run_simulated_stream(count, min_gap, max_gap):
             seconds = jewels * GIFT_SECONDS_PER_JEWEL
 
             add_time(seconds)
-            push_event("gift", name, jewels, seconds)
+            push_event("gift", name, jewels, seconds, color=get_gift_color(name))
         else:
             usd = round(random.choice(
                 [1, 2, 5, 10, 20, 50, 100, 200]
@@ -5117,6 +5323,11 @@ if __name__ == "__main__":
 
     register_hotkeys()
     register_test_animation_hotkeys()
+
+    threading.Thread(
+        target=init_icue,
+        daemon=True
+    ).start()
 
     threading.Thread(
         target=start_ssn_listener,
