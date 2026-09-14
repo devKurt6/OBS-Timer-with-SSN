@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 import time
 import threading
-import queue
 import json
 import os
 import re
@@ -66,12 +65,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = .5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -119,12 +118,11 @@ exchange_rate_lock = threading.Lock()
 # still works fine either way).
 ICUE_ENABLED = True
 
-# Every gift lights the keyboard this same color, regardless of
-# which gift it is (Super Chats still use YouTube's real tier
-# color - see last_superchat_color below). Set to None to go back
-# to per-gift colors from gift_images/_manifest.json instead.
-GIFT_KEYBOARD_COLOR = "#8A2BE2"  # violet
-
+# Gifts only carry a color if gift_images/_manifest.json has a
+# "colors" entry for that gift name (see load_gift_image_manifest()
+# above). Gifts with no manifest color simply don't touch the
+# keyboard - nothing breaks.
+#
 # Super Chats get their color from YouTube's own tier color
 # (reported by the browser extension - see last_superchat_color).
 
@@ -349,24 +347,9 @@ icue_lock = threading.Lock()
 # don't re-query it on every single color change.
 icue_led_positions = None
 
-# Set by _icue_state_changed once the session actually reaches
-# CSS_Connected. connect() returns as soon as the request is
-# *accepted*, not once iCUE has actually finished the handshake -
-# querying devices before this event fires reliably returns
-# CE_NotConnected even though everything else is fine.
-icue_connected_event = threading.Event()
-
-# Every gift/Super Chat color goes through this queue instead of
-# spawning its own thread - see apply_keyboard_color_async() and
-# _icue_worker_loop() below for why.
-icue_color_queue = queue.Queue()
-icue_worker_started = False
-
 
 def _icue_state_changed(evt):
     print(f"[ICUE] Session state -> {evt.state}")
-    if "Connected" in str(evt.state) and "NotConnected" not in str(evt.state) and "Connecting" not in str(evt.state):
-        icue_connected_event.set()
 
 
 def init_icue():
@@ -392,90 +375,37 @@ def init_icue():
         return
 
     try:
-        try:
-            import cuesdk as _cuesdk_pkg
-            print(f"[ICUE] cuesdk package version: {getattr(_cuesdk_pkg, '__version__', 'unknown')}")
-        except Exception:
-            pass
-
         sdk = CueSdk()
         err = sdk.connect(_icue_state_changed)
-        print(f"[ICUE] connect() returned: {err}")
 
         if err != CorsairError.CE_Success:
             print(f"[ICUE] connect() failed: {err}")
             return
 
-        # Wait for the session to actually finish connecting before
-        # asking for anything else - connect() only means the
-        # request was accepted, not that the handshake is done yet.
-        if not icue_connected_event.wait(timeout=10):
-            print(
-                "[ICUE] Timed out waiting for CSS_Connected - iCUE "
-                "may still be starting up. Try again in a few seconds."
-            )
-            return
-
-        details, details_err = sdk.get_session_details()
-        print(f"[ICUE] get_session_details() -> err={details_err}, details={details}")
-
-        # Diagnostic: ask for ALL devices first (no filter), so we
-        # can tell a permissions problem (nothing comes back at all)
-        # apart from a keyboard-filter problem (other devices show
-        # up but the keyboard doesn't).
-        all_devices, all_err = sdk.get_devices(
-            CorsairDeviceFilter(device_type_mask=CorsairDeviceType.CDT_All)
-        )
-        print(
-            f"[ICUE] get_devices(ALL) err={all_err}, "
-            f"found={len(all_devices) if all_devices else 0}: "
-            f"{[ (d.device_id, getattr(d, 'device_type', '?')) for d in (all_devices or []) ]}"
-        )
-
         # Give iCUE a moment to finish the handshake before we ask
         # it for devices.
         devices = None
-        last_err = None
-        for attempt in range(20):
+        for _ in range(20):
             devices, err = sdk.get_devices(
                 CorsairDeviceFilter(
                     device_type_mask=CorsairDeviceType.CDT_Keyboard
                 )
             )
-            last_err = err
             if err == CorsairError.CE_Success and devices:
                 break
             time.sleep(0.25)
-
-        print(f"[ICUE] get_devices() last err={last_err}, found={len(devices) if devices else 0}")
 
         if not devices:
             print(
                 "[ICUE] No keyboard found. Make sure iCUE is running "
                 "and 'Enable SDK' is turned on in iCUE Settings -> "
-                "General. (See the err code above the line - if it "
-                "reads CE_Success with 0 devices, iCUE is reachable "
-                "but isn't reporting the K95 to the SDK layer; if "
-                "it's anything else, that's the actual failure.)"
+                "General."
             )
             return
 
         device_id = devices[0].device_id
-        print(f"[ICUE] Found device: {sdk.get_device_info(device_id)}")
 
-        if hasattr(sdk, "get_led_positions"):
-            leds, err = sdk.get_led_positions(device_id)
-        elif hasattr(sdk, "get_led_positions_by_device_index"):
-            leds, err = sdk.get_led_positions_by_device_index(0)
-        else:
-            print(
-                "[ICUE] Neither get_led_positions() nor "
-                "get_led_positions_by_device_index() exist on this "
-                "cuesdk version. Available methods: "
-                + ", ".join(m for m in dir(sdk) if not m.startswith("_"))
-            )
-            return
-
+        leds, err = sdk.get_led_positions_by_device_index(0)
         if err != CorsairError.CE_Success or not leds:
             print(f"[ICUE] Could not read LED positions: {err}")
             return
@@ -485,49 +415,10 @@ def init_icue():
             icue_keyboard_device_id = device_id
             icue_led_positions = leds
 
-        print(f"[ICUE] Connected. Keyboard device_id={device_id}, {len(leds)} LEDs")
-
-        global icue_worker_started
-        if not icue_worker_started:
-            icue_worker_started = True
-            threading.Thread(target=_icue_worker_loop, daemon=True).start()
+        print(f"[ICUE] Connected. Keyboard device_id={device_id}")
 
     except Exception as e:
         print("[ICUE] Failed to initialize:", e)
-
-
-def _get_led_id(led):
-    """The LED-id field on the position object has been named
-    differently across cuesdk versions (led_id / ledId / id). Try
-    the known names instead of hardcoding one that might not match
-    this install."""
-
-    for attr in ("led_id", "ledId", "id"):
-        if hasattr(led, attr):
-            return getattr(led, attr)
-
-    raise AttributeError(
-        f"Could not find a LED-id field on position object. "
-        f"Available attributes: {[a for a in dir(led) if not a.startswith('_')]}"
-    )
-
-
-def _make_led_color(led_id, r, g, b):
-    """CorsairLedColor's exact constructor signature (RGB vs RGBA,
-    positional vs keyword) has varied across cuesdk versions. Try
-    the common shapes instead of hardcoding one."""
-
-    for attempt in (
-        lambda: CorsairLedColor(led_id, r, g, b, 255),
-        lambda: CorsairLedColor(led_id, r, g, b, a=255),
-        lambda: CorsairLedColor(led_id, r, g, b),
-    ):
-        try:
-            return attempt()
-        except TypeError:
-            continue
-
-    raise TypeError("No matching CorsairLedColor(...) signature found.")
 
 
 def set_keyboard_color(hex_color):
@@ -539,12 +430,7 @@ def set_keyboard_color(hex_color):
     last super chat / gift").
     """
 
-    if (
-        not ICUE_ENABLED
-        or icue_sdk is None
-        or icue_led_positions is None
-        or icue_keyboard_device_id is None
-    ):
+    if not ICUE_ENABLED or icue_sdk is None or icue_led_positions is None:
         return
 
     try:
@@ -558,80 +444,39 @@ def set_keyboard_color(hex_color):
 
         with icue_lock:
             colors = [
-                _make_led_color(_get_led_id(led), r, g, b)
+                CorsairLedColor(led.led_id, r, g, b)
                 for led in icue_led_positions
             ]
-            # Using the direct, synchronous set_led_colors() here
-            # instead of set_led_colors_buffer() + the async flush -
-            # the async flush's callback was getting garbage
-            # collected by Python after the call returned while
-            # iCUE still held a pointer to it, crashing the process
-            # on the next completion. This method needs no callback
-            # at all, so that failure mode doesn't exist here.
-            err = icue_sdk.set_led_colors(icue_keyboard_device_id, colors)
-            if err is not None and str(err) != "CorsairError.CE_Success":
-                print(f"[ICUE] set_led_colors returned: {err}")
+            icue_sdk.set_led_colors_buffer_by_device_index(0, colors)
+            icue_sdk.set_led_colors_flush_buffer()
 
     except Exception as e:
         print("[ICUE] Failed to set keyboard color:", e)
 
 
 def apply_keyboard_color_async(hex_color):
-    """Fire-and-forget wrapper so a slow SDK call never delays the
-    Flask request or SSN listener thread that triggered it.
-
-    IMPORTANT: this only enqueues the color - it does NOT spawn a
-    new thread per event. cuesdk is a ctypes binding straight into
-    Corsair's native DLL, which is not safe to call from multiple
-    threads concurrently (two overlapping calls can crash the whole
-    Python process, not just raise a catchable exception). A single
-    dedicated worker thread (started in init_icue) drains this
-    queue one color at a time, so the native SDK is never touched
-    from more than one thread at once.
-    """
+    """Fire-and-forget wrapper so a slow/blocked SDK call never
+    delays the Flask request or SSN listener thread that triggered
+    it."""
 
     if not ICUE_ENABLED or not hex_color:
         return
 
-    icue_color_queue.put(hex_color)
-
-
-def _icue_worker_loop():
-    """Runs for the lifetime of the program on its own thread. This
-    is the ONLY thread allowed to call into icue_sdk after startup -
-    every gift/Super Chat just drops a color into icue_color_queue
-    instead of touching the SDK directly."""
-
-    while True:
-        hex_color = icue_color_queue.get()
-
-        # If several colors piled up while we were busy (a burst of
-        # gifts), skip straight to the most recent one instead of
-        # flashing through every color in order - only matters for
-        # bursts, harmless otherwise.
-        while True:
-            try:
-                hex_color = icue_color_queue.get_nowait()
-            except queue.Empty:
-                break
-
-        set_keyboard_color(hex_color)
+    threading.Thread(
+        target=set_keyboard_color,
+        args=(hex_color,),
+        daemon=True,
+    ).start()
 
 
 _gift_image_manifest_cache = None
 
 
 def get_gift_color(gift_name):
-    """Returns the color to light the keyboard for this gift.
-
-    If GIFT_KEYBOARD_COLOR is set, every gift returns that same
-    fixed color regardless of which gift it is. If it's set to
-    None, falls back to the per-gift color listed in
+    """Looks up the first color listed for this gift in
     gift_images/_manifest.json (see load_gift_image_manifest()).
+    Returns None if the gift has no manifest entry or no colors.
     """
-
-    if GIFT_KEYBOARD_COLOR is not None:
-        return GIFT_KEYBOARD_COLOR
 
     global _gift_image_manifest_cache
 

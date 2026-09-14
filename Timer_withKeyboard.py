@@ -66,12 +66,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = .5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -119,12 +119,11 @@ exchange_rate_lock = threading.Lock()
 # still works fine either way).
 ICUE_ENABLED = True
 
-# Every gift lights the keyboard this same color, regardless of
-# which gift it is (Super Chats still use YouTube's real tier
-# color - see last_superchat_color below). Set to None to go back
-# to per-gift colors from gift_images/_manifest.json instead.
-GIFT_KEYBOARD_COLOR = "#8A2BE2"  # violet
-
+# Gifts only carry a color if gift_images/_manifest.json has a
+# "colors" entry for that gift name (see load_gift_image_manifest()
+# above). Gifts with no manifest color simply don't touch the
+# keyboard - nothing breaks.
+#
 # Super Chats get their color from YouTube's own tier color
 # (reported by the browser extension - see last_superchat_color).
 
@@ -622,16 +621,10 @@ _gift_image_manifest_cache = None
 
 
 def get_gift_color(gift_name):
-    """Returns the color to light the keyboard for this gift.
-
-    If GIFT_KEYBOARD_COLOR is set, every gift returns that same
-    fixed color regardless of which gift it is. If it's set to
-    None, falls back to the per-gift color listed in
+    """Looks up the first color listed for this gift in
     gift_images/_manifest.json (see load_gift_image_manifest()).
+    Returns None if the gift has no manifest entry or no colors.
     """
-
-    if GIFT_KEYBOARD_COLOR is not None:
-        return GIFT_KEYBOARD_COLOR
 
     global _gift_image_manifest_cache
 
