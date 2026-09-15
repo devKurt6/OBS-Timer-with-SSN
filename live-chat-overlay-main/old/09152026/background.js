@@ -4,9 +4,6 @@
 //   - SUPERCHAT_COLOR: YouTube's real tier color for a Super Chat
 //     that just landed in chat, so the Timer.py overlay's flying
 //     Super Chat animation can match it
-//   - KEYBOARD_COLOR: the color (or null) for whichever message is
-//     currently selected on the Live Chat Overlay, so Timer.py can
-//     light (or turn off) the Corsair keyboard to match
 //
 // This runs in the extension's BACKGROUND service worker, not on the
 // youtube.com page itself. That matters: a fetch() made directly from
@@ -37,17 +34,6 @@ const MESSAGE_HANDLERS = {
     buildBody: (message) => ({
       color: message.color,
       amount: message.amount
-    })
-  },
-  KEYBOARD_COLOR: {
-    // Which message is currently SELECTED on the Live Chat Overlay
-    // (see sendKeyboardColor() / hideActiveChat() in youtube.js) -
-    // lights or turns off the Corsair keyboard to match. Separate
-    // from SUPERCHAT_COLOR above, which only feeds the flying
-    // overlay animation.
-    url: TIMER_SERVER_BASE + "/overlay/keyboard-color",
-    buildBody: (message) => ({
-      color: message.color
     })
   }
 };
