@@ -125,6 +125,21 @@ ICUE_ENABLED = True
 # to per-gift colors from gift_images/_manifest.json instead.
 GIFT_KEYBOARD_COLOR = "#8A2BE2"  # violet
 
+# Used by /overlay/active-message-color (see below): the keyboard
+# color for a plain chat message (no gift, no Super Chat), and the
+# color used when no message is currently selected in the Live
+# Chat Overlay extension ("off" = black = LEDs effectively off).
+ICUE_MESSAGE_COLOR = "#FFFFFF"  # white
+ICUE_OFF_COLOR = "#000000"
+
+# False (default): keyboard color is driven entirely by
+# /overlay/active-message-color, i.e. whichever chat message is
+# currently selected in the Live Chat Overlay extension - no
+# selection means no lighting. True: go back to the old behavior
+# of lighting up on every single gift/Super Chat donation event,
+# regardless of what's shown in the overlay.
+ICUE_FOLLOW_DONATIONS = False
+
 # Super Chats get their color from YouTube's own tier color
 # (reported by the browser extension - see last_superchat_color).
 
@@ -714,10 +729,13 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
         if len(recent_events) > 200:
             del recent_events[: len(recent_events) - 200]
 
-    # Mirror this event's color onto the Corsair keyboard via iCUE.
-    # Done outside the lock, and on its own thread, so a slow SDK
-    # call never blocks the Flask request or SSN listener thread.
-    if color:
+    # Keyboard lighting is now driven by whichever message is
+    # selected in the Live Chat Overlay extension instead of firing
+    # directly off every donation event - see
+    # /overlay/active-message-color and ICUE_FOLLOW_DONATIONS below.
+    # Set ICUE_FOLLOW_DONATIONS = True to go back to the old
+    # every-gift/every-Super-Chat behavior.
+    if ICUE_FOLLOW_DONATIONS and color:
         apply_keyboard_color_async(color)
 
     return event
@@ -2589,6 +2607,57 @@ def superchat_color_update():
         last_superchat_color["ts"] = time.time()
 
     print(f"[SUPERCHAT COLOR] Received {color} (amount: {amount or 'unknown'})")
+
+    return jsonify({"ok": True})
+
+
+@app.route("/overlay/active-message-color", methods=["POST", "OPTIONS"])
+def overlay_active_message_color():
+    """Lights the keyboard to match whichever chat message is
+    currently shown in the Live Chat Overlay extension (youtube.js),
+    instead of reacting to gift/Super Chat donation events directly.
+
+    Sent by youtube.js via background.js every time a message is
+    clicked to show/hide in the overlay - see the "ACTIVE MESSAGE
+    KEYBOARD COLOR" section of youtube.js.
+
+    Expects JSON body:
+      {"status": "shown", "messageType": "gift", "tierColor": ""}
+      {"status": "shown", "messageType": "superchat", "tierColor": "#RRGGBB"}
+      {"status": "shown", "messageType": "message", "tierColor": ""}
+      {"status": "hidden"}
+
+    status="hidden" (no message currently selected) turns the
+    keyboard off. messageType="gift" always uses GIFT_KEYBOARD_COLOR
+    (violet) regardless of which gift. messageType="superchat" uses
+    the real tierColor YouTube reported. Anything else (a plain
+    text message, a membership post, etc.) lights the keyboard
+    white.
+    """
+
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+    data = request.get_json(silent=True) or {}
+
+    status = str(data.get("status") or "").strip().lower()
+    message_type = str(data.get("messageType") or "").strip().lower()
+    tier_color = str(data.get("tierColor") or "").strip()
+
+    if status == "hidden":
+        apply_keyboard_color_async(ICUE_OFF_COLOR)
+        print("[OVERLAY COLOR] No message selected -> keyboard off")
+        return jsonify({"ok": True})
+
+    if message_type == "gift":
+        apply_keyboard_color_async(GIFT_KEYBOARD_COLOR)
+        print(f"[OVERLAY COLOR] Gift message shown -> {GIFT_KEYBOARD_COLOR}")
+    elif message_type == "superchat" and tier_color:
+        apply_keyboard_color_async(tier_color)
+        print(f"[OVERLAY COLOR] Super Chat message shown -> {tier_color}")
+    else:
+        apply_keyboard_color_async(ICUE_MESSAGE_COLOR)
+        print(f"[OVERLAY COLOR] Regular message shown -> {ICUE_MESSAGE_COLOR}")
 
     return jsonify({"ok": True})
 

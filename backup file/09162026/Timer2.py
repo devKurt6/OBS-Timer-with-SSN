@@ -66,12 +66,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = .5
+GIFT_SECONDS_PER_JEWEL = 1
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 30
+SUPERCHAT_SECONDS_PER_USD = 60
 
 
 # ---------------- CURRENCY API ----------------
@@ -105,18 +105,8 @@ exchange_rate_lock = threading.Lock()
 
 
 # ---------------- ICUE (KEYBOARD LIGHTING) ----------------
-# Lights up your Corsair keyboard (via iCUE's SDK) to match whatever
-# message is currently SELECTED on the Live Chat Overlay (the
-# click-to-highlight overlay driven by youtube.js) - not gifts/Super
-# Chats as they happen in the background. See the
-# "/overlay/keyboard-color" route below, which is what actually
-# drives this now:
-#
-#   - Nothing selected                 -> keyboard off
-#   - A regular chat message selected  -> white
-#   - A gift selected                  -> violet
-#   - A Super Chat/Super Sticker       -> YouTube's own tier color
-#     selected
+# Lights up your Corsair keyboard (via iCUE's SDK) to match the
+# color of the most recent gift / Super Chat.
 #
 # Requirements:
 #   - iCUE 4.31+ installed and running
@@ -129,21 +119,14 @@ exchange_rate_lock = threading.Lock()
 # still works fine either way).
 ICUE_ENABLED = True
 
-# Kept for the "gift" color used by the flying gift/Super Chat
-# overlay animation (see get_gift_color()) - it no longer drives
-# the keyboard directly. The keyboard's own gift/message/off colors
-# now live in KEYBOARD_COLOR_MESSAGE / KEYBOARD_COLOR_GIFT /
-# KEYBOARD_COLOR_OFF right below.
+# Every gift lights the keyboard this same color, regardless of
+# which gift it is (Super Chats still use YouTube's real tier
+# color - see last_superchat_color below). Set to None to go back
+# to per-gift colors from gift_images/_manifest.json instead.
 GIFT_KEYBOARD_COLOR = "#8A2BE2"  # violet
 
-# Colors used by the "/overlay/keyboard-color" route for a selected
-# regular chat message and for "nothing selected". Selected gifts
-# reuse GIFT_KEYBOARD_COLOR above, and selected Super Chats use
-# whatever tier color youtube.js reports for that message (falling
-# back to KEYBOARD_COLOR_SUPERCHAT_FALLBACK if none was available).
-KEYBOARD_COLOR_MESSAGE = "#FFFFFF"
-KEYBOARD_COLOR_SUPERCHAT_FALLBACK = "#FFD700"
-KEYBOARD_COLOR_OFF = "#000000"
+# Super Chats get their color from YouTube's own tier color
+# (reported by the browser extension - see last_superchat_color).
 
 
 # ---------------- NUMPAD HOTKEYS ----------------
@@ -731,11 +714,11 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
         if len(recent_events) > 200:
             del recent_events[: len(recent_events) - 200]
 
-    # NOTE: this no longer touches the Corsair keyboard. The keyboard
-    # is now driven purely by which message is SELECTED on the Live
-    # Chat Overlay (see the "/overlay/keyboard-color" route below),
-    # not by every gift/Super Chat as it happens in the background.
-    # `color` here is only used for the flying overlay animation.
+    # Mirror this event's color onto the Corsair keyboard via iCUE.
+    # Done outside the lock, and on its own thread, so a slow SDK
+    # call never blocks the Flask request or SSN listener thread.
+    if color:
+        apply_keyboard_color_async(color)
 
     return event
 
@@ -2608,38 +2591,6 @@ def superchat_color_update():
     print(f"[SUPERCHAT COLOR] Received {color} (amount: {amount or 'unknown'})")
 
     return jsonify({"ok": True})
-
-
-@app.route("/overlay/keyboard-color", methods=["POST", "OPTIONS"])
-def overlay_keyboard_color():
-    """Light (or turn off) the Corsair keyboard to match whichever
-    message is currently SELECTED on the Live Chat Overlay.
-
-    Sent automatically by youtube.js via background.js every time a
-    message is clicked to show/hide on the overlay (see
-    sendKeyboardColor() and hideActiveChat() in youtube.js) - NOT
-    tied to gifts/Super Chats adding time in the background.
-
-    Expects JSON body: {"color": "#RRGGBB"} to light the keyboard
-    that color, or {"color": null} (or no color at all) when nothing
-    is selected, which turns the keyboard off.
-    """
-
-    if request.method == "OPTIONS":
-        # CORS preflight - the after_request hook above adds the
-        # actual allow-headers; just return an empty 204 here.
-        return ("", 204)
-
-    data = request.get_json(silent=True) or {}
-
-    color = data.get("color")
-    color = str(color).strip() if color else ""
-
-    apply_keyboard_color_async(color or KEYBOARD_COLOR_OFF)
-
-    print(f"[KEYBOARD COLOR] Overlay selection -> {color or 'off'}")
-
-    return jsonify({"ok": True, "color": color or None})
 
 
 @app.route("/test/superchat")

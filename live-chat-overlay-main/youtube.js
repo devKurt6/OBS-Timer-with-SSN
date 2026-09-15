@@ -135,48 +135,39 @@ var fanFundingGiftObserver = new MutationObserver(function(mutations) {
 });
 fanFundingGiftObserver.observe(document.documentElement, { childList: true, subtree: true });
 
-document.addEventListener("click", function(e) {
-    console.log("CLICK:", e.target);
-}, true);
-
-// ---------------- SELECTED-MESSAGE KEYBOARD COLOR ----------------
-// Tells the local Timer.py app (via background.js) what color to
-// light the Corsair keyboard for, based on whichever message is
-// currently selected/highlighted on the Live Chat Overlay below -
-// NOT based on gifts/Super Chats arriving in the background. Pass
-// a hex color to light the keyboard that color, or null/undefined
-// when nothing is selected to turn it off.
-function sendKeyboardColor(color) {
+// ---------------- ACTIVE MESSAGE KEYBOARD COLOR ----------------
+// Tells Timer.py which message (if any) is currently shown in this
+// Live Chat Overlay, so it can light the Corsair keyboard to match:
+// no message selected -> keyboard off, a gift message -> violet,
+// a Super Chat -> its real tier color, anything else (plain chat,
+// membership post) -> white. See /overlay/active-message-color in
+// Timer.py and the ACTIVE_MESSAGE_COLOR handler in background.js.
+function sendActiveMessageColor(status, messageType, tierColor) {
   try {
     chrome.runtime.sendMessage(
-      { type: "KEYBOARD_COLOR", color: color || null },
+      {
+        type: "ACTIVE_MESSAGE_COLOR",
+        status: status,
+        messageType: messageType || "",
+        tierColor: tierColor || ""
+      },
       function (response) {
         if (chrome.runtime.lastError) {
           console.warn(
-            "[KEYBOARD COLOR] sendMessage error:",
+            "[ACTIVE MESSAGE COLOR] sendMessage error:",
             chrome.runtime.lastError.message
-          );
-          return;
-        }
-        if (response && !response.ok) {
-          console.warn(
-            "[KEYBOARD COLOR] Timer app rejected update:",
-            response.error
           );
         }
       }
     );
   } catch (e) {
-    console.warn("[KEYBOARD COLOR] sendMessage threw:", e);
+    console.warn("[ACTIVE MESSAGE COLOR] sendMessage threw:", e);
   }
 }
 
-// Colors used for the three non-Super-Chat cases. Super Chats use
-// YouTube's own tier color (data.tierColor) instead, with this as
-// a fallback for the rare case no tier color was available.
-var KEYBOARD_COLOR_MESSAGE = "#FFFFFF";
-var KEYBOARD_COLOR_GIFT = "#8A2BE2";
-var KEYBOARD_COLOR_SUPERCHAT_FALLBACK = "#FFD700";
+document.addEventListener("click", function(e) {
+    console.log("CLICK:", e.target);
+}, true);
 
 $("body").off("pointerdown").on("pointerdown", "yt-live-chat-text-message-renderer,yt-live-chat-paid-message-renderer,yt-live-chat-membership-item-renderer,ytd-sponsorships-live-chat-gift-purchase-announcement-renderer,yt-live-chat-paid-sticker-renderer, yt-gift-message-view-model", function() {
 
@@ -216,9 +207,7 @@ setTimeout(function(){
     return;
   }
 
-  var isGiftMessage = $(this).is("yt-gift-message-view-model");
-
-  if (isGiftMessage) {
+  if ($(this).is("yt-gift-message-view-model")) {
 
     data.authorname = $(this).find("#author-name-v2").text().trim();
 
@@ -1017,19 +1006,16 @@ var html =
     + data.membershipHTML
     + '</div>';
 
-  // Light the keyboard to match whatever is now selected: purple
-  // for a gift (either the dedicated gift element or a "sent a
-  // gift/star" row), the real Super Chat/Super Sticker tier color
-  // when there is one, or plain white for a regular message.
-  if (isGiftMessage || data.isStarGift) {
-    sendKeyboardColor(KEYBOARD_COLOR_GIFT);
-  } else if (data.sticker || data.donation) {
-    sendKeyboardColor(data.tierColor || KEYBOARD_COLOR_SUPERCHAT_FALLBACK);
-  } else {
-    sendKeyboardColor(KEYBOARD_COLOR_MESSAGE);
-  }
-
   lastID = data.chatId;
+
+  // Classify this message for the keyboard: gift messages/gifted
+  // memberships/Stars-style gifts always count as "gift" (violet),
+  // anything else carrying a real donation tier color counts as
+  // "superchat" (its own tier color), everything else - plain
+  // chat, membership posts - is just "message" (white).
+  var isGiftMessage = $(this).is("yt-gift-message-view-model") || !!data.giftedMembership || !!data.isStarGift;
+  var activeMessageType = isGiftMessage ? "gift" : (data.tierColor ? "superchat" : "message");
+  sendActiveMessageColor("shown", activeMessageType, data.tierColor || "");
 
   if(sessionID) {
 
@@ -1060,6 +1046,9 @@ var html =
 });
 
 function hideActiveChat() {
+  // No message selected anymore - keyboard should go dark too.
+  sendActiveMessageColor("hidden", "", "");
+
   if(sessionID) {
     var remote = {
       version: version,
@@ -1073,9 +1062,6 @@ function hideActiveChat() {
   $(".hl-c-cont").addClass("fadeout").delay(300).queue(function(){
     $(".hl-c-cont").remove().dequeue();
   });
-
-  // No message selected anymore - turn the keyboard off.
-  sendKeyboardColor(null);
 
   lastID = false;
 }
