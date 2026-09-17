@@ -1,23 +1,14 @@
 // Relays live data from the YouTube content script (youtube.js) to
-// two separate local Flask servers, run as two separate processes:
-//   - Timer_combo4.py (Test.py), the timer server:
-//       - COMBO_UPDATE: live Gift Combo count updates
-//       - SUPERCHAT_COLOR: YouTube's real tier color for a Super
-//         Chat that just landed in chat, so the Timer.py overlay's
-//         flying Super Chat animation can match it
-//   - keyboard_color_server.py, the keyboard-lighting server:
-//       - ACTIVE_MESSAGE_COLOR: which message (if any) is currently
-//         shown in the Live Chat Overlay, so it can light the
-//         Corsair keyboard to match it (violet for gifts, the real
-//         tier color for Super Chats, white for anything else, off
-//         when nothing is selected)
-//
-// These used to be the same server/process (both handled by
-// Test.py on port 5000). Keyboard lighting has since been split
-// into its own standalone server (keyboard_color_server.py) so it
-// can be started, stopped, and restarted independently of the
-// timer - that's why ACTIVE_MESSAGE_COLOR below points at a
-// different port than the other two message types.
+// the local Timer_combo4.py Flask server:
+//   - COMBO_UPDATE: live Gift Combo count updates
+//   - SUPERCHAT_COLOR: YouTube's real tier color for a Super Chat
+//     that just landed in chat, so the Timer.py overlay's flying
+//     Super Chat animation can match it
+//   - ACTIVE_MESSAGE_COLOR: which message (if any) is currently
+//     shown in the Live Chat Overlay, so Timer.py can light the
+//     Corsair keyboard to match it (violet for gifts, the real
+//     tier color for Super Chats, white for anything else, off
+//     when nothing is selected)
 //
 // This runs in the extension's BACKGROUND service worker, not on the
 // youtube.com page itself. That matters: a fetch() made directly from
@@ -27,15 +18,13 @@
 // (Private Network Access). A fetch from the background service
 // worker is NOT subject to that page-context restriction - it only
 // needs the target host listed under "host_permissions" in
-// manifest.json, which has been added there for BOTH ports below.
+// manifest.json, which has been added there.
 
 const TIMER_SERVER_BASE = "http://127.0.0.1:5000";
-const KEYBOARD_SERVER_BASE = "http://127.0.0.1:5001";
 
 // Maps each message type the content script can send to the
-// endpoint that handles it (on whichever of the two servers owns
-// that feature), and how to build that endpoint's request body
-// from the message.
+// Timer.py endpoint that handles it, and how to build that
+// endpoint's request body from the message.
 const MESSAGE_HANDLERS = {
   COMBO_UPDATE: {
     url: TIMER_SERVER_BASE + "/combo/live-update",
@@ -53,7 +42,7 @@ const MESSAGE_HANDLERS = {
     })
   },
   ACTIVE_MESSAGE_COLOR: {
-    url: KEYBOARD_SERVER_BASE + "/overlay/active-message-color",
+    url: TIMER_SERVER_BASE + "/overlay/active-message-color",
     buildBody: (message) => ({
       status: message.status,
       messageType: message.messageType,

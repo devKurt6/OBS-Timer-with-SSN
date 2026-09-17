@@ -25,6 +25,17 @@ try:
 except ImportError:
     keyboard = None
 
+try:
+    from cuesdk import (
+        CueSdk,
+        CorsairDeviceFilter,
+        CorsairDeviceType,
+        CorsairError,
+        CorsairLedColor,
+    )
+except ImportError:
+    CueSdk = None
+
 
 app = Flask(__name__)
 
@@ -55,12 +66,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = .5
+GIFT_SECONDS_PER_JEWEL = 1
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 30
+SUPERCHAT_SECONDS_PER_USD = 60
 
 
 # ---------------- CURRENCY API ----------------
@@ -93,20 +104,43 @@ exchange_rate_cache = {}
 exchange_rate_lock = threading.Lock()
 
 
-# ---------------- GIFT EVENT COLOR (overlay animation tint) ----------------
-# NOTE: Corsair/iCUE keyboard lighting has moved out of this file -
-# see keyboard_color_server.py, which runs as its own separate
-# process/server. This constant is unrelated to that: it's the tint
-# color get_gift_color() below hands to push_event() so the browser
-# overlay's flying gift animation can color itself (see
-# recent_events / push_event()'s "color" field).
+# ---------------- ICUE (KEYBOARD LIGHTING) ----------------
+# Lights up your Corsair keyboard (via iCUE's SDK) to match the
+# color of the most recent gift / Super Chat.
 #
-# Every gift uses this same tint, regardless of which gift it is.
-# Set to None to fall back to the per-gift color listed in
-# gift_images/_manifest.json instead.
-GIFT_EVENT_COLOR = "#8A2BE2"  # violet
+# Requirements:
+#   - iCUE 4.31+ installed and running
+#   - "Enable SDK" / third-party device control turned on in
+#     iCUE's Settings -> General
+#   - `pip install cuesdk`
+#
+# Set to False to disable this feature entirely (e.g. if iCUE
+# or the cuesdk package isn't installed - the rest of the timer
+# still works fine either way).
+ICUE_ENABLED = True
 
-# Super Chats get their tint from YouTube's own tier color
+# Every gift lights the keyboard this same color, regardless of
+# which gift it is (Super Chats still use YouTube's real tier
+# color - see last_superchat_color below). Set to None to go back
+# to per-gift colors from gift_images/_manifest.json instead.
+GIFT_KEYBOARD_COLOR = "#8A2BE2"  # violet
+
+# Used by /overlay/active-message-color (see below): the keyboard
+# color for a plain chat message (no gift, no Super Chat), and the
+# color used when no message is currently selected in the Live
+# Chat Overlay extension ("off" = black = LEDs effectively off).
+ICUE_MESSAGE_COLOR = "#FFFFFF"  # white
+ICUE_OFF_COLOR = "#000000"
+
+# False (default): keyboard color is driven entirely by
+# /overlay/active-message-color, i.e. whichever chat message is
+# currently selected in the Live Chat Overlay extension - no
+# selection means no lighting. True: go back to the old behavior
+# of lighting up on every single gift/Super Chat donation event,
+# regardless of what's shown in the overlay.
+ICUE_FOLLOW_DONATIONS = False
+
+# Super Chats get their color from YouTube's own tier color
 # (reported by the browser extension - see last_superchat_color).
 
 
@@ -275,125 +309,6 @@ bank_seconds = 0.0
 timer_running = False
 timer_locked = False
 
-# Left-side "Tell or ask me anything." text on the overlay: True
-# (default) rotates through left_texts every 10 seconds (see the
-# timer page's JS below); False keeps it pinned to a single fixed
-# line. Toggled from the Dashboard (/left-text/enable,
-# /left-text/disable) so it can be flipped mid-stream.
-left_text_scroll_enabled = True
-
-# The actual lines the left-side text rotates through. Editable
-# from the Dashboard (a textarea, one line per message - "how many
-# messages" it cycles through is just how many lines you put there)
-# instead of having to edit code. The first entry is always what's
-# shown while scrolling is OFF. Saved to/loaded from STATE_FILE like
-# everything else here, so edits survive a restart.
-DEFAULT_LEFT_TEXTS = [
-    "Tell or ask me anything.",
-    "Type your question in chat!"
-]
-left_texts = list(DEFAULT_LEFT_TEXTS)
-
-# Look-and-feel of the left-side text (font family, size, bold,
-# italic, color). Editable from the Dashboard so the user isn't
-# stuck with whatever was hardcoded in CSS. Applied on the overlay
-# page as inline styles pulled from /state (see left_text_style
-# handling in the timer page's JS below).
-DEFAULT_LEFT_TEXT_STYLE = {
-    "font_family": "Arial, sans-serif",
-    "font_size": 53,     # px
-    "bold": True,
-    "italic": False,
-    "color": "#FFFFFF"
-}
-left_text_style = dict(DEFAULT_LEFT_TEXT_STYLE)
-
-
-# ---------------- TIMER MESSAGE TEXT (the line above the digits) ----------------
-# Same idea as left_texts/left_text_style above, but for the small
-# line above the big digit timer (id="msg" on the overlay - default
-# "Stream ends in..." / "Super Chat/Gift to add time"). It has its
-# own separate set of lines for when the timer is LOCKED (default
-# "Raiding streamer in..." / "Timer locked."), since that's already
-# a special-case message. Both are editable from the Dashboard.
-DEFAULT_MSG_TEXTS_UNLOCKED = [
-    "Stream ends in...",
-    "Super Chat/Gift to add time"
-]
-DEFAULT_MSG_TEXTS_LOCKED = [
-    "Raiding streamer in...",
-    "Timer locked."
-]
-msg_texts_unlocked = list(DEFAULT_MSG_TEXTS_UNLOCKED)
-msg_texts_locked = list(DEFAULT_MSG_TEXTS_LOCKED)
-
-DEFAULT_MSG_TEXT_STYLE = {
-    "font_family": "Arial, sans-serif",
-    "font_size": 26,     # px
-    "bold": True,
-    "italic": False,
-    "color": "#FFFFFF"
-}
-msg_text_style = dict(DEFAULT_MSG_TEXT_STYLE)
-
-
-def sanitize_text_style(raw, base):
-    """
-    Takes a dict of (possibly partial, possibly bad) style overrides
-    and returns a full, safe style dict layered on top of `base`.
-    Used for both left_text_style and msg_text_style. Unknown/
-    invalid fields are ignored rather than raising, so one bad field
-    doesn't reject the whole request.
-    """
-
-    result = dict(base)
-
-    if not isinstance(raw, dict):
-        return result
-
-    if "font_family" in raw:
-        # Strip characters that have no business in a font-family
-        # value, mainly so this can't be used to break out of the
-        # inline style attribute (quotes, braces, semicolons).
-        family = re.sub(r'[^a-zA-Z0-9 ,\-\'"]', "", str(raw["font_family"])).strip()
-        if family:
-            result["font_family"] = family[:120]
-
-    if "font_size" in raw:
-        try:
-            size = float(raw["font_size"])
-            result["font_size"] = max(8, min(200, size))
-        except (TypeError, ValueError):
-            pass
-
-    if "bold" in raw:
-        result["bold"] = bool(raw["bold"])
-
-    if "italic" in raw:
-        result["italic"] = bool(raw["italic"])
-
-    if "color" in raw:
-        color = str(raw["color"]).strip()
-        if re.fullmatch(r"#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?", color):
-            result["color"] = color
-
-    return result
-
-
-def sanitize_text_lines(raw_texts, fallback):
-    """
-    Cleans a list of text lines (strips whitespace, drops empties).
-    Returns `fallback` if the result would otherwise be empty, so a
-    text block can never be saved with zero lines.
-    """
-
-    if not isinstance(raw_texts, list):
-        return list(fallback)
-
-    cleaned = [str(t).strip() for t in raw_texts if str(t).strip()]
-
-    return cleaned or list(fallback)
-
 last_tick = time.time()
 
 
@@ -439,20 +354,299 @@ def take_recent_superchat_color():
         return None
 
 
+# ---------------- ICUE (KEYBOARD LIGHTING) ----------------
+
+icue_sdk = None
+icue_keyboard_device_id = None
+icue_lock = threading.Lock()
+
+# Cached per-device LED layout, fetched once at connect time so we
+# don't re-query it on every single color change.
+icue_led_positions = None
+
+# Set by _icue_state_changed once the session actually reaches
+# CSS_Connected. connect() returns as soon as the request is
+# *accepted*, not once iCUE has actually finished the handshake -
+# querying devices before this event fires reliably returns
+# CE_NotConnected even though everything else is fine.
+icue_connected_event = threading.Event()
+
+# Every gift/Super Chat color goes through this queue instead of
+# spawning its own thread - see apply_keyboard_color_async() and
+# _icue_worker_loop() below for why.
+icue_color_queue = queue.Queue()
+icue_worker_started = False
+
+
+def _icue_state_changed(evt):
+    print(f"[ICUE] Session state -> {evt.state}")
+    if "Connected" in str(evt.state) and "NotConnected" not in str(evt.state) and "Connecting" not in str(evt.state):
+        icue_connected_event.set()
+
+
+def init_icue():
+    """Connects to iCUE's SDK and finds the first keyboard.
+
+    Safe to call even if iCUE isn't running or the cuesdk package
+    isn't installed - it just prints a warning and leaves the
+    keyboard-lighting feature inactive. Nothing else in the timer
+    depends on this succeeding.
+    """
+
+    global icue_sdk, icue_keyboard_device_id, icue_led_positions
+
+    if not ICUE_ENABLED:
+        print("[ICUE] Disabled (ICUE_ENABLED = False).")
+        return
+
+    if CueSdk is None:
+        print(
+            "[ICUE] 'cuesdk' package not installed - "
+            "keyboard lighting disabled. Run: pip install cuesdk"
+        )
+        return
+
+    try:
+        try:
+            import cuesdk as _cuesdk_pkg
+            print(f"[ICUE] cuesdk package version: {getattr(_cuesdk_pkg, '__version__', 'unknown')}")
+        except Exception:
+            pass
+
+        sdk = CueSdk()
+        err = sdk.connect(_icue_state_changed)
+        print(f"[ICUE] connect() returned: {err}")
+
+        if err != CorsairError.CE_Success:
+            print(f"[ICUE] connect() failed: {err}")
+            return
+
+        # Wait for the session to actually finish connecting before
+        # asking for anything else - connect() only means the
+        # request was accepted, not that the handshake is done yet.
+        if not icue_connected_event.wait(timeout=10):
+            print(
+                "[ICUE] Timed out waiting for CSS_Connected - iCUE "
+                "may still be starting up. Try again in a few seconds."
+            )
+            return
+
+        details, details_err = sdk.get_session_details()
+        print(f"[ICUE] get_session_details() -> err={details_err}, details={details}")
+
+        # Diagnostic: ask for ALL devices first (no filter), so we
+        # can tell a permissions problem (nothing comes back at all)
+        # apart from a keyboard-filter problem (other devices show
+        # up but the keyboard doesn't).
+        all_devices, all_err = sdk.get_devices(
+            CorsairDeviceFilter(device_type_mask=CorsairDeviceType.CDT_All)
+        )
+        print(
+            f"[ICUE] get_devices(ALL) err={all_err}, "
+            f"found={len(all_devices) if all_devices else 0}: "
+            f"{[ (d.device_id, getattr(d, 'device_type', '?')) for d in (all_devices or []) ]}"
+        )
+
+        # Give iCUE a moment to finish the handshake before we ask
+        # it for devices.
+        devices = None
+        last_err = None
+        for attempt in range(20):
+            devices, err = sdk.get_devices(
+                CorsairDeviceFilter(
+                    device_type_mask=CorsairDeviceType.CDT_Keyboard
+                )
+            )
+            last_err = err
+            if err == CorsairError.CE_Success and devices:
+                break
+            time.sleep(0.25)
+
+        print(f"[ICUE] get_devices() last err={last_err}, found={len(devices) if devices else 0}")
+
+        if not devices:
+            print(
+                "[ICUE] No keyboard found. Make sure iCUE is running "
+                "and 'Enable SDK' is turned on in iCUE Settings -> "
+                "General. (See the err code above the line - if it "
+                "reads CE_Success with 0 devices, iCUE is reachable "
+                "but isn't reporting the K95 to the SDK layer; if "
+                "it's anything else, that's the actual failure.)"
+            )
+            return
+
+        device_id = devices[0].device_id
+        print(f"[ICUE] Found device: {sdk.get_device_info(device_id)}")
+
+        if hasattr(sdk, "get_led_positions"):
+            leds, err = sdk.get_led_positions(device_id)
+        elif hasattr(sdk, "get_led_positions_by_device_index"):
+            leds, err = sdk.get_led_positions_by_device_index(0)
+        else:
+            print(
+                "[ICUE] Neither get_led_positions() nor "
+                "get_led_positions_by_device_index() exist on this "
+                "cuesdk version. Available methods: "
+                + ", ".join(m for m in dir(sdk) if not m.startswith("_"))
+            )
+            return
+
+        if err != CorsairError.CE_Success or not leds:
+            print(f"[ICUE] Could not read LED positions: {err}")
+            return
+
+        with icue_lock:
+            icue_sdk = sdk
+            icue_keyboard_device_id = device_id
+            icue_led_positions = leds
+
+        print(f"[ICUE] Connected. Keyboard device_id={device_id}, {len(leds)} LEDs")
+
+        global icue_worker_started
+        if not icue_worker_started:
+            icue_worker_started = True
+            threading.Thread(target=_icue_worker_loop, daemon=True).start()
+
+    except Exception as e:
+        print("[ICUE] Failed to initialize:", e)
+
+
+def _get_led_id(led):
+    """The LED-id field on the position object has been named
+    differently across cuesdk versions (led_id / ledId / id). Try
+    the known names instead of hardcoding one that might not match
+    this install."""
+
+    for attr in ("led_id", "ledId", "id"):
+        if hasattr(led, attr):
+            return getattr(led, attr)
+
+    raise AttributeError(
+        f"Could not find a LED-id field on position object. "
+        f"Available attributes: {[a for a in dir(led) if not a.startswith('_')]}"
+    )
+
+
+def _make_led_color(led_id, r, g, b):
+    """CorsairLedColor's exact constructor signature (RGB vs RGBA,
+    positional vs keyword) has varied across cuesdk versions. Try
+    the common shapes instead of hardcoding one."""
+
+    for attempt in (
+        lambda: CorsairLedColor(led_id, r, g, b, 255),
+        lambda: CorsairLedColor(led_id, r, g, b, a=255),
+        lambda: CorsairLedColor(led_id, r, g, b),
+    ):
+        try:
+            return attempt()
+        except TypeError:
+            continue
+
+    raise TypeError("No matching CorsairLedColor(...) signature found.")
+
+
+def set_keyboard_color(hex_color):
+    """Sets every LED on the keyboard to hex_color (e.g. '#F57F17').
+
+    Runs whatever color was most recently reported for a gift or
+    Super Chat, and leaves the keyboard on that color until the
+    next one comes in (matches "keyboard shows the color of the
+    last super chat / gift").
+    """
+
+    if (
+        not ICUE_ENABLED
+        or icue_sdk is None
+        or icue_led_positions is None
+        or icue_keyboard_device_id is None
+    ):
+        return
+
+    try:
+        hex_color = (hex_color or "").lstrip("#")
+        if len(hex_color) != 6:
+            return
+
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+
+        with icue_lock:
+            colors = [
+                _make_led_color(_get_led_id(led), r, g, b)
+                for led in icue_led_positions
+            ]
+            # Using the direct, synchronous set_led_colors() here
+            # instead of set_led_colors_buffer() + the async flush -
+            # the async flush's callback was getting garbage
+            # collected by Python after the call returned while
+            # iCUE still held a pointer to it, crashing the process
+            # on the next completion. This method needs no callback
+            # at all, so that failure mode doesn't exist here.
+            err = icue_sdk.set_led_colors(icue_keyboard_device_id, colors)
+            if err is not None and str(err) != "CorsairError.CE_Success":
+                print(f"[ICUE] set_led_colors returned: {err}")
+
+    except Exception as e:
+        print("[ICUE] Failed to set keyboard color:", e)
+
+
+def apply_keyboard_color_async(hex_color):
+    """Fire-and-forget wrapper so a slow SDK call never delays the
+    Flask request or SSN listener thread that triggered it.
+
+    IMPORTANT: this only enqueues the color - it does NOT spawn a
+    new thread per event. cuesdk is a ctypes binding straight into
+    Corsair's native DLL, which is not safe to call from multiple
+    threads concurrently (two overlapping calls can crash the whole
+    Python process, not just raise a catchable exception). A single
+    dedicated worker thread (started in init_icue) drains this
+    queue one color at a time, so the native SDK is never touched
+    from more than one thread at once.
+    """
+
+    if not ICUE_ENABLED or not hex_color:
+        return
+
+    icue_color_queue.put(hex_color)
+
+
+def _icue_worker_loop():
+    """Runs for the lifetime of the program on its own thread. This
+    is the ONLY thread allowed to call into icue_sdk after startup -
+    every gift/Super Chat just drops a color into icue_color_queue
+    instead of touching the SDK directly."""
+
+    while True:
+        hex_color = icue_color_queue.get()
+
+        # If several colors piled up while we were busy (a burst of
+        # gifts), skip straight to the most recent one instead of
+        # flashing through every color in order - only matters for
+        # bursts, harmless otherwise.
+        while True:
+            try:
+                hex_color = icue_color_queue.get_nowait()
+            except queue.Empty:
+                break
+
+        set_keyboard_color(hex_color)
+
+
 _gift_image_manifest_cache = None
 
 
 def get_gift_color(gift_name):
-    """Returns the tint color for this gift's overlay animation.
+    """Returns the color to light the keyboard for this gift.
 
-    If GIFT_EVENT_COLOR is set, every gift returns that same
+    If GIFT_KEYBOARD_COLOR is set, every gift returns that same
     fixed color regardless of which gift it is. If it's set to
     None, falls back to the per-gift color listed in
     gift_images/_manifest.json (see load_gift_image_manifest()).
     """
 
-    if GIFT_EVENT_COLOR is not None:
-        return GIFT_EVENT_COLOR
+    if GIFT_KEYBOARD_COLOR is not None:
+        return GIFT_KEYBOARD_COLOR
 
     global _gift_image_manifest_cache
 
@@ -535,11 +729,14 @@ def push_event(event_type, name, value, seconds, image_url=None, combo_count=1, 
         if len(recent_events) > 200:
             del recent_events[: len(recent_events) - 200]
 
-    # Keyboard lighting no longer lives in this file - it's handled
-    # entirely by keyboard_color_server.py, driven directly by
-    # youtube.js/background.js via that server's
-    # /overlay/active-message-color endpoint whenever a chat message
-    # is clicked in the Live Chat Overlay extension.
+    # Keyboard lighting is now driven by whichever message is
+    # selected in the Live Chat Overlay extension instead of firing
+    # directly off every donation event - see
+    # /overlay/active-message-color and ICUE_FOLLOW_DONATIONS below.
+    # Set ICUE_FOLLOW_DONATIONS = True to go back to the old
+    # every-gift/every-Super-Chat behavior.
+    if ICUE_FOLLOW_DONATIONS and color:
+        apply_keyboard_color_async(color)
 
     return event
 
@@ -640,13 +837,7 @@ def save_state():
             "timer_seconds": timer_seconds,
             "bank_seconds": bank_seconds,
             "running": timer_running,
-            "locked": timer_locked,
-            "left_text_scroll": left_text_scroll_enabled,
-            "left_texts": left_texts,
-            "left_text_style": left_text_style,
-            "msg_texts_unlocked": msg_texts_unlocked,
-            "msg_texts_locked": msg_texts_locked,
-            "msg_text_style": msg_text_style
+            "locked": timer_locked
         }
 
     try:
@@ -661,12 +852,6 @@ def load_state():
     global bank_seconds
     global timer_running
     global timer_locked
-    global left_text_scroll_enabled
-    global left_texts
-    global left_text_style
-    global msg_texts_unlocked
-    global msg_texts_locked
-    global msg_text_style
 
     if not os.path.exists(STATE_FILE):
         return
@@ -682,33 +867,6 @@ def load_state():
         timer_running = False
 
         timer_locked = bool(data.get("locked", False))
-
-        left_text_scroll_enabled = bool(data.get("left_text_scroll", True))
-
-        left_texts = sanitize_text_lines(
-            data.get("left_texts", DEFAULT_LEFT_TEXTS),
-            DEFAULT_LEFT_TEXTS
-        )
-
-        left_text_style = sanitize_text_style(
-            data.get("left_text_style", {}),
-            DEFAULT_LEFT_TEXT_STYLE
-        )
-
-        msg_texts_unlocked = sanitize_text_lines(
-            data.get("msg_texts_unlocked", DEFAULT_MSG_TEXTS_UNLOCKED),
-            DEFAULT_MSG_TEXTS_UNLOCKED
-        )
-
-        msg_texts_locked = sanitize_text_lines(
-            data.get("msg_texts_locked", DEFAULT_MSG_TEXTS_LOCKED),
-            DEFAULT_MSG_TEXTS_LOCKED
-        )
-
-        msg_text_style = sanitize_text_style(
-            data.get("msg_text_style", {}),
-            DEFAULT_MSG_TEXT_STYLE
-        )
 
     except Exception as e:
         print("Failed to load timer state:", e)
@@ -2173,143 +2331,8 @@ def state():
             "locked": timer_locked,
             "bank": bank_seconds,
             "events": new_events,
-            "last_event_id": last_event_id,
-            "left_text_scroll_enabled": left_text_scroll_enabled,
-            "left_texts": left_texts,
-            "left_text_style": left_text_style,
-            "msg_texts_unlocked": msg_texts_unlocked,
-            "msg_texts_locked": msg_texts_locked,
-            "msg_text_style": msg_text_style
+            "last_event_id": last_event_id
         })
-
-
-@app.route("/left-text/enable")
-def left_text_enable():
-    global left_text_scroll_enabled
-    left_text_scroll_enabled = True
-    save_state()
-    return jsonify({"ok": True, "left_text_scroll_enabled": True})
-
-
-@app.route("/left-text/disable")
-def left_text_disable():
-    global left_text_scroll_enabled
-    left_text_scroll_enabled = False
-    save_state()
-    return jsonify({"ok": True, "left_text_scroll_enabled": False})
-
-
-@app.route("/left-text/set-texts", methods=["POST"])
-def left_text_set_texts():
-    """
-    Replaces the full list of rotating left-side text lines.
-    Called from the Dashboard's textarea (one line per message) -
-    the user decides how many lines/messages just by how many
-    non-empty lines they put in the box.
-
-    Body: {"texts": ["line one", "line two", ...]}
-    """
-
-    global left_texts
-
-    data = request.get_json(silent=True) or {}
-    raw_texts = data.get("texts", [])
-
-    if not isinstance(raw_texts, list):
-        return jsonify({
-            "ok": False,
-            "error": "\"texts\" must be a list of strings."
-        }), 400
-
-    cleaned = [str(t).strip() for t in raw_texts if str(t).strip()]
-
-    if not cleaned:
-        return jsonify({
-            "ok": False,
-            "error": "Need at least one non-empty line of text."
-        }), 400
-
-    left_texts = cleaned
-    save_state()
-
-    return jsonify({"ok": True, "left_texts": left_texts})
-
-
-@app.route("/left-text/set-style", methods=["POST"])
-def left_text_set_style():
-    """
-    Updates the look of the left-side text (font family, size,
-    bold, italic, color). Called from the Dashboard's style
-    controls. Any subset of fields can be sent - fields left out
-    keep their current value.
-
-    Body: {"font_family": "...", "font_size": 53, "bold": true,
-           "italic": false, "color": "#FFFFFF"}
-    """
-
-    global left_text_style
-
-    data = request.get_json(silent=True) or {}
-
-    left_text_style = sanitize_text_style(data, left_text_style)
-    save_state()
-
-    return jsonify({"ok": True, "left_text_style": left_text_style})
-
-
-@app.route("/msg-text/set-texts", methods=["POST"])
-def msg_text_set_texts():
-    """
-    Replaces the rotating lines shown above the digit timer. Both
-    the "unlocked" set and the "locked" set (shown while the timer
-    is locked) can be sent in the same request; either can be
-    omitted to leave it unchanged.
-
-    Body: {"unlocked": ["line one", ...], "locked": ["line one", ...]}
-    """
-
-    global msg_texts_unlocked
-    global msg_texts_locked
-
-    data = request.get_json(silent=True) or {}
-
-    if "unlocked" in data:
-        msg_texts_unlocked = sanitize_text_lines(
-            data.get("unlocked"),
-            msg_texts_unlocked
-        )
-
-    if "locked" in data:
-        msg_texts_locked = sanitize_text_lines(
-            data.get("locked"),
-            msg_texts_locked
-        )
-
-    save_state()
-
-    return jsonify({
-        "ok": True,
-        "msg_texts_unlocked": msg_texts_unlocked,
-        "msg_texts_locked": msg_texts_locked
-    })
-
-
-@app.route("/msg-text/set-style", methods=["POST"])
-def msg_text_set_style():
-    """
-    Updates the look of the text above the digit timer (font
-    family, size, bold, italic, color). Same shape as
-    /left-text/set-style.
-    """
-
-    global msg_text_style
-
-    data = request.get_json(silent=True) or {}
-
-    msg_text_style = sanitize_text_style(data, msg_text_style)
-    save_state()
-
-    return jsonify({"ok": True, "msg_text_style": msg_text_style})
 
 
 # ============================================================
@@ -2584,6 +2607,57 @@ def superchat_color_update():
         last_superchat_color["ts"] = time.time()
 
     print(f"[SUPERCHAT COLOR] Received {color} (amount: {amount or 'unknown'})")
+
+    return jsonify({"ok": True})
+
+
+@app.route("/overlay/active-message-color", methods=["POST", "OPTIONS"])
+def overlay_active_message_color():
+    """Lights the keyboard to match whichever chat message is
+    currently shown in the Live Chat Overlay extension (youtube.js),
+    instead of reacting to gift/Super Chat donation events directly.
+
+    Sent by youtube.js via background.js every time a message is
+    clicked to show/hide in the overlay - see the "ACTIVE MESSAGE
+    KEYBOARD COLOR" section of youtube.js.
+
+    Expects JSON body:
+      {"status": "shown", "messageType": "gift", "tierColor": ""}
+      {"status": "shown", "messageType": "superchat", "tierColor": "#RRGGBB"}
+      {"status": "shown", "messageType": "message", "tierColor": ""}
+      {"status": "hidden"}
+
+    status="hidden" (no message currently selected) turns the
+    keyboard off. messageType="gift" always uses GIFT_KEYBOARD_COLOR
+    (violet) regardless of which gift. messageType="superchat" uses
+    the real tierColor YouTube reported. Anything else (a plain
+    text message, a membership post, etc.) lights the keyboard
+    white.
+    """
+
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+    data = request.get_json(silent=True) or {}
+
+    status = str(data.get("status") or "").strip().lower()
+    message_type = str(data.get("messageType") or "").strip().lower()
+    tier_color = str(data.get("tierColor") or "").strip()
+
+    if status == "hidden":
+        apply_keyboard_color_async(ICUE_OFF_COLOR)
+        print("[OVERLAY COLOR] No message selected -> keyboard off")
+        return jsonify({"ok": True})
+
+    if message_type == "gift":
+        apply_keyboard_color_async(GIFT_KEYBOARD_COLOR)
+        print(f"[OVERLAY COLOR] Gift message shown -> {GIFT_KEYBOARD_COLOR}")
+    elif message_type == "superchat" and tier_color:
+        apply_keyboard_color_async(tier_color)
+        print(f"[OVERLAY COLOR] Super Chat message shown -> {tier_color}")
+    else:
+        apply_keyboard_color_async(ICUE_MESSAGE_COLOR)
+        print(f"[OVERLAY COLOR] Regular message shown -> {ICUE_MESSAGE_COLOR}")
 
     return jsonify({"ok": True})
 
@@ -3219,215 +3293,20 @@ def dashboard():
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Timer Dashboard</title>
 
 <style>
 
-:root {
-    --bg: #121014;
-    --panel: #1b1922;
-    --panel-border: #2c2933;
-    --accent: #8A2BE2;
-    --accent-soft: rgba(138, 43, 226, 0.18);
-    --text: #f2f1f5;
-    --text-dim: #a8a5b3;
-    --danger: #e0455a;
-    --radius: 12px;
-}
-
-* {
-    box-sizing: border-box;
-}
-
 body {
-    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 24px;
-    max-width: 1100px;
-    margin: 0 auto;
-    line-height: 1.4;
+    font-family: Arial;
+    background:#111;
+    color:white;
+    padding:20px;
 }
 
-header {
-    margin-bottom: 24px;
-}
-
-header h1 {
-    margin: 0 0 4px 0;
-    font-size: 26px;
-}
-
-header p {
-    margin: 0;
-    color: var(--text-dim);
-    font-size: 14px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.card {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-}
-
-.card.wide {
-    grid-column: 1 / -1;
-}
-
-.card h2 {
-    margin: 0 0 4px 0;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.card .hint {
-    color: var(--text-dim);
-    font-size: 13px;
-    margin: 4px 0 14px 0;
-}
-
-.btn-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-button, .btn {
-    background: #2a2733;
-    color: var(--text);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 9px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background .15s ease, border-color .15s ease;
-}
-
-button:hover, .btn:hover {
-    background: #35313f;
-    border-color: var(--accent);
-}
-
-button.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-    font-weight: 600;
-}
-
-button.primary:hover {
-    filter: brightness(1.1);
-}
-
-button.danger {
-    border-color: var(--danger);
-    color: #ffd3d8;
-}
-
-button.danger:hover {
-    background: rgba(224, 69, 90, 0.15);
-}
-
-.field-label {
-    display: block;
-    font-size: 13px;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-}
-
-textarea, input[type="text"], input[type="number"], select {
-    width: 100%;
-    background: #100f15;
-    color: var(--text);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 9px 10px;
-    font-size: 14px;
-    font-family: inherit;
-}
-
-textarea:focus, input:focus, select:focus {
-    outline: none;
-    border-color: var(--accent);
-}
-
-input[type="color"] {
-    width: 100%;
-    height: 38px;
-    padding: 3px;
-    background: #100f15;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.checkbox-field {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    padding-top: 22px;
-}
-
-.checkbox-field input {
-    width: 18px;
-    height: 18px;
-}
-
-.style-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-}
-
-.status-line {
-    font-size: 13px;
-    color: var(--text-dim);
-    min-height: 18px;
-    margin-top: 8px;
-}
-
-.status-line.ok {
-    color: #7be08a;
-}
-
-.status-line.err {
-    color: var(--danger);
-}
-
-.preview-box {
-    margin-top: 14px;
-    padding: 18px;
-    background: #100f15;
-    border: 1px dashed var(--panel-border);
-    border-radius: 10px;
-    text-align: center;
-    word-break: break-word;
-}
-
-.two-col {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-}
-
-hr.divider {
-    border: none;
-    border-top: 1px solid var(--panel-border);
-    margin: 18px 0;
+button {
+    margin:5px;
+    padding:10px;
 }
 
 </style>
@@ -3436,455 +3315,92 @@ hr.divider {
 
 <body>
 
-<header>
-    <h1>🎬 Stream Timer Dashboard</h1>
-    <p>Controls for the timer overlay - text and font changes apply live, no restart needed.</p>
-</header>
-
-<div class="grid">
-
-    <div class="card">
-        <h2>▶️ Playback</h2>
-        <p class="hint">Start, pause, or reset the countdown.</p>
-        <div class="btn-row">
-            <button class="primary" onclick="fetch('/start')">Start</button>
-            <button onclick="fetch('/pause')">Pause</button>
-            <button class="danger" onclick="fetch('/reset')">Reset</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>🔒 Lock</h2>
-        <p class="hint">Locking freezes the timer and switches the message above it to the "locked" set below.</p>
-        <div class="btn-row">
-            <button onclick="fetch('/lock')">Lock</button>
-            <button onclick="fetch('/unlock')">Unlock</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>🏦 Bank</h2>
-        <p class="hint">Apply or clear time sitting in the bank.</p>
-        <div class="btn-row">
-            <button onclick="fetch('/apply_bank')">Apply Bank</button>
-            <button onclick="fetch('/clear_bank')">Clear Bank</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>➖ Subtract Time</h2>
-        <p class="hint">Manually remove time from the timer.</p>
-        <div class="btn-row">
-            <button onclick="fetch('/subtract/30')">-30 sec</button>
-            <button onclick="fetch('/subtract/60')">-1 min</button>
-            <button onclick="fetch('/subtract/150')">-2.5 min</button>
-            <button onclick="fetch('/subtract/300')">-5 min</button>
-            <button onclick="fetch('/subtract/600')">-10 min</button>
-            <button onclick="fetch('/subtract/1500')">-25 min</button>
-        </div>
-    </div>
-
-    <div class="card wide">
-        <h2>🎁 Manual Super Chat Add Time (Numpad only)</h2>
-        <p class="hint">
-            Numpad 1 = +30s &nbsp;•&nbsp; Numpad 2 = +1 min &nbsp;•&nbsp;
-            Numpad 3 = +2.5 min &nbsp;•&nbsp; Numpad 4 = +5 min &nbsp;•&nbsp;
-            Numpad 5 = +10 min &nbsp;•&nbsp; Numpad 6 = +25 min.
-            The regular number row does nothing.
-        </p>
-    </div>
-
-</div>
-
-
-<div class="card wide">
-
-    <h2>💬 Left-Side Text</h2>
-    <p class="hint">
-        The box next to the timer. When scrolling is ON it rotates through the lines
-        below every 10 seconds; when OFF it stays fixed on the first line.
-    </p>
-
-    <div class="btn-row">
-        <button onclick="fetch('/left-text/enable')">Enable Scrolling</button>
-        <button onclick="fetch('/left-text/disable')">Disable Scrolling</button>
-    </div>
-
-    <hr class="divider">
-
-    <div class="two-col">
-
-        <div>
-            <label class="field-label">Message lines (one per line - add or remove as many as you want)</label>
-            <textarea id="leftTextsBox" rows="6"></textarea>
-            <div class="btn-row" style="margin-top:10px;">
-                <button class="primary" onclick="leftTextsEditor.save()">Save Text Lines</button>
-            </div>
-            <div id="leftTextsStatus" class="status-line"></div>
-        </div>
-
-        <div>
-            <label class="field-label">Font style</label>
-            <div class="style-grid">
-
-                <div>
-                    <label class="field-label">Font family</label>
-                    <select id="leftFontFamily">
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
-                        <option value="Georgia, serif">Georgia</option>
-                        <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                        <option value="'Courier New', Courier, monospace">Courier New</option>
-                        <option value="Verdana, sans-serif">Verdana</option>
-                        <option value="Tahoma, sans-serif">Tahoma</option>
-                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                        <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
-                        <option value="Impact, sans-serif">Impact</option>
-                        <option value="custom">Custom (type below)...</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="field-label">Custom font (optional)</label>
-                    <input id="leftFontFamilyCustom" type="text" placeholder="e.g. 'Poppins', sans-serif">
-                </div>
-
-                <div>
-                    <label class="field-label">Size (px)</label>
-                    <input id="leftFontSize" type="number" min="8" max="200" step="1">
-                </div>
-
-                <div>
-                    <label class="field-label">Color</label>
-                    <input id="leftFontColor" type="color">
-                </div>
-
-                <div class="checkbox-field">
-                    <input id="leftFontBold" type="checkbox"><label for="leftFontBold">Bold</label>
-                </div>
-
-                <div class="checkbox-field">
-                    <input id="leftFontItalic" type="checkbox"><label for="leftFontItalic">Italic</label>
-                </div>
-
-            </div>
+<h2>Timer Dashboard</h2>
 
-            <p id="leftStylePreview" class="preview-box">Tell or ask me anything.</p>
+<h3>Controls</h3>
 
-            <div class="btn-row" style="margin-top:10px;">
-                <button class="primary" onclick="leftStyleEditor.save()">Save Font Style</button>
-            </div>
-            <div id="leftStyleStatus" class="status-line"></div>
-        </div>
+<button onclick="fetch('/start')">
+Start
+</button>
 
-    </div>
-
-</div>
-
-
-<div class="card wide">
+<button onclick="fetch('/pause')">
+Pause
+</button>
 
-    <h2>⏱️ Timer Message Text</h2>
-    <p class="hint">
-        The line above the big digit timer. It rotates every 5 seconds and automatically
-        switches to the "locked" set while the timer is locked.
-    </p>
-
-    <div class="two-col">
-
-        <div>
-            <label class="field-label">Lines while UNLOCKED (one per line)</label>
-            <textarea id="msgUnlockedBox" rows="4"></textarea>
-        </div>
-
-        <div>
-            <label class="field-label">Lines while LOCKED (one per line)</label>
-            <textarea id="msgLockedBox" rows="4"></textarea>
-        </div>
-
-    </div>
-
-    <div class="btn-row" style="margin-top:10px;">
-        <button class="primary" onclick="saveMsgTexts()">Save Text Lines</button>
-    </div>
-    <div id="msgTextsStatus" class="status-line"></div>
-
-    <hr class="divider">
-
-    <label class="field-label">Font style</label>
-    <div class="style-grid">
-
-        <div>
-            <label class="field-label">Font family</label>
-            <select id="msgFontFamily">
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="'Helvetica Neue', Helvetica, sans-serif">Helvetica</option>
-                <option value="Georgia, serif">Georgia</option>
-                <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                <option value="'Courier New', Courier, monospace">Courier New</option>
-                <option value="Verdana, sans-serif">Verdana</option>
-                <option value="Tahoma, sans-serif">Tahoma</option>
-                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                <option value="'Comic Sans MS', cursive, sans-serif">Comic Sans MS</option>
-                <option value="Impact, sans-serif">Impact</option>
-                <option value="custom">Custom (type below)...</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="field-label">Custom font (optional)</label>
-            <input id="msgFontFamilyCustom" type="text" placeholder="e.g. 'Poppins', sans-serif">
-        </div>
-
-        <div>
-            <label class="field-label">Size (px)</label>
-            <input id="msgFontSize" type="number" min="8" max="200" step="1">
-        </div>
-
-        <div>
-            <label class="field-label">Color</label>
-            <input id="msgFontColor" type="color">
-        </div>
-
-        <div class="checkbox-field">
-            <input id="msgFontBold" type="checkbox"><label for="msgFontBold">Bold</label>
-        </div>
-
-        <div class="checkbox-field">
-            <input id="msgFontItalic" type="checkbox"><label for="msgFontItalic">Italic</label>
-        </div>
-
-    </div>
-
-    <p id="msgStylePreview" class="preview-box">Stream ends in...</p>
-
-    <div class="btn-row" style="margin-top:10px;">
-        <button class="primary" onclick="msgStyleEditor.save()">Save Font Style</button>
-    </div>
-    <div id="msgStyleStatus" class="status-line"></div>
-
-</div>
-
-
-<script>
-
-// ---------------- shared helpers ----------------
-
-function setLine(el, text, isError){
-    el.textContent = text;
-    el.classList.remove('ok', 'err');
-    el.classList.add(isError ? 'err' : 'ok');
-}
-
-// ---------------- generic font-style editor ----------------
-// One of these is created per customizable text element (left-side
-// text, timer message text). Handles loading the current style from
-// /state, live-previewing edits, and saving via POST.
-
-function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
-
-    const ids = {
-        family: prefix + 'FontFamily',
-        familyCustom: prefix + 'FontFamilyCustom',
-        size: prefix + 'FontSize',
-        color: prefix + 'FontColor',
-        bold: prefix + 'FontBold',
-        italic: prefix + 'FontItalic',
-        preview: prefix + 'StylePreview',
-        status: prefix + 'StyleStatus'
-    };
-
-    function currentFamily(){
-        const custom = document.getElementById(ids.familyCustom).value.trim();
-        if (custom) return custom;
-        return document.getElementById(ids.family).value;
-    }
-
-    function refreshPreview(){
-        const preview = document.getElementById(ids.preview);
-        preview.style.fontFamily = currentFamily();
-        preview.style.fontSize = (document.getElementById(ids.size).value || 24) + 'px';
-        preview.style.color = document.getElementById(ids.color).value;
-        preview.style.fontWeight = document.getElementById(ids.bold).checked ? 'bold' : 'normal';
-        preview.style.fontStyle = document.getElementById(ids.italic).checked ? 'italic' : 'normal';
-    }
-
-    [ids.family, ids.familyCustom, ids.size, ids.color, ids.bold, ids.italic].forEach(id => {
-        document.getElementById(id).addEventListener('input', refreshPreview);
-    });
-
-    async function load(){
-        try {
-            const res = await fetch('/state');
-            const data = await res.json();
-            const style = data[stateKey] || {};
-
-            const familySelect = document.getElementById(ids.family);
-            const knownFamily = Array.from(familySelect.options)
-                .some(opt => opt.value === style.font_family);
-
-            if (knownFamily){
-                familySelect.value = style.font_family;
-                document.getElementById(ids.familyCustom).value = '';
-            } else if (style.font_family){
-                familySelect.value = 'custom';
-                document.getElementById(ids.familyCustom).value = style.font_family;
-            }
-
-            document.getElementById(ids.size).value = style.font_size || 24;
-            document.getElementById(ids.color).value = style.color || '#ffffff';
-            document.getElementById(ids.bold).checked = !!style.bold;
-            document.getElementById(ids.italic).checked = !!style.italic;
-
-            refreshPreview();
-        } catch (e){
-            setLine(document.getElementById(ids.status), 'Failed to load current style: ' + e, true);
-        }
-    }
-
-    async function save(){
-        const statusEl = document.getElementById(ids.status);
-
-        const payload = {
-            font_family: currentFamily(),
-            font_size: Number(document.getElementById(ids.size).value) || 24,
-            bold: document.getElementById(ids.bold).checked,
-            italic: document.getElementById(ids.italic).checked,
-            color: document.getElementById(ids.color).value
-        };
-
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-
-            if (data.ok){
-                setLine(statusEl, 'Saved.', false);
-            } else {
-                setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
-            }
-        } catch (e){
-            setLine(statusEl, 'Request failed: ' + e, true);
-        }
-    }
-
-    load();
-
-    return { save: save, refreshPreview: refreshPreview };
-}
-
-const leftStyleEditor = wireStyleEditor('left', '/left-text/set-style', 'left_text_style');
-const msgStyleEditor = wireStyleEditor('msg', '/msg-text/set-style', 'msg_text_style');
-
-// ---------------- left-side rotating text ----------------
-
-const leftTextsEditor = (function(){
-
-    async function load(){
-        try {
-            const res = await fetch('/state');
-            const data = await res.json();
-            document.getElementById('leftTextsBox').value = (data.left_texts || []).join('\\n');
-        } catch (e){
-            setLine(document.getElementById('leftTextsStatus'), 'Failed to load current text: ' + e, true);
-        }
-    }
-
-    async function save(){
-        const box = document.getElementById('leftTextsBox');
-        const statusEl = document.getElementById('leftTextsStatus');
-
-        const lines = box.value
-            .split('\\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-
-        if (lines.length === 0){
-            setLine(statusEl, 'Enter at least one line.', true);
-            return;
-        }
-
-        try {
-            const res = await fetch('/left-text/set-texts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts: lines })
-            });
-            const data = await res.json();
-
-            if (data.ok){
-                setLine(statusEl, 'Saved ' + data.left_texts.length + ' line(s).', false);
-            } else {
-                setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
-            }
-        } catch (e){
-            setLine(statusEl, 'Request failed: ' + e, true);
-        }
-    }
-
-    load();
-
-    return { save: save };
-
-})();
-
-// ---------------- timer message text (unlocked + locked) ----------------
-
-async function loadMsgTexts(){
-    try {
-        const res = await fetch('/state');
-        const data = await res.json();
-        document.getElementById('msgUnlockedBox').value = (data.msg_texts_unlocked || []).join('\\n');
-        document.getElementById('msgLockedBox').value = (data.msg_texts_locked || []).join('\\n');
-    } catch (e){
-        setLine(document.getElementById('msgTextsStatus'), 'Failed to load current text: ' + e, true);
-    }
-}
-
-async function saveMsgTexts(){
-    const statusEl = document.getElementById('msgTextsStatus');
-
-    const unlocked = document.getElementById('msgUnlockedBox').value
-        .split('\\n').map(l => l.trim()).filter(l => l.length > 0);
-
-    const locked = document.getElementById('msgLockedBox').value
-        .split('\\n').map(l => l.trim()).filter(l => l.length > 0);
-
-    if (unlocked.length === 0 || locked.length === 0){
-        setLine(statusEl, 'Both boxes need at least one line.', true);
-        return;
-    }
-
-    try {
-        const res = await fetch('/msg-text/set-texts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ unlocked: unlocked, locked: locked })
-        });
-        const data = await res.json();
-
-        if (data.ok){
-            setLine(statusEl, 'Saved.', false);
-        } else {
-            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
-        }
-    } catch (e){
-        setLine(statusEl, 'Request failed: ' + e, true);
-    }
-}
-
-loadMsgTexts();
-
-</script>
+<button onclick="fetch('/reset')">
+Reset
+</button>
+
+
+<h3>Lock</h3>
+
+<button onclick="fetch('/lock')">
+Lock
+</button>
+
+<button onclick="fetch('/unlock')">
+Unlock
+</button>
+
+
+<h3>Bank</h3>
+
+<button onclick="fetch('/apply_bank')">
+Apply Bank
+</button>
+
+<button onclick="fetch('/clear_bank')">
+Clear Bank
+</button>
+
+
+<h3>Manual Super Chat Add Time</h3>
+
+<p>
+Numeric keypad only:
+Numpad 1 = +30s,
+Numpad 2 = +1 min,
+Numpad 3 = +2.5 min,
+Numpad 4 = +5 min,
+Numpad 5 = +10 min,
+Numpad 6 = +25 min.
+</p>
+
+<p>
+The regular number row does nothing.
+</p>
+
+
+<h3>Subtract Time</h3>
+
+<button onclick="fetch('/subtract/30')">
+-30 sec
+</button>
+
+<button onclick="fetch('/subtract/60')">
+-1 min
+</button>
+
+<button onclick="fetch('/subtract/150')">
+-2.5 min
+</button>
+
+<button onclick="fetch('/subtract/300')">
+-5 min
+</button>
+
+<button onclick="fetch('/subtract/600')">
+-10 min
+</button>
+
+<button onclick="fetch('/subtract/1500')">
+-25 min
+</button>
 
 </body>
 
 </html>
 """
-
 
 
 # ============================================================
@@ -3955,28 +3471,15 @@ html, body {
     align-items: center;
     justify-content: center;
 
-    text-align: center;
-
-    padding: 0;
-}
-
-/* Only this inner text fades on rotation - #left itself (the
-   background box) stays put, matching how #msg fades while its
-   surrounding .box-bg stays static. Font family/size/weight/style/
-   color are NOT set here - they're applied as inline styles from
-   left_text_style (see applyLeftTextStyle() in the JS below), so
-   they can be changed from the Dashboard without touching CSS. The
-   values below are just the pre-JS fallback/first-paint look. */
-#left-text {
     font-size: 53px;
     font-weight: 549;
     line-height: 0.95;
 
+    text-align: center;
+
     letter-spacing: .5px;
 
-    opacity: 1;
-
-    transition: opacity .8s ease;
+    padding: 0;
 }
 
 #right {
@@ -4301,11 +3804,6 @@ html, body {
     justify-content: center;
     align-items: center;
 
-    /* Font family/size/weight/style/color are NOT set here - they're
-       applied as inline styles from msg_text_style (see
-       applyMsgTextStyle() in the JS below), so they can be changed
-       from the Dashboard without touching CSS. Values below are
-       just the pre-JS fallback/first-paint look. */
     font-size: 26px;
     font-weight: 650;
     line-height: 1.2;
@@ -4623,8 +4121,6 @@ html, body {
 
     </div>-->
     
-    <div id="left"><span id="left-text">Tell or ask me anything.</span></div>
-
     <div id="right">
     <div class="box-bg">
          <div id="msg">Stream ends in...
@@ -5561,30 +5057,6 @@ async function update(){
 
     lastKnownSeconds = d.seconds;
 
-    // Cached for the left-text rotator (setInterval below) so it
-    // doesn't need its own separate /state poll.
-    leftScrollEnabled = d.left_text_scroll_enabled !== false;
-
-    // Pick up any text-line edits made from the Dashboard. If the
-    // list actually changed, snap the index back to 0 so it doesn't
-    // point past the end of a shorter new list.
-    if (Array.isArray(d.left_texts) && d.left_texts.length){
-        const changed =
-            d.left_texts.length !== leftTexts.length ||
-            d.left_texts.some((t, i) => t !== leftTexts[i]);
-
-        if (changed){
-            leftTexts = d.left_texts;
-            leftTextIndex = 0;
-        }
-    }
-
-    // Pick up any font style edits made from the Dashboard (family,
-    // size, bold, italic, color).
-    if (d.left_text_style){
-        applyLeftTextStyle(d.left_text_style);
-    }
-
     let handledByEvent = false;
 
     // Skip animating on the very first load so old/backlogged
@@ -5650,26 +5122,22 @@ async function update(){
 
 
 
-// ---------------- TIMER MESSAGE TEXT (line above the digits) ----------------
-// Rotates through msgTextsUnlocked/msgTextsLocked every 5 seconds,
-// switching sets automatically when the timer locks/unlocks. Both
-// lists (and the style below) are no longer hardcoded - they're
-// kept in sync with /state, which the Dashboard's controls write to
-// via /msg-text/set-texts and /msg-text/set-style. These fallbacks
-// are only used for the brief moment before the first /state
-// response arrives.
-let msgTextsUnlocked = [
-    "Stream ends in...",
-    "Super Chat/Gift to add time"
-];
-
-let msgTextsLocked = [
-    "Raiding streamer in...",
-    "Timer locked."
-];
-
 function getFadeTexts(isLocked){
-    return isLocked ? msgTextsLocked : msgTextsUnlocked;
+
+    if (isLocked){
+
+        return [
+            "Raiding streamer in...",
+            "Timer locked."
+        ];
+
+    }
+
+    return [
+        "Stream ends in...",
+        "Super Chat/Gift to add time"
+    ];
+
 }
 
 
@@ -5693,116 +5161,6 @@ function fadeTextSwap(newText){
 
 }
 
-// Last-applied style, so applyMsgTextStyle() can skip re-touching
-// the DOM when nothing actually changed since the last /state poll.
-let currentMsgTextStyle = null;
-
-function applyMsgTextStyle(style){
-
-    const el = document.getElementById("msg");
-
-    if (!el || !style) return;
-
-    const serialized = JSON.stringify(style);
-
-    if (serialized === currentMsgTextStyle) return;
-
-    currentMsgTextStyle = serialized;
-
-    if (style.font_family) el.style.fontFamily = style.font_family;
-    if (style.font_size) el.style.fontSize = style.font_size + "px";
-    if (style.color) el.style.color = style.color;
-
-    el.style.fontWeight = style.bold ? "bold" : "normal";
-    el.style.fontStyle = style.italic ? "italic" : "normal";
-}
-
-
-// ---------------- "TELL OR ASK ME ANYTHING." LEFT TEXT ----------------
-// Rotates through leftTexts every 10 seconds when enabled from the
-// Dashboard (/left-text/enable, /left-text/disable). When disabled,
-// pins the text to leftTexts[0] only. leftTexts itself is no longer
-// hardcoded here - it's kept in sync with the server's /state
-// response (see update() above), which the Dashboard's textarea
-// writes to via /left-text/set-texts. This fallback is only used
-// for the brief moment before the first /state response arrives.
-let leftTexts = [
-    "Tell or ask me anything.",
-    "Type your question in chat!"
-];
-
-let leftTextIndex = 0;
-let leftScrollEnabled = true;
-
-// Last-applied style, so applyLeftTextStyle() can skip re-touching
-// the DOM when nothing actually changed since the last /state poll.
-let currentLeftTextStyle = null;
-
-function applyLeftTextStyle(style){
-
-    const el = document.getElementById("left-text");
-
-    if (!el || !style) return;
-
-    const serialized = JSON.stringify(style);
-
-    if (serialized === currentLeftTextStyle) return;
-
-    currentLeftTextStyle = serialized;
-
-    if (style.font_family) el.style.fontFamily = style.font_family;
-    if (style.font_size) el.style.fontSize = style.font_size + "px";
-    if (style.color) el.style.color = style.color;
-
-    el.style.fontWeight = style.bold ? "bold" : "normal";
-    el.style.fontStyle = style.italic ? "italic" : "normal";
-}
-
-function leftTextSwap(newText){
-
-    const el =
-        document.getElementById("left-text");
-
-    if (!el) return;
-
-    // fade out
-    el.style.opacity = 0;
-
-    setTimeout(() => {
-
-        el.innerText = newText;
-
-        el.style.opacity = 1;
-
-    }, 400);
-
-}
-
-setInterval(() => {
-
-    if (!leftScrollEnabled){
-
-        // Scrolling turned off from the Dashboard - make sure it's
-        // pinned to the default line and stop advancing.
-        if (leftTextIndex !== 0){
-            leftTextIndex = 0;
-            leftTextSwap(leftTexts[0]);
-        }
-
-        return;
-
-    }
-
-    leftTextIndex =
-        (leftTextIndex + 1) %
-        leftTexts.length;
-
-    leftTextSwap(
-        leftTexts[leftTextIndex]
-    );
-
-}, 10000);
-
 
 let currentLocked = false;
 
@@ -5815,20 +5173,6 @@ setInterval(async () => {
     let r = await fetch('/state');
 
     let d = await r.json();
-
-    // Pick up any text-line edits made from the Dashboard for
-    // either the unlocked or locked set.
-    if (Array.isArray(d.msg_texts_unlocked) && d.msg_texts_unlocked.length){
-        msgTextsUnlocked = d.msg_texts_unlocked;
-    }
-
-    if (Array.isArray(d.msg_texts_locked) && d.msg_texts_locked.length){
-        msgTextsLocked = d.msg_texts_locked;
-    }
-
-    if (d.msg_text_style){
-        applyMsgTextStyle(d.msg_text_style);
-    }
 
     // detect lock change
     if (
@@ -5846,11 +5190,6 @@ setInterval(async () => {
 
         index = 0;
 
-    } else {
-
-        // Keep pointed at the right list even if only its contents
-        // changed (not the lock state) since the last poll.
-        activeTexts = getFadeTexts(currentLocked);
     }
 
     index =
@@ -6208,6 +5547,11 @@ if __name__ == "__main__":
 
     register_hotkeys()
     register_test_animation_hotkeys()
+
+    threading.Thread(
+        target=init_icue,
+        daemon=True
+    ).start()
 
     threading.Thread(
         target=start_ssn_listener,
