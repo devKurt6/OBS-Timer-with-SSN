@@ -14,6 +14,7 @@ import hashlib
 from collections import OrderedDict
 from urllib.parse import quote
 import sys
+import subprocess
 
 try:
     import websockets
@@ -281,6 +282,14 @@ timer_locked = False
 # line. Toggled from the Dashboard (/left-text/enable,
 # /left-text/disable) so it can be flipped mid-stream.
 left_text_scroll_enabled = True
+
+# Whether the ENTIRE "Tell or ask me anything." box (background +
+# text, id="left" in the overlay) is shown at all. Separate from
+# left_text_scroll_enabled above, which only controls whether the
+# text rotates or stays fixed on the box - this controls whether the
+# box renders on the overlay at all. Toggled from the Dashboard
+# (/left-box/enable, /left-box/disable).
+left_box_enabled = True
 
 # The actual lines the left-side text rotates through. Editable
 # from the Dashboard (a textarea, one line per message - "how many
@@ -642,6 +651,7 @@ def save_state():
             "running": timer_running,
             "locked": timer_locked,
             "left_text_scroll": left_text_scroll_enabled,
+            "left_box_enabled": left_box_enabled,
             "left_texts": left_texts,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
@@ -662,6 +672,7 @@ def load_state():
     global timer_running
     global timer_locked
     global left_text_scroll_enabled
+    global left_box_enabled
     global left_texts
     global left_text_style
     global msg_texts_unlocked
@@ -684,6 +695,7 @@ def load_state():
         timer_locked = bool(data.get("locked", False))
 
         left_text_scroll_enabled = bool(data.get("left_text_scroll", True))
+        left_box_enabled = bool(data.get("left_box_enabled", True))
 
         left_texts = sanitize_text_lines(
             data.get("left_texts", DEFAULT_LEFT_TEXTS),
@@ -2175,6 +2187,7 @@ def state():
             "events": new_events,
             "last_event_id": last_event_id,
             "left_text_scroll_enabled": left_text_scroll_enabled,
+            "left_box_enabled": left_box_enabled,
             "left_texts": left_texts,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
@@ -2197,6 +2210,27 @@ def left_text_disable():
     left_text_scroll_enabled = False
     save_state()
     return jsonify({"ok": True, "left_text_scroll_enabled": False})
+
+
+@app.route("/left-box/enable")
+def left_box_enable():
+    """Shows the entire left-side box (background + text) on the
+    overlay again."""
+    global left_box_enabled
+    left_box_enabled = True
+    save_state()
+    return jsonify({"ok": True, "left_box_enabled": True})
+
+
+@app.route("/left-box/disable")
+def left_box_disable():
+    """Hides the entire left-side box (background + text) from the
+    overlay, not just the text - the box takes up no space while
+    disabled."""
+    global left_box_enabled
+    left_box_enabled = False
+    save_state()
+    return jsonify({"ok": True, "left_box_enabled": False})
 
 
 @app.route("/left-text/set-texts", methods=["POST"])
@@ -3501,8 +3535,21 @@ hr.divider {
 
     <h2>💬 Left-Side Text</h2>
     <p class="hint">
-        The box next to the timer. When scrolling is ON it rotates through the lines
-        below every 10 seconds; when OFF it stays fixed on the first line.
+        The box next to the timer ("Tell or ask me anything.").
+    </p>
+
+    <label class="field-label">Box on/off (hides the entire box, background included)</label>
+    <div class="btn-row">
+        <button id="leftBoxOnBtn" onclick="setLeftBox(true)">Box ON</button>
+        <button id="leftBoxOffBtn" onclick="setLeftBox(false)">Box OFF</button>
+    </div>
+    <div id="leftBoxStatus" class="status-line"></div>
+
+    <hr class="divider">
+
+    <p class="hint">
+        When the box is ON: Scrolling ON rotates through the lines
+        below every 10 seconds; Scrolling OFF stays fixed on the first line.
     </p>
 
     <div class="btn-row">
@@ -3778,6 +3825,37 @@ function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
 
 const leftStyleEditor = wireStyleEditor('left', '/left-text/set-style', 'left_text_style');
 const msgStyleEditor = wireStyleEditor('msg', '/msg-text/set-style', 'msg_text_style');
+
+// ---------------- left-side box on/off ----------------
+
+async function setLeftBox(on){
+    const statusEl = document.getElementById('leftBoxStatus');
+    try {
+        const res = await fetch(on ? '/left-box/enable' : '/left-box/disable');
+        const data = await res.json();
+        if (data.ok){
+            setLine(statusEl, on ? 'Box is ON.' : 'Box is OFF (hidden on overlay).', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+async function loadLeftBoxStatus(){
+    const statusEl = document.getElementById('leftBoxStatus');
+    try {
+        const res = await fetch('/state');
+        const data = await res.json();
+        const on = data.left_box_enabled !== false;
+        setLine(statusEl, on ? 'Box is currently ON.' : 'Box is currently OFF (hidden on overlay).', false);
+    } catch (e){
+        setLine(statusEl, 'Failed to load current state: ' + e, true);
+    }
+}
+
+loadLeftBoxStatus();
 
 // ---------------- left-side rotating text ----------------
 
@@ -5565,6 +5643,11 @@ async function update(){
     // doesn't need its own separate /state poll.
     leftScrollEnabled = d.left_text_scroll_enabled !== false;
 
+    // Show/hide the ENTIRE left box (background + text), not just
+    // the text inside it. display:none removes it from layout
+    // entirely rather than just making it invisible.
+    applyLeftBoxVisibility(d.left_box_enabled !== false);
+
     // Pick up any text-line edits made from the Dashboard. If the
     // list actually changed, snap the index back to 0 so it doesn't
     // point past the end of a shorter new list.
@@ -5733,6 +5816,24 @@ let leftTexts = [
 
 let leftTextIndex = 0;
 let leftScrollEnabled = true;
+
+// Whether the entire #left box (background + text) should be
+// shown at all. Toggled from the Dashboard (/left-box/enable,
+// /left-box/disable) - separate from leftScrollEnabled above,
+// which only affects whether the text inside it rotates.
+let leftBoxVisible = true;
+
+function applyLeftBoxVisibility(visible){
+    if (visible === leftBoxVisible) return;
+    leftBoxVisible = visible;
+
+    const box = document.getElementById("left");
+    if (!box) return;
+
+    // display:none takes the box fully out of the layout (matches
+    // "including the entire box", not just hiding its text/color).
+    box.style.display = visible ? "flex" : "none";
+}
 
 // Last-applied style, so applyLeftTextStyle() can skip re-touching
 // the DOM when nothing actually changed since the last /state poll.
@@ -6185,6 +6286,40 @@ def register_test_animation_hotkeys():
         )
 
 
+def launch_keyboard_server():
+    """
+    Starts keyboard.py (the Corsair/iCUE keyboard-lighting server,
+    port 5001) as its own separate process, in its own new console
+    window, so it comes up automatically whenever timer.py is run.
+
+    keyboard.py must be in the same folder as this script. This
+    only launches the process - it does NOT shut it down when
+    timer.py exits, so closing this window will leave the keyboard
+    server's console window open on its own.
+    """
+
+    keyboard_script = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "keyboard.py"
+    )
+
+    if not os.path.exists(keyboard_script):
+        print(
+            f"WARNING: keyboard.py not found at {keyboard_script} - "
+            "keyboard lighting server was NOT started."
+        )
+        return
+
+    try:
+        subprocess.Popen(
+            [sys.executable, keyboard_script],
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
+        print("Launched keyboard.py in a new console window.")
+    except Exception as e:
+        print("Failed to launch keyboard.py:", e)
+
+
 # ============================================================
 # RUN
 # ============================================================
@@ -6193,6 +6328,8 @@ if __name__ == "__main__":
 
     load_state()
     load_exchange_rate_cache()
+
+    launch_keyboard_server()
 
     last_tick = time.time()
 
