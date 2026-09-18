@@ -980,8 +980,7 @@ var html =
     + '</div>'
 
     + (data.message ?
-        '<div class="hl-message" style="' + data.backgroundColor + ' ' + data.textColor
-        + (data.donation ? ' padding-left:160px;box-sizing:border-box;' : '') + '">'
+        '<div class="hl-message" style="' + data.backgroundColor + ' ' + data.textColor + '">'
     + data.message +
     '</div>'
     : '')
