@@ -291,6 +291,12 @@ left_text_scroll_enabled = True
 # (/left-box/enable, /left-box/disable).
 left_box_enabled = True
 
+# Whether the ENTIRE right-side box (timer + "Stream ends in..."
+# message, id="right" in the overlay) is shown at all. Same idea as
+# left_box_enabled above, but for the right-side box. Toggled from
+# the Dashboard (/right-box/enable, /right-box/disable).
+right_box_enabled = True
+
 # The actual lines the left-side text rotates through. Editable
 # from the Dashboard (a textarea, one line per message - "how many
 # messages" it cycles through is just how many lines you put there)
@@ -652,6 +658,7 @@ def save_state():
             "locked": timer_locked,
             "left_text_scroll": left_text_scroll_enabled,
             "left_box_enabled": left_box_enabled,
+            "right_box_enabled": right_box_enabled,
             "left_texts": left_texts,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
@@ -673,6 +680,7 @@ def load_state():
     global timer_locked
     global left_text_scroll_enabled
     global left_box_enabled
+    global right_box_enabled
     global left_texts
     global left_text_style
     global msg_texts_unlocked
@@ -696,6 +704,7 @@ def load_state():
 
         left_text_scroll_enabled = bool(data.get("left_text_scroll", True))
         left_box_enabled = bool(data.get("left_box_enabled", True))
+        right_box_enabled = bool(data.get("right_box_enabled", True))
 
         left_texts = sanitize_text_lines(
             data.get("left_texts", DEFAULT_LEFT_TEXTS),
@@ -2188,6 +2197,7 @@ def state():
             "last_event_id": last_event_id,
             "left_text_scroll_enabled": left_text_scroll_enabled,
             "left_box_enabled": left_box_enabled,
+            "right_box_enabled": right_box_enabled,
             "left_texts": left_texts,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
@@ -2231,6 +2241,27 @@ def left_box_disable():
     left_box_enabled = False
     save_state()
     return jsonify({"ok": True, "left_box_enabled": False})
+
+
+@app.route("/right-box/enable")
+def right_box_enable():
+    """Shows the entire right-side box (timer + message) on the
+    overlay again."""
+    global right_box_enabled
+    right_box_enabled = True
+    save_state()
+    return jsonify({"ok": True, "right_box_enabled": True})
+
+
+@app.route("/right-box/disable")
+def right_box_disable():
+    """Hides the entire right-side box (timer + message) from the
+    overlay, not just the text - the box takes up no space while
+    disabled."""
+    global right_box_enabled
+    right_box_enabled = False
+    save_state()
+    return jsonify({"ok": True, "right_box_enabled": False})
 
 
 @app.route("/left-text/set-texts", methods=["POST"])
@@ -3318,6 +3349,23 @@ header p {
     grid-column: 1 / -1;
 }
 
+/* Puts the Left-Side Text and Right-Side Box cards next to each
+   other instead of stacked, so the right-side controls aren't
+   scrolled far below the left-side ones. Falls back to stacking on
+   narrow screens. */
+.card.dual-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.card.dual-row > .card {
+    margin: 0;
+}
+
 .card h2 {
     margin: 0 0 4px 0;
     font-size: 16px;
@@ -3531,7 +3579,9 @@ hr.divider {
 </div>
 
 
-<div class="card wide">
+<div class="card wide dual-row">
+
+<div class="card">
 
     <h2>💬 Left-Side Text</h2>
     <p class="hint">
@@ -3625,6 +3675,25 @@ hr.divider {
         </div>
 
     </div>
+
+</div>
+
+
+<div class="card">
+
+    <h2>⏰ Right-Side Box</h2>
+    <p class="hint">
+        The box with the "Stream ends in..." message and the timer digits.
+    </p>
+
+    <label class="field-label">Box on/off (hides the entire box, background included)</label>
+    <div class="btn-row">
+        <button id="rightBoxOnBtn" onclick="setRightBox(true)">Box ON</button>
+        <button id="rightBoxOffBtn" onclick="setRightBox(false)">Box OFF</button>
+    </div>
+    <div id="rightBoxStatus" class="status-line"></div>
+
+</div>
 
 </div>
 
@@ -3856,6 +3925,37 @@ async function loadLeftBoxStatus(){
 }
 
 loadLeftBoxStatus();
+
+// ---------------- right-side box on/off ----------------
+
+async function setRightBox(on){
+    const statusEl = document.getElementById('rightBoxStatus');
+    try {
+        const res = await fetch(on ? '/right-box/enable' : '/right-box/disable');
+        const data = await res.json();
+        if (data.ok){
+            setLine(statusEl, on ? 'Box is ON.' : 'Box is OFF (hidden on overlay).', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+async function loadRightBoxStatus(){
+    const statusEl = document.getElementById('rightBoxStatus');
+    try {
+        const res = await fetch('/state');
+        const data = await res.json();
+        const on = data.right_box_enabled !== false;
+        setLine(statusEl, on ? 'Box is currently ON.' : 'Box is currently OFF (hidden on overlay).', false);
+    } catch (e){
+        setLine(statusEl, 'Failed to load current state: ' + e, true);
+    }
+}
+
+loadRightBoxStatus();
 
 // ---------------- left-side rotating text ----------------
 
@@ -5648,6 +5748,10 @@ async function update(){
     // entirely rather than just making it invisible.
     applyLeftBoxVisibility(d.left_box_enabled !== false);
 
+    // Show/hide the ENTIRE right box (timer + message), same idea
+    // as the left box above.
+    applyRightBoxVisibility(d.right_box_enabled !== false);
+
     // Pick up any text-line edits made from the Dashboard. If the
     // list actually changed, snap the index back to 0 so it doesn't
     // point past the end of a shorter new list.
@@ -5832,6 +5936,23 @@ function applyLeftBoxVisibility(visible){
 
     // display:none takes the box fully out of the layout (matches
     // "including the entire box", not just hiding its text/color).
+    box.style.display = visible ? "flex" : "none";
+}
+
+// Whether the entire #right box (timer + message) should be shown
+// at all. Toggled from the Dashboard (/right-box/enable,
+// /right-box/disable).
+let rightBoxVisible = true;
+
+function applyRightBoxVisibility(visible){
+    if (visible === rightBoxVisible) return;
+    rightBoxVisible = visible;
+
+    const box = document.getElementById("right");
+    if (!box) return;
+
+    // display:none takes the box fully out of the layout, same as
+    // the left box above.
     box.style.display = visible ? "flex" : "none";
 }
 

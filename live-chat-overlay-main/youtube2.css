@@ -451,22 +451,6 @@ yt-live-chat-viewer-engagement-message-renderer {
 #pop-out-button {
   margin-left: 20px;
 }
-#fan-funding-filter-toggle,
-#author-filter-toggle {
-  margin-left: 20px;
-}
-.button-small {
-  padding: 2px 8px;
-  font-size: 0.8em;
-}
-#fan-funding-filter-toggle.fan-funding-filter-active {
-  background: #2e7d32;
-  border-color: #2e7d32;
-}
-#author-filter-toggle.author-filter-active {
-  background: #1565c0;
-  border-color: #1565c0;
-}
 #pop-out-url {
   margin-left: 20px;
   font-size: 1.2em;
@@ -487,10 +471,5 @@ yt-live-chat-app yt-sort-filter-sub-menu-renderer tp-yt-iron-dropdown {
 
 /* In Fan funding, ignore Jewel gifts below the extension's 67-Jewel minimum. */
 .fan-funding-gift-below-minimum {
-    display: none !important;
-}
-
-/* Single-author filter: hide every message that isn't from the target channel. */
-.author-filter-hidden {
     display: none !important;
 }
