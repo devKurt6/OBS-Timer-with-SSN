@@ -1,4 +1,4 @@
-Flask>=3.0.0
-keyboard>=0.13.5
-websockets>=15.0
+Flask
+keyboard
+websockets
 cuesdk

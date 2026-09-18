@@ -6288,11 +6288,12 @@ def register_test_animation_hotkeys():
 
 def launch_keyboard_server():
     """
-    Starts keyboard.py (the Corsair/iCUE keyboard-lighting server,
-    port 5001) as its own separate process, in its own new console
-    window, so it comes up automatically whenever timer.py is run.
+    Starts keyboard_color_server.py (the Corsair/iCUE keyboard-lighting
+    server, port 5001) as its own separate process, in its own new
+    console window, so it comes up automatically whenever timer.py
+    is run.
 
-    keyboard.py must be in the same folder as this script. This
+    keyboard_color_server.py must be in the same folder as this script. This
     only launches the process - it does NOT shut it down when
     timer.py exits, so closing this window will leave the keyboard
     server's console window open on its own.
@@ -6300,12 +6301,12 @@ def launch_keyboard_server():
 
     keyboard_script = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "keyboard.py"
+        "keyboard_color_server.py"
     )
 
     if not os.path.exists(keyboard_script):
         print(
-            f"WARNING: keyboard.py not found at {keyboard_script} - "
+            f"WARNING: keyboard_color_server.py not found at {keyboard_script} - "
             "keyboard lighting server was NOT started."
         )
         return
@@ -6315,9 +6316,9 @@ def launch_keyboard_server():
             [sys.executable, keyboard_script],
             creationflags=subprocess.CREATE_NEW_CONSOLE
         )
-        print("Launched keyboard.py in a new console window.")
+        print("Launched keyboard_color_server.py in a new console window.")
     except Exception as e:
-        print("Failed to launch keyboard.py:", e)
+        print("Failed to launch keyboard_color_server.py:", e)
 
 
 # ============================================================
