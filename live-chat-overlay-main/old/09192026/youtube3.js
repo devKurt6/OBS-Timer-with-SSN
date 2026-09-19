@@ -18,7 +18,7 @@ var fanFundingMode = "all";
 var fanFundingGiftMinimumJewels = 67;
 // Scales the whole SUPERCHAT badge (icon, text, padding, everything
 // inside it) up or down together. 1 = default size, 0.8 = 80%, 1.2 = 120%, etc.
-var superchatBadgeScale = 0.7;
+var superchatBadgeScale = 0.8;
 // Words to censor in chat messages
 var censoredWords = {
   "nigger": "n*gger",
@@ -92,17 +92,6 @@ function shouldShowGift(element) {
 function setFanFundingMode(mode) {
   fanFundingMode = mode;
   filterVisibleFanFundingGifts();
-  updateFanFundingButtonLabel();
-}
-
-// Keeps the manual toggle button's label in sync no matter what
-// changed the mode - a click on the button itself, or a click on
-// YouTube's native "Fan funding" / "Top chat" / "Live chat" tabs.
-function updateFanFundingButtonLabel() {
-  var isFiltering = fanFundingMode === "gifts-67-plus";
-  $("#fan-funding-filter-toggle")
-    .text("Jewel Filter (67+): " + (isFiltering ? "ON" : "OFF"))
-    .toggleClass("fan-funding-filter-active", isFiltering);
 }
 
 function filterFanFundingGiftRow(element) {
@@ -148,67 +137,6 @@ var fanFundingGiftObserver = new MutationObserver(function(mutations) {
   });
 });
 fanFundingGiftObserver.observe(document.documentElement, { childList: true, subtree: true });
-
-// ---------------- SINGLE-AUTHOR FILTER ----------------
-// Manual toggle that hides every chat message except the ones from
-// one specific channel (@ParasocialwithDonBenitez) - handy for
-// finding your own messages in a fast-moving chat.
-var authorFilterMode = false;
-var authorFilterHandle = "ParasocialwithDonBenitez";
-var AUTHOR_FILTER_SELECTOR =
-  "yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer, " +
-  "yt-live-chat-membership-item-renderer, yt-live-chat-paid-sticker-renderer, " +
-  "yt-gift-message-view-model, ytd-sponsorships-live-chat-gift-purchase-announcement-renderer";
-
-// Loose match: strips a leading "@" and all whitespace and compares
-// case-insensitively, since the visible chat author name is a
-// display name (may include spaces) while the target is a handle.
-function normalizeAuthorName(str) {
-  return (str || "").replace(/^@/, "").replace(/\s+/g, "").toLowerCase();
-}
-
-function getMessageAuthorName(element) {
-  var nameEl = element.querySelector("#author-name-v2, #author-name");
-  return nameEl ? (nameEl.textContent || "").trim() : "";
-}
-
-function matchesAuthorFilter(element) {
-  return normalizeAuthorName(getMessageAuthorName(element)) === normalizeAuthorName(authorFilterHandle);
-}
-
-function setAuthorFilterMode(enabled) {
-  authorFilterMode = enabled;
-  filterVisibleAuthorMessages();
-  updateAuthorFilterButtonLabel();
-}
-
-function updateAuthorFilterButtonLabel() {
-  $("#author-filter-toggle")
-    .text("Only @" + authorFilterHandle + ": " + (authorFilterMode ? "ON" : "OFF"))
-    .toggleClass("author-filter-active", authorFilterMode);
-}
-
-function filterAuthorRow(element) {
-  var shouldHide = authorFilterMode && !matchesAuthorFilter(element);
-  element.classList.toggle("author-filter-hidden", shouldHide);
-}
-
-function filterVisibleAuthorMessages() {
-  document.querySelectorAll(AUTHOR_FILTER_SELECTOR).forEach(filterAuthorRow);
-}
-
-var authorFilterObserver = new MutationObserver(function(mutations) {
-  mutations.forEach(function(mutation) {
-    mutation.addedNodes.forEach(function(node) {
-      if (node.nodeType !== Node.ELEMENT_NODE) return;
-      if (node.matches(AUTHOR_FILTER_SELECTOR)) {
-        filterAuthorRow(node);
-      }
-      node.querySelectorAll(AUTHOR_FILTER_SELECTOR).forEach(filterAuthorRow);
-    });
-  });
-});
-authorFilterObserver.observe(document.documentElement, { childList: true, subtree: true });
 
 // ---------------- ACTIVE MESSAGE KEYBOARD COLOR ----------------
 // Tells Timer.py which message (if any) is currently shown in this
@@ -607,7 +535,7 @@ if (data.sticker) {
         }
     }
 </style>
-    <div class="donation donation-icon-label" style="position:absolute;display:block;text-align:center;left:10px;top:103px;z-index:3;min-width:175px;border-radius:10px;padding:30px 5px 0;overflow:hidden;transform:rotate(-5deg) translateX(-50%) scale(${superchatBadgeScale});${scCardBg}">
+    <div class="donation donation-icon-label" style="position:absolute;display:block;text-align:center;left:10px;top:108px;z-index:3;min-width:175px;border-radius:10px;padding:30px 5px 0;overflow:hidden;transform:rotate(-5deg) translateX(-50%) scale(${superchatBadgeScale});${scCardBg}">
         <div
             style="
                 position:absolute;
@@ -1286,22 +1214,6 @@ if (window.location.hash) {
 // $("#primary-content").append('<span id="aspect-ratio-container" style="font-size: 0.7em">Aspect Ratio: <span id="aspect-ratio"></span></span>');
 $("#primary-content").append('<span id="get-overlay-url-container"><a href="#" id="pop-out-button" class="button">Get Overlay URL</a></span>');
 $("#primary-content").append('<span class="hidden" style="margin-top: 50px;"><input type="url" readonly id="pop-out-url"></span>');
-$("#primary-content").append('<span id="fan-funding-filter-container"><a href="#" id="fan-funding-filter-toggle" class="button button-small">Jewel Filter (67+): OFF</a></span>');
-$("#primary-content").append('<span id="author-filter-container"><a href="#" id="author-filter-toggle" class="button button-small">Only @' + authorFilterHandle + ': OFF</a></span>');
-
-// Manual on/off switch for the 67-Jewel gift filter, independent of
-// clicking YouTube's own "Fan funding" tab. Lets you turn the filter
-// on ahead of time, or leave it off even while "Fan funding" is the
-// active native tab.
-$("#fan-funding-filter-toggle").click(function(e) {
-  e.preventDefault();
-  setFanFundingMode(fanFundingMode === "gifts-67-plus" ? "all" : "gifts-67-plus");
-});
-
-$("#author-filter-toggle").click(function(e) {
-  e.preventDefault();
-  setAuthorFilterMode(!authorFilterMode);
-});
 
 function displayAspectRatio() {
   var ratio = Math.round(window.innerWidth / window.innerHeight * 100) / 100;
@@ -1366,11 +1278,6 @@ $(function(){
   if(window.location.hash) {
     $("#pop-out-button").click();
   }
-
-  // Make sure the toggle buttons' labels match the actual filter
-  // state as soon as the panel exists.
-  updateFanFundingButtonLabel();
-  updateAuthorFilterButtonLabel();
 
   // Show banner
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
