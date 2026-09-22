@@ -195,40 +195,21 @@ function updateAuthorFilterButtonLabel() {
 
 // ---------------- USERNAME SEARCH FILTER ----------------
 // Like the fixed single-author filter above, but instead of one
-// handle baked into the code, the viewer types (or pastes) one or
-// more @usernames into a textbox and chat live-filters down to just
-// the matching authors. Supports many usernames at once (tested with
-// 200+): separate them with commas, spaces, and/or new lines - any
-// mix works since we split on all of them. A message is shown if its
-// author matches ANY of the listed usernames (OR logic). Mutually
-// exclusive with the fixed single-author filter above (see
-// setAuthorFilterMode/setSearchFilterMode) so there's only ever one
-// reason a row can be hidden at a time.
+// handle baked into the code, the viewer types a @username (or any
+// part of one) into a textbox and chat live-filters down to just the
+// matching authors as they type. Mutually exclusive with the fixed
+// single-author filter above (see setAuthorFilterMode/setSearchFilterMode)
+// so there's only ever one reason a row can be hidden at a time.
 var searchFilterMode = false;
 var searchFilterQuery = "";
-var searchFilterTerms = []; // parsed, normalized list derived from searchFilterQuery
 
-// Splits the raw textbox contents into individual usernames on
-// commas, whitespace, and newlines (any combination), normalizes
-// each one, and drops empties. This is what lets someone paste a
-// giant list of 200+ usernames in one go, separated however they want.
-function parseSearchFilterTerms(raw) {
-  return (raw || "")
-    .split(/[\s,]+/)
-    .map(normalizeAuthorName)
-    .filter(function(term) { return term.length > 0; });
-}
-
-// Substring match per term (unlike matchesAuthorFilter's exact
-// match), so typing/pasting "don" matches "ParasocialwithDonBenitez"
-// while still typing toward the full handle. Matches if the author
-// matches ANY term in the list.
+// Substring match (unlike matchesAuthorFilter's exact match), so
+// typing "don" matches "ParasocialwithDonBenitez" while the viewer is
+// still typing toward the full handle.
 function matchesSearchFilter(element) {
-  if (searchFilterTerms.length === 0) return true; // nothing typed yet - don't hide anything
-  var name = normalizeAuthorName(getMessageAuthorName(element));
-  return searchFilterTerms.some(function(term) {
-    return name.indexOf(term) !== -1;
-  });
+  var needle = normalizeAuthorName(searchFilterQuery);
+  if (!needle) return true; // nothing typed yet - don't hide anything
+  return normalizeAuthorName(getMessageAuthorName(element)).indexOf(needle) !== -1;
 }
 
 function setSearchFilterMode(enabled) {
@@ -243,14 +224,12 @@ function setSearchFilterMode(enabled) {
 
 function setSearchFilterQuery(query) {
   searchFilterQuery = query || "";
-  searchFilterTerms = parseSearchFilterTerms(searchFilterQuery);
   if (searchFilterMode) filterVisibleAuthorMessages();
 }
 
 function updateSearchFilterUI() {
-  var countLabel = searchFilterTerms.length > 0 ? " (" + searchFilterTerms.length + ")" : "";
   $("#search-filter-toggle")
-    .text("Search Filter: " + (searchFilterMode ? "ON" : "OFF") + countLabel)
+    .text("Search Filter: " + (searchFilterMode ? "ON" : "OFF"))
     .toggleClass("author-filter-active", searchFilterMode);
   $("#search-filter-input").toggleClass("hidden", !searchFilterMode);
 }
@@ -1357,7 +1336,7 @@ $("#primary-content").append('<span id="get-overlay-url-container"><a href="#" i
 $("#primary-content").append('<span class="hidden" style="margin-top: 50px;"><input type="url" readonly id="pop-out-url"></span>');
 $("#primary-content").append('<span id="fan-funding-filter-container"><a href="#" id="fan-funding-filter-toggle" class="button button-small">Jewel Filter (67+): OFF</a></span>');
 $("#primary-content").append('<span id="author-filter-container"><a href="#" id="author-filter-toggle" class="button button-small">Only @' + authorFilterHandle + ': OFF</a></span>');
-$("#primary-content").append('<span id="search-filter-container"><a href="#" id="search-filter-toggle" class="button button-small">Search Filter: OFF</a><textarea id="search-filter-input" class="hidden" placeholder="@username1, @username2, @username3 ... (comma, space, or newline separated - paste as many as you want)"></textarea></span>');
+$("#primary-content").append('<span id="search-filter-container"><a href="#" id="search-filter-toggle" class="button button-small">Search Filter: OFF</a><input type="text" id="search-filter-input" class="hidden" placeholder="@username"></span>');
 
 // Manual on/off switch for the 67-Jewel gift filter, independent of
 // clicking YouTube's own "Fan funding" tab. Lets you turn the filter
@@ -1379,10 +1358,9 @@ $("#search-filter-toggle").click(function(e) {
   if (searchFilterMode) $("#search-filter-input").trigger("focus");
 });
 
-// Live-filter as the viewer types or pastes - no submit button, no
-// debounce needed since this is just a DOM class toggle over
-// whatever's already on screen. Fires on paste too (paste triggers
-// "input"), so dropping in a list of 200+ usernames applies instantly.
+// Live-filter as the viewer types - no submit button, no debounce
+// needed since this is just a DOM class toggle over whatever's
+// already on screen.
 $("#search-filter-input").on("input", function(e) {
   setSearchFilterQuery($(this).val());
 });

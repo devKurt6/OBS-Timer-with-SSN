@@ -476,18 +476,11 @@ yt-live-chat-viewer-engagement-message-renderer {
 }
 #search-filter-input {
   margin-left: 8px;
-  padding: 4px 6px;
+  padding: 2px 6px;
   font-size: 0.8em;
   border: 1px #bbb solid;
   border-radius: 4px;
-  width: 260px;
-  height: 28px;
-  min-height: 28px;
-  max-height: 200px;
-  resize: vertical;
-  vertical-align: middle;
-  font-family: inherit;
-  white-space: pre-wrap;
+  width: 160px;
 }
 #pop-out-url {
   margin-left: 20px;
