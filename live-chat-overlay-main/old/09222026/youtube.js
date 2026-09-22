@@ -178,11 +178,6 @@ function matchesAuthorFilter(element) {
 
 function setAuthorFilterMode(enabled) {
   authorFilterMode = enabled;
-  if (enabled && searchFilterMode) {
-    // Only one filter "reason" active at a time - see the search
-    // filter section below.
-    setSearchFilterMode(false);
-  }
   filterVisibleAuthorMessages();
   updateAuthorFilterButtonLabel();
 }
@@ -193,51 +188,8 @@ function updateAuthorFilterButtonLabel() {
     .toggleClass("author-filter-active", authorFilterMode);
 }
 
-// ---------------- USERNAME SEARCH FILTER ----------------
-// Like the fixed single-author filter above, but instead of one
-// handle baked into the code, the viewer types a @username (or any
-// part of one) into a textbox and chat live-filters down to just the
-// matching authors as they type. Mutually exclusive with the fixed
-// single-author filter above (see setAuthorFilterMode/setSearchFilterMode)
-// so there's only ever one reason a row can be hidden at a time.
-var searchFilterMode = false;
-var searchFilterQuery = "";
-
-// Substring match (unlike matchesAuthorFilter's exact match), so
-// typing "don" matches "ParasocialwithDonBenitez" while the viewer is
-// still typing toward the full handle.
-function matchesSearchFilter(element) {
-  var needle = normalizeAuthorName(searchFilterQuery);
-  if (!needle) return true; // nothing typed yet - don't hide anything
-  return normalizeAuthorName(getMessageAuthorName(element)).indexOf(needle) !== -1;
-}
-
-function setSearchFilterMode(enabled) {
-  searchFilterMode = enabled;
-  if (enabled && authorFilterMode) {
-    authorFilterMode = false;
-    updateAuthorFilterButtonLabel();
-  }
-  updateSearchFilterUI();
-  filterVisibleAuthorMessages();
-}
-
-function setSearchFilterQuery(query) {
-  searchFilterQuery = query || "";
-  if (searchFilterMode) filterVisibleAuthorMessages();
-}
-
-function updateSearchFilterUI() {
-  $("#search-filter-toggle")
-    .text("Search Filter: " + (searchFilterMode ? "ON" : "OFF"))
-    .toggleClass("author-filter-active", searchFilterMode);
-  $("#search-filter-input").toggleClass("hidden", !searchFilterMode);
-}
-
 function filterAuthorRow(element) {
-  var shouldHide =
-    (authorFilterMode && !matchesAuthorFilter(element)) ||
-    (searchFilterMode && !matchesSearchFilter(element));
+  var shouldHide = authorFilterMode && !matchesAuthorFilter(element);
   element.classList.toggle("author-filter-hidden", shouldHide);
 }
 
@@ -1336,7 +1288,6 @@ $("#primary-content").append('<span id="get-overlay-url-container"><a href="#" i
 $("#primary-content").append('<span class="hidden" style="margin-top: 50px;"><input type="url" readonly id="pop-out-url"></span>');
 $("#primary-content").append('<span id="fan-funding-filter-container"><a href="#" id="fan-funding-filter-toggle" class="button button-small">Jewel Filter (67+): OFF</a></span>');
 $("#primary-content").append('<span id="author-filter-container"><a href="#" id="author-filter-toggle" class="button button-small">Only @' + authorFilterHandle + ': OFF</a></span>');
-$("#primary-content").append('<span id="search-filter-container"><a href="#" id="search-filter-toggle" class="button button-small">Search Filter: OFF</a><input type="text" id="search-filter-input" class="hidden" placeholder="@username"></span>');
 
 // Manual on/off switch for the 67-Jewel gift filter, independent of
 // clicking YouTube's own "Fan funding" tab. Lets you turn the filter
@@ -1350,25 +1301,6 @@ $("#fan-funding-filter-toggle").click(function(e) {
 $("#author-filter-toggle").click(function(e) {
   e.preventDefault();
   setAuthorFilterMode(!authorFilterMode);
-});
-
-$("#search-filter-toggle").click(function(e) {
-  e.preventDefault();
-  setSearchFilterMode(!searchFilterMode);
-  if (searchFilterMode) $("#search-filter-input").trigger("focus");
-});
-
-// Live-filter as the viewer types - no submit button, no debounce
-// needed since this is just a DOM class toggle over whatever's
-// already on screen.
-$("#search-filter-input").on("input", function(e) {
-  setSearchFilterQuery($(this).val());
-});
-
-// Typing in the textbox shouldn't leak into YouTube's own chat
-// input or trigger YouTube's keyboard shortcuts.
-$("#search-filter-input").on("keydown click", function(e) {
-  e.stopPropagation();
 });
 
 function displayAspectRatio() {

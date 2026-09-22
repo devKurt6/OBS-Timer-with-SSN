@@ -1,0 +1,60 @@
+
+**********************************************************************
+[2026-09-22 10:15:51]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Star for 2 Jewels
+JEWELS: 2
+SOURCE: SSN
+IMAGE: SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-22 10:15:56]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Sparkles for 2 Jewels
+JEWELS: 2
+SOURCE: SSN
+IMAGE: SSN
+RESULT: SUCCESS
+TIME ADDED: +1.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-22 10:15:59]
+EVENT: JEWEL GIFT
+DETECTED VIA: SSN webhook
+GIFT: Party hat for 20 Jewels
+JEWELS: 20
+SOURCE: SSN
+IMAGE: SSN
+RESULT: SUCCESS
+TIME ADDED: +10.00 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-22 10:16:08]
+EVENT: SUPER CHAT
+ORIGINAL: CA$2.00
+CURRENCY: CAD
+AMOUNT: 2.00
+USD RATE: 0.71475000
+USD AMOUNT: $1.43
+RESULT: SUCCESS
+TIME ADDED: +42.88 seconds
+**********************************************************************
+
+**********************************************************************
+[2026-09-22 10:17:45]
+EVENT: SUPER CHAT
+ORIGINAL: $1.99
+CURRENCY: USD
+AMOUNT: 1.99
+USD RATE: 1.00000000
+USD AMOUNT: $1.99
+RESULT: SUCCESS
+TIME ADDED: +59.70 seconds
+**********************************************************************

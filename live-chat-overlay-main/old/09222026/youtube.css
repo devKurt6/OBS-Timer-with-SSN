@@ -467,21 +467,6 @@ yt-live-chat-viewer-engagement-message-renderer {
   background: #1565c0;
   border-color: #1565c0;
 }
-#search-filter-container {
-  margin-left: 20px;
-}
-#search-filter-toggle.author-filter-active {
-  background: #1565c0;
-  border-color: #1565c0;
-}
-#search-filter-input {
-  margin-left: 8px;
-  padding: 2px 6px;
-  font-size: 0.8em;
-  border: 1px #bbb solid;
-  border-radius: 4px;
-  width: 160px;
-}
 #pop-out-url {
   margin-left: 20px;
   font-size: 1.2em;

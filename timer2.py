@@ -345,6 +345,31 @@ DEFAULT_LEFT_TEXT_STYLE = {
 }
 left_text_style = dict(DEFAULT_LEFT_TEXT_STYLE)
 
+# Per-line style OVERRIDES for left_texts, applied on top of (i.e.
+# instead of) left_text_style. Parallel to left_texts:
+# left_text_line_styles[i] is either None (that line just uses the
+# shared/global left_text_style above - this is the default for
+# every line, and is what "apply to all" via the global Font Style
+# controls affects) or a full style dict in the exact same shape as
+# left_text_style ({"font_family", "font_size", "bold", "italic",
+# "color"}) that this one line uses instead. Editable per-line from
+# the Dashboard (a "Customize this line" toggle next to each
+# message row). Saved to/loaded from STATE_FILE like everything
+# else here.
+left_text_line_styles = [None] * len(left_texts)
+
+# Named, saved groups of left-side text lines ("group messages"),
+# e.g. {"Hello Message": {"texts": ["Hello", "Hello2", ...],
+# "durations": [10, 10, ...], "line_styles": [None, {...}, ...]}}.
+# Editable from the Dashboard: the user builds a set of lines
+# (optionally with their own per-line styles), saves it under a
+# name, and a button for that name appears - clicking it loads (and
+# immediately applies) that saved set of lines/durations/styles as
+# the live left_texts/left_text_durations/left_text_line_styles
+# above. Saved to/loaded from STATE_FILE like everything else here,
+# so groups survive a restart.
+left_text_groups = {}
+
 
 # ---------------- TIMER MESSAGE TEXT (the line above the digits) ----------------
 # Same idea as left_texts/left_text_style above, but for the small
@@ -459,6 +484,78 @@ def sanitize_text_lines(raw_texts, fallback):
     cleaned = [str(t).strip() for t in raw_texts if str(t).strip()]
 
     return cleaned or list(fallback)
+
+
+def sanitize_group_name(raw_name):
+    """
+    Cleans a saved-group name: strips whitespace and caps the
+    length so it can't blow up the Dashboard's button row.
+    """
+
+    name = str(raw_name).strip()
+    return name[:60]
+
+
+def sanitize_line_styles(raw_list, count):
+    """
+    Returns a list of exactly `count` per-line style overrides,
+    parallel to a list of text lines (left_texts, or a saved
+    group's texts). Each entry is either None (that line just uses
+    the shared/global style) or a full style dict validated the
+    same way as left_text_style/msg_text_style. Bad/missing entries
+    fall back to None instead of raising, so one bad override can
+    never break the rotation.
+    """
+
+    if not isinstance(raw_list, list):
+        raw_list = []
+
+    result = []
+
+    for i in range(count):
+        item = raw_list[i] if i < len(raw_list) else None
+
+        if not isinstance(item, dict) or not item:
+            result.append(None)
+        else:
+            result.append(sanitize_text_style(item, DEFAULT_LEFT_TEXT_STYLE))
+
+    return result
+
+
+def sanitize_text_groups(raw_groups):
+    """
+    Cleans a dict of saved left-text groups (the Dashboard's
+    "group messages", e.g. {"Hello Message": {"texts": [...],
+    "durations": [...], "line_styles": [...]}}). Bad entries are
+    dropped instead of raising, so one corrupted group can't break
+    the whole file.
+    """
+
+    result = {}
+
+    if not isinstance(raw_groups, dict):
+        return result
+
+    for raw_name, group in raw_groups.items():
+        name = sanitize_group_name(raw_name)
+        if not name or not isinstance(group, dict):
+            continue
+
+        texts = sanitize_text_lines(group.get("texts", []), [])
+        if not texts:
+            continue
+
+        durations = sanitize_durations(group.get("durations"), len(texts))
+        line_styles = sanitize_line_styles(group.get("line_styles"), len(texts))
+
+        result[name] = {
+            "texts": texts,
+            "durations": durations,
+            "line_styles": line_styles
+        }
+
+    return result
 
 last_tick = time.time()
 
@@ -714,9 +811,11 @@ def save_state():
             "left_texts": left_texts,
             "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
+            "left_text_line_styles": left_text_line_styles,
             "msg_texts_unlocked": msg_texts_unlocked,
             "msg_texts_locked": msg_texts_locked,
-            "msg_text_style": msg_text_style
+            "msg_text_style": msg_text_style,
+            "left_text_groups": left_text_groups
         }
 
     try:
@@ -738,6 +837,8 @@ def load_state():
     global left_texts
     global left_text_durations
     global left_text_style
+    global left_text_line_styles
+    global left_text_groups
     global msg_texts_unlocked
     global msg_texts_locked
     global msg_text_style
@@ -775,6 +876,15 @@ def load_state():
         left_text_style = sanitize_text_style(
             data.get("left_text_style", {}),
             DEFAULT_LEFT_TEXT_STYLE
+        )
+
+        left_text_line_styles = sanitize_line_styles(
+            data.get("left_text_line_styles"),
+            len(left_texts)
+        )
+
+        left_text_groups = sanitize_text_groups(
+            data.get("left_text_groups", {})
         )
 
         msg_texts_unlocked = sanitize_text_lines(
@@ -2263,6 +2373,8 @@ def state():
             "left_texts": left_texts,
             "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
+            "left_text_line_styles": left_text_line_styles,
+            "left_text_groups": left_text_groups,
             "msg_texts_unlocked": msg_texts_unlocked,
             "msg_texts_locked": msg_texts_locked,
             "msg_text_style": msg_text_style
@@ -2352,25 +2464,32 @@ def msg_box_disable():
 def left_text_set_texts():
     """
     Replaces the full list of rotating left-side text lines, and
-    (optionally) how many seconds each line stays on screen.
-    Called from the Dashboard - the user decides how many
-    lines/messages just by how many non-empty rows they fill in.
+    (optionally) how many seconds each line stays on screen and/or
+    a per-line font style override. Called from the Dashboard - the
+    user decides how many lines/messages just by how many non-empty
+    rows they fill in.
 
     Body: {"texts": ["line one", "line two", ...],
-           "durations": [10, 5, ...]}
+           "durations": [10, 5, ...],
+           "line_styles": [null, {"font_family": "...", ...}, ...]}
 
-    "durations" is parallel to "texts" (same order). It is optional:
-    if it's left out, each line keeps the default
-    (DEFAULT_LEFT_TEXT_SECONDS). Values are clamped to
-    MIN_LEFT_TEXT_SECONDS..MAX_LEFT_TEXT_SECONDS.
+    "durations" and "line_styles" are both parallel to "texts"
+    (same order) and both optional. A missing/omitted "durations"
+    entry keeps the default (DEFAULT_LEFT_TEXT_SECONDS), clamped to
+    MIN_LEFT_TEXT_SECONDS..MAX_LEFT_TEXT_SECONDS. A missing/null
+    "line_styles" entry means that line just uses the shared/global
+    left_text_style (set via /left-text/set-style) instead of its
+    own custom style.
     """
 
     global left_texts
     global left_text_durations
+    global left_text_line_styles
 
     data = request.get_json(silent=True) or {}
     raw_texts = data.get("texts", [])
     raw_durations = data.get("durations")
+    raw_line_styles = data.get("line_styles")
 
     if not isinstance(raw_texts, list):
         return jsonify({
@@ -2378,14 +2497,18 @@ def left_text_set_texts():
             "error": "\"texts\" must be a list of strings."
         }), 400
 
-    # Line up each duration with its text BEFORE dropping empty
-    # lines, so removing a blank row can't shift the other rows'
-    # durations onto the wrong text.
+    # Line up each duration/style with its text BEFORE dropping
+    # empty lines, so removing a blank row can't shift the other
+    # rows' durations/styles onto the wrong text.
     if not isinstance(raw_durations, list):
         raw_durations = []
 
+    if not isinstance(raw_line_styles, list):
+        raw_line_styles = []
+
     cleaned = []
     cleaned_raw_durations = []
+    cleaned_raw_line_styles = []
 
     for i, t in enumerate(raw_texts):
         text = str(t).strip()
@@ -2394,6 +2517,9 @@ def left_text_set_texts():
         cleaned.append(text)
         cleaned_raw_durations.append(
             raw_durations[i] if i < len(raw_durations) else None
+        )
+        cleaned_raw_line_styles.append(
+            raw_line_styles[i] if i < len(raw_line_styles) else None
         )
 
     if not cleaned:
@@ -2407,12 +2533,135 @@ def left_text_set_texts():
         cleaned_raw_durations,
         len(cleaned)
     )
+    left_text_line_styles = sanitize_line_styles(
+        cleaned_raw_line_styles,
+        len(cleaned)
+    )
     save_state()
 
     return jsonify({
         "ok": True,
         "left_texts": left_texts,
-        "left_text_durations": left_text_durations
+        "left_text_durations": left_text_durations,
+        "left_text_line_styles": left_text_line_styles
+    })
+
+
+@app.route("/left-text/groups/list")
+def left_text_groups_list():
+    """
+    Returns every saved group message (name -> {texts, durations}),
+    for the Dashboard to render as "load this group" buttons.
+    """
+
+    return jsonify({
+        "ok": True,
+        "left_text_groups": left_text_groups
+    })
+
+
+@app.route("/left-text/groups/save", methods=["POST"])
+def left_text_groups_save():
+    """
+    Saves the Dashboard's current draft of message lines (+ their
+    per-line durations and per-line style overrides) as a named,
+    reusable group - e.g. saving ["Hello", "Hello2", "Hello 3",
+    "Hello 4"] under the name "Hello Message". Saving under a name
+    that already exists overwrites that group.
+
+    Body: {"name": "Hello Message",
+           "texts": ["Hello", "Hello2", ...],
+           "durations": [10, 10, ...],
+           "line_styles": [null, {"font_family": "...", ...}, ...]}
+
+    "durations" and "line_styles" are both optional, same as
+    /left-text/set-texts.
+    """
+
+    global left_text_groups
+
+    data = request.get_json(silent=True) or {}
+
+    name = sanitize_group_name(data.get("name", ""))
+    if not name:
+        return jsonify({
+            "ok": False,
+            "error": "Enter a name for this group of messages."
+        }), 400
+
+    raw_texts = data.get("texts", [])
+    raw_durations = data.get("durations")
+    raw_line_styles = data.get("line_styles")
+
+    if not isinstance(raw_texts, list):
+        return jsonify({
+            "ok": False,
+            "error": "\"texts\" must be a list of strings."
+        }), 400
+
+    if not isinstance(raw_durations, list):
+        raw_durations = []
+
+    if not isinstance(raw_line_styles, list):
+        raw_line_styles = []
+
+    # Line up each duration/style with its text BEFORE dropping
+    # empty lines, same reasoning as /left-text/set-texts above.
+    cleaned = []
+    cleaned_raw_durations = []
+    cleaned_raw_line_styles = []
+
+    for i, t in enumerate(raw_texts):
+        text = str(t).strip()
+        if not text:
+            continue
+        cleaned.append(text)
+        cleaned_raw_durations.append(
+            raw_durations[i] if i < len(raw_durations) else None
+        )
+        cleaned_raw_line_styles.append(
+            raw_line_styles[i] if i < len(raw_line_styles) else None
+        )
+
+    if not cleaned:
+        return jsonify({
+            "ok": False,
+            "error": "Need at least one non-empty line to save a group."
+        }), 400
+
+    left_text_groups[name] = {
+        "texts": cleaned,
+        "durations": sanitize_durations(cleaned_raw_durations, len(cleaned)),
+        "line_styles": sanitize_line_styles(cleaned_raw_line_styles, len(cleaned))
+    }
+    save_state()
+
+    return jsonify({
+        "ok": True,
+        "left_text_groups": left_text_groups
+    })
+
+
+@app.route("/left-text/groups/delete", methods=["POST"])
+def left_text_groups_delete():
+    """
+    Deletes a saved group message by name.
+
+    Body: {"name": "Hello Message"}
+    """
+
+    global left_text_groups
+
+    data = request.get_json(silent=True) or {}
+    name = sanitize_group_name(data.get("name", ""))
+
+    if name in left_text_groups:
+        del left_text_groups[name]
+        save_state()
+
+    return jsonify({
+        "ok": True,
+        "left_text_groups": left_text_groups
     })
 
 
@@ -3633,6 +3882,164 @@ input[type="color"] {
     padding: 8px 10px;
 }
 
+.left-text-row-outer {
+    margin-bottom: 4px;
+}
+
+.left-text-row-outer .left-text-row {
+    margin-bottom: 0;
+}
+
+.lt-style-toggle {
+    font-size: 14px;
+}
+
+.lt-style-toggle.lt-style-active {
+    border-color: var(--accent, #8A2BE2);
+    color: var(--accent, #8A2BE2);
+}
+
+.lt-style-panel {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 0 12px 0;
+    padding: 10px 12px;
+    background: #16151d;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+}
+
+.lt-style-enable-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.lt-style-enable-wrap input {
+    width: auto;
+}
+
+.lt-style-fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+    transition: opacity 0.15s ease;
+}
+
+.lt-style-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lt-style-field-label {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.lt-style-field-family {
+    flex: 1 1 140px;
+    min-width: 120px;
+}
+
+.lt-style-field-family select.lts-family,
+.lt-style-field-family input.lts-family-custom {
+    width: 100%;
+}
+
+.lt-style-field-size {
+    flex: 0 0 76px;
+}
+
+.lt-style-field-size input.lts-size {
+    width: 76px;
+}
+
+.lt-style-field-color {
+    flex: 0 0 70px;
+}
+
+.lt-style-fields .lt-style-field-color input.lts-color[type="color"] {
+    width: 70px;
+    height: 38px;
+    padding: 2px;
+}
+
+.lt-style-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-dim);
+    flex: 0 0 auto;
+    padding-bottom: 8px;
+}
+
+.lt-style-checkbox input {
+    width: auto;
+}
+
+.save-group-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.save-group-row input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.save-group-row button {
+    flex: 0 0 auto;
+}
+
+.text-groups-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.text-group-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #1c1a24;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    padding: 4px 6px 4px 14px;
+}
+
+.text-group-chip button.load-group {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 13px;
+    padding: 4px 4px;
+    cursor: pointer;
+}
+
+.text-group-chip button.delete-group {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.text-group-chip button.delete-group:hover {
+    color: var(--danger);
+}
+
 .preview-box {
     margin-top: 14px;
     padding: 18px;
@@ -3756,6 +4163,12 @@ hr.divider {
     <div class="two-col">
 
         <div>
+            <label class="field-label">Saved groups</label>
+            <div id="textGroupsList" class="text-groups-list"></div>
+            <div id="textGroupsStatus" class="status-line"></div>
+
+            <hr class="divider">
+
             <label class="field-label">Message lines + seconds each one stays on screen (add or remove as many as you want)</label>
             <div id="leftTextsRows"></div>
             <div class="btn-row" style="margin-top:8px;">
@@ -3775,7 +4188,27 @@ hr.divider {
         </div>
 
         <div>
+            <label class="field-label">Save these lines as a group message</label>
+            <p class="hint">
+                Type a name for the lines on the left (e.g. "Hello
+                Message") and save them as a group. A button with that
+                name will appear above the lines - click it any time to
+                instantly load those exact lines back in.
+            </p>
+            <div class="save-group-row">
+                <input id="textGroupName" type="text" placeholder="Group name, e.g. Hello Message">
+                <button onclick="leftTextsEditor.saveGroup()">Save as Group</button>
+            </div>
+
+            <hr class="divider">
+
             <label class="field-label">Font style</label>
+            <p class="hint">
+                This is the shared/default style - it applies to
+                every message line EXCEPT lines where you've turned
+                on "Custom style for this line" (the 🎨 button next
+                to each line on the left).
+            </p>
             <div class="style-grid">
 
                 <div>
@@ -4157,11 +4590,181 @@ const leftTextsEditor = (function(){
 
     const DEFAULT_SECONDS = 10;
 
+    // Same font choices as the shared "Font style" select below -
+    // kept as one list here so each line's own style panel offers
+    // the exact same options.
+    const LT_FONT_OPTIONS = [
+        { value: "Arial, sans-serif", label: "Arial" },
+        { value: "'Helvetica Neue', Helvetica, sans-serif", label: "Helvetica" },
+        { value: "Georgia, serif", label: "Georgia" },
+        { value: "'Times New Roman', Times, serif", label: "Times New Roman" },
+        { value: "'Courier New', Courier, monospace", label: "Courier New" },
+        { value: "Verdana, sans-serif", label: "Verdana" },
+        { value: "Tahoma, sans-serif", label: "Tahoma" },
+        { value: "'Trebuchet MS', sans-serif", label: "Trebuchet MS" },
+        { value: "'Comic Sans MS', cursive, sans-serif", label: "Comic Sans MS" },
+        { value: "Impact, sans-serif", label: "Impact" },
+        { value: "custom", label: "Custom (type below)..." }
+    ];
+
+    // The shared/global left-text style (from the "Font style"
+    // controls further down) - used only to seed sensible starting
+    // values when a line's own style panel is opened for the first
+    // time with no override saved yet.
+    let globalStyleDefaults = null;
+
     function rowsEl(){
         return document.getElementById('leftTextsRows');
     }
 
-    function addRow(text, seconds){
+    function buildLineStylePanel(styleOverride){
+        const panel = document.createElement('div');
+        panel.className = 'lt-style-panel';
+
+        const enableWrap = document.createElement('label');
+        enableWrap.className = 'lt-style-enable-wrap';
+
+        const enableCb = document.createElement('input');
+        enableCb.type = 'checkbox';
+        enableCb.className = 'lts-enable';
+        enableCb.checked = !!styleOverride;
+
+        const enableText = document.createElement('span');
+        enableText.textContent = 'Custom style for this line (off = uses the shared Font style below)';
+
+        enableWrap.appendChild(enableCb);
+        enableWrap.appendChild(enableText);
+
+        const fieldsWrap = document.createElement('div');
+        fieldsWrap.className = 'lt-style-fields';
+
+        // Small helper so every field gets its own visible label
+        // above it (font family, size, color, etc.) instead of a
+        // bare, unlabeled input - the color swatch especially is
+        // easy to miss without one.
+        function fieldGroup(labelText, inputEl, extraClass){
+            const wrap = document.createElement('div');
+            wrap.className = 'lt-style-field' + (extraClass ? (' ' + extraClass) : '');
+
+            const label = document.createElement('label');
+            label.className = 'lt-style-field-label';
+            label.textContent = labelText;
+
+            wrap.appendChild(label);
+            wrap.appendChild(inputEl);
+            return wrap;
+        }
+
+        const familySelect = document.createElement('select');
+        familySelect.className = 'lts-family';
+        LT_FONT_OPTIONS.forEach(function(opt){
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label;
+            familySelect.appendChild(o);
+        });
+
+        const familyCustom = document.createElement('input');
+        familyCustom.type = 'text';
+        familyCustom.className = 'lts-family-custom';
+        familyCustom.placeholder = "e.g. 'Poppins', sans-serif";
+
+        const sizeInput = document.createElement('input');
+        sizeInput.type = 'number';
+        sizeInput.className = 'lts-size';
+        sizeInput.min = '8';
+        sizeInput.max = '200';
+        sizeInput.step = '1';
+
+        const colorInput = document.createElement('input');
+        colorInput.type = 'color';
+        colorInput.className = 'lts-color';
+
+        const boldWrap = document.createElement('label');
+        boldWrap.className = 'lt-style-checkbox';
+        const boldCb = document.createElement('input');
+        boldCb.type = 'checkbox';
+        boldCb.className = 'lts-bold';
+        boldWrap.appendChild(boldCb);
+        boldWrap.appendChild(document.createTextNode('Bold'));
+
+        const italicWrap = document.createElement('label');
+        italicWrap.className = 'lt-style-checkbox';
+        const italicCb = document.createElement('input');
+        italicCb.type = 'checkbox';
+        italicCb.className = 'lts-italic';
+        italicWrap.appendChild(italicCb);
+        italicWrap.appendChild(document.createTextNode('Italic'));
+
+        fieldsWrap.appendChild(fieldGroup('Font family', familySelect, 'lt-style-field-family'));
+        fieldsWrap.appendChild(fieldGroup('Custom font (optional)', familyCustom, 'lt-style-field-family'));
+        fieldsWrap.appendChild(fieldGroup('Size (px)', sizeInput, 'lt-style-field-size'));
+        fieldsWrap.appendChild(fieldGroup('Color', colorInput, 'lt-style-field-color'));
+        fieldsWrap.appendChild(boldWrap);
+        fieldsWrap.appendChild(italicWrap);
+
+        panel.appendChild(enableWrap);
+        panel.appendChild(fieldsWrap);
+
+        // Seed the fields: use this line's saved override if it has
+        // one, otherwise fall back to the current shared style, and
+        // failing that, sane hardcoded defaults.
+        const seed = styleOverride || globalStyleDefaults || {
+            font_family: 'Arial, sans-serif',
+            font_size: 32,
+            bold: true,
+            italic: false,
+            color: '#FFFFFF'
+        };
+
+        const knownFamily = LT_FONT_OPTIONS.some(function(o){ return o.value === seed.font_family; });
+        if (knownFamily){
+            familySelect.value = seed.font_family;
+        } else if (seed.font_family){
+            familySelect.value = 'custom';
+            familyCustom.value = seed.font_family;
+        }
+
+        sizeInput.value = seed.font_size || 32;
+        colorInput.value = seed.color || '#ffffff';
+        boldCb.checked = !!seed.bold;
+        italicCb.checked = !!seed.italic;
+
+        function updateFieldsEnabled(){
+            const on = enableCb.checked;
+            fieldsWrap.querySelectorAll('input, select').forEach(function(el){ el.disabled = !on; });
+            fieldsWrap.style.opacity = on ? '1' : '0.5';
+        }
+
+        enableCb.addEventListener('change', updateFieldsEnabled);
+        updateFieldsEnabled();
+
+        return panel;
+    }
+
+    function getRowStyleOverride(outer){
+        const panel = outer.querySelector('.lt-style-panel');
+        if (!panel) return null;
+
+        const enableCb = panel.querySelector('.lts-enable');
+        if (!enableCb || !enableCb.checked) return null;
+
+        const familyCustom = panel.querySelector('.lts-family-custom').value.trim();
+        const familySelect = panel.querySelector('.lts-family').value;
+
+        return {
+            font_family: familyCustom || familySelect,
+            font_size: Number(panel.querySelector('.lts-size').value) || 32,
+            bold: panel.querySelector('.lts-bold').checked,
+            italic: panel.querySelector('.lts-italic').checked,
+            color: panel.querySelector('.lts-color').value
+        };
+    }
+
+    function addRow(text, seconds, styleOverride){
+        const outer = document.createElement('div');
+        outer.className = 'left-text-row-outer';
+
         const row = document.createElement('div');
         row.className = 'left-text-row';
 
@@ -4183,18 +4786,35 @@ const leftTextsEditor = (function(){
         unit.className = 'lt-unit';
         unit.textContent = 'sec';
 
+        const panel = buildLineStylePanel(styleOverride || null);
+
+        const styleToggleBtn = document.createElement('button');
+        styleToggleBtn.type = 'button';
+        styleToggleBtn.className = 'lt-style-toggle';
+        styleToggleBtn.title = "Customize this line's font style";
+        styleToggleBtn.textContent = '🎨';
+        if (styleOverride) styleToggleBtn.classList.add('lt-style-active');
+        styleToggleBtn.onclick = function(){
+            const isOpen = panel.style.display === 'flex';
+            panel.style.display = isOpen ? 'none' : 'flex';
+        };
+
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.title = 'Remove this line';
         removeBtn.textContent = '\u2715';
-        removeBtn.onclick = function(){ row.remove(); };
+        removeBtn.onclick = function(){ outer.remove(); };
 
         row.appendChild(textInput);
         row.appendChild(secsInput);
         row.appendChild(unit);
+        row.appendChild(styleToggleBtn);
         row.appendChild(removeBtn);
 
-        rowsEl().appendChild(row);
+        outer.appendChild(row);
+        outer.appendChild(panel);
+
+        rowsEl().appendChild(outer);
     }
 
     async function load(){
@@ -4202,28 +4822,215 @@ const leftTextsEditor = (function(){
             const res = await fetch('/state');
             const data = await res.json();
 
+            globalStyleDefaults = data.left_text_style || globalStyleDefaults;
+
             const texts = data.left_texts || [];
             const durations = data.left_text_durations || [];
+            const lineStyles = data.left_text_line_styles || [];
 
             rowsEl().innerHTML = '';
 
             texts.forEach(function(t, i){
-                addRow(t, durations[i]);
+                addRow(t, durations[i], lineStyles[i] || null);
             });
         } catch (e){
             setLine(document.getElementById('leftTextsStatus'), 'Failed to load current text: ' + e, true);
         }
     }
 
+    // ---------------- saved group messages ----------------
+    // A "group" is a named, saved set of lines (+ their durations
+    // and per-line style overrides), e.g. "Hello Message" ->
+    // ["Hello", "Hello2", "Hello 3", "Hello 4"]. Clicking its button
+    // below loads those exact lines into the rows above AND
+    // immediately saves/applies them, so the overlay switches to
+    // that group right away.
+
+    function groupsListEl(){
+        return document.getElementById('textGroupsList');
+    }
+
+    function renderGroups(groups){
+        const container = groupsListEl();
+        container.innerHTML = '';
+
+        const names = Object.keys(groups || {}).sort(function(a, b){
+            return a.localeCompare(b);
+        });
+
+        if (names.length === 0){
+            const empty = document.createElement('span');
+            empty.className = 'lt-unit';
+            empty.textContent = 'No saved groups yet.';
+            container.appendChild(empty);
+            return;
+        }
+
+        names.forEach(function(name){
+            const chip = document.createElement('span');
+            chip.className = 'text-group-chip';
+
+            const loadBtn = document.createElement('button');
+            loadBtn.type = 'button';
+            loadBtn.className = 'load-group';
+            loadBtn.textContent = name;
+            loadBtn.title = 'Load and apply "' + name + '"';
+            loadBtn.onclick = function(){ loadGroup(name, groups[name]); };
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-group';
+            deleteBtn.textContent = '\u2715';
+            deleteBtn.title = 'Delete "' + name + '"';
+            deleteBtn.onclick = function(){ deleteGroup(name); };
+
+            chip.appendChild(loadBtn);
+            chip.appendChild(deleteBtn);
+            container.appendChild(chip);
+        });
+    }
+
+    async function loadGroups(){
+        try {
+            const res = await fetch('/left-text/groups/list');
+            const data = await res.json();
+            renderGroups(data.left_text_groups || {});
+        } catch (e){
+            setLine(document.getElementById('textGroupsStatus'), 'Failed to load saved groups: ' + e, true);
+        }
+    }
+
+    async function saveGroup(){
+        const statusEl = document.getElementById('textGroupsStatus');
+        const nameInput = document.getElementById('textGroupName');
+        const name = nameInput.value.trim();
+
+        if (!name){
+            setLine(statusEl, 'Enter a name for this group.', true);
+            return;
+        }
+
+        const texts = [];
+        const durations = [];
+        const lineStyles = [];
+        const outers = rowsEl().querySelectorAll('.left-text-row-outer');
+
+        for (const outer of outers){
+            const row = outer.querySelector('.left-text-row');
+            const text = row.querySelector('.lt-text').value.trim();
+            if (text.length === 0) continue;
+
+            const secs = Number(row.querySelector('.lt-secs').value);
+            if (!isFinite(secs) || secs < 1){
+                setLine(statusEl, 'Every line needs a time of at least 1 second.', true);
+                return;
+            }
+
+            texts.push(text);
+            durations.push(secs);
+            lineStyles.push(getRowStyleOverride(outer));
+        }
+
+        if (texts.length === 0){
+            setLine(statusEl, 'Add at least one line above before saving a group.', true);
+            return;
+        }
+
+        try {
+            const res = await fetch('/left-text/groups/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, texts: texts, durations: durations, line_styles: lineStyles })
+            });
+            const data = await res.json();
+
+            if (data.ok){
+                setLine(statusEl, 'Saved group "' + name + '".', false);
+                nameInput.value = '';
+                renderGroups(data.left_text_groups || {});
+            } else {
+                setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+            }
+        } catch (e){
+            setLine(statusEl, 'Request failed: ' + e, true);
+        }
+    }
+
+    async function loadGroup(name, group){
+        const statusEl = document.getElementById('textGroupsStatus');
+        if (!group){
+            setLine(statusEl, 'Could not find group "' + name + '".', true);
+            return;
+        }
+
+        // Populate the rows above with this group's lines (+ their
+        // saved per-line styles) ...
+        rowsEl().innerHTML = '';
+        (group.texts || []).forEach(function(t, i){
+            addRow(t, (group.durations || [])[i], (group.line_styles || [])[i] || null);
+        });
+
+        // ...then immediately apply them as the live messages, so
+        // clicking the button really does "directly load" the group
+        // into the overlay, not just into the editor.
+        try {
+            const res = await fetch('/left-text/set-texts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    texts: group.texts,
+                    durations: group.durations,
+                    line_styles: group.line_styles
+                })
+            });
+            const data = await res.json();
+
+            if (data.ok){
+                setLine(statusEl, 'Loaded and applied "' + name + '".', false);
+                setLine(document.getElementById('leftTextsStatus'), 'Loaded from group "' + name + '".', false);
+            } else {
+                setLine(statusEl, 'Error applying group: ' + (data.error || 'unknown error'), true);
+            }
+        } catch (e){
+            setLine(statusEl, 'Request failed: ' + e, true);
+        }
+    }
+
+    async function deleteGroup(name){
+        const statusEl = document.getElementById('textGroupsStatus');
+
+        try {
+            const res = await fetch('/left-text/groups/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name })
+            });
+            const data = await res.json();
+
+            if (data.ok){
+                setLine(statusEl, 'Deleted group "' + name + '".', false);
+                renderGroups(data.left_text_groups || {});
+            } else {
+                setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+            }
+        } catch (e){
+            setLine(statusEl, 'Request failed: ' + e, true);
+        }
+    }
+
+    loadGroups();
+
     async function save(){
         const statusEl = document.getElementById('leftTextsStatus');
 
         const texts = [];
         const durations = [];
+        const lineStyles = [];
 
-        const rows = rowsEl().querySelectorAll('.left-text-row');
+        const outers = rowsEl().querySelectorAll('.left-text-row-outer');
 
-        for (const row of rows){
+        for (const outer of outers){
+            const row = outer.querySelector('.left-text-row');
             const text = row.querySelector('.lt-text').value.trim();
             if (text.length === 0) continue;
 
@@ -4236,6 +5043,7 @@ const leftTextsEditor = (function(){
 
             texts.push(text);
             durations.push(secs);
+            lineStyles.push(getRowStyleOverride(outer));
         }
 
         if (texts.length === 0){
@@ -4247,7 +5055,7 @@ const leftTextsEditor = (function(){
             const res = await fetch('/left-text/set-texts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts: texts, durations: durations })
+                body: JSON.stringify({ texts: texts, durations: durations, line_styles: lineStyles })
             });
             const data = await res.json();
 
@@ -4266,7 +5074,8 @@ const leftTextsEditor = (function(){
 
     return {
         save: save,
-        addRow: function(){ addRow('', DEFAULT_SECONDS); }
+        addRow: function(){ addRow('', DEFAULT_SECONDS, null); },
+        saveGroup: saveGroup
     };
 
 })();
@@ -6067,11 +6876,20 @@ async function update(){
         scheduleLeftTextAdvance();
     }
 
-    // Pick up any font style edits made from the Dashboard (family,
-    // size, bold, italic, color).
-    if (d.left_text_style){
-        applyLeftTextStyle(d.left_text_style);
+    // Pick up any per-line style overrides set from the Dashboard
+    // (the 🎨 button next to each message line).
+    if (Array.isArray(d.left_text_line_styles)){
+        leftTextLineStyles = d.left_text_line_styles;
     }
+
+    // Pick up any font style edits made from the Dashboard (family,
+    // size, bold, italic, color) - this is the shared/default style
+    // for lines without their own override above.
+    if (d.left_text_style){
+        leftTextStyleGlobal = d.left_text_style;
+    }
+
+    applyEffectiveLeftTextStyle(leftTextIndex);
 
     let handledByEvent = false;
 
@@ -6223,6 +7041,17 @@ let leftTexts = [
 // leftTexts, edited per-line on the Dashboard).
 let leftTextDurations = [10, 10];
 
+// Per-line style OVERRIDES (parallel to leftTexts). Each entry is
+// either null (that line uses the shared leftTextStyleGlobal below)
+// or a full style dict, set per-line from the Dashboard (the 🎨
+// button next to each message line).
+let leftTextLineStyles = [];
+
+// The shared/default left-text style, set from the Dashboard's
+// "Font style" controls. Applies to every line EXCEPT ones with
+// their own entry in leftTextLineStyles.
+let leftTextStyleGlobal = null;
+
 let leftTextIndex = 0;
 let leftScrollEnabled = true;
 
@@ -6307,6 +7136,19 @@ function applyLeftTextStyle(style){
     el.style.fontStyle = style.italic ? "italic" : "normal";
 }
 
+// Returns the style that SHOULD be showing for a given line index:
+// that line's own override if it has one, otherwise the shared/
+// default style.
+function effectiveLeftTextStyle(index){
+    const override = leftTextLineStyles[index];
+    return (override && typeof override === "object") ? override : leftTextStyleGlobal;
+}
+
+function applyEffectiveLeftTextStyle(index){
+    const style = effectiveLeftTextStyle(index);
+    if (style) applyLeftTextStyle(style);
+}
+
 // Converts a message's "||" markers into real <br> line breaks
 // without letting any raw HTML in the message itself get
 // interpreted - text is escaped first (via textContent), THEN the
@@ -6317,7 +7159,7 @@ function renderLeftTextHtml(text){
     return div.innerHTML.split('||').join('<br>');
 }
 
-function leftTextSwap(newText){
+function leftTextSwap(newText, index){
 
     const el =
         document.getElementById("left-text");
@@ -6328,6 +7170,11 @@ function leftTextSwap(newText){
     el.style.opacity = 0;
 
     setTimeout(() => {
+
+        // Switch the style at the same moment the text itself
+        // changes, so a line's own custom style (if any) takes
+        // effect right as that line appears.
+        applyEffectiveLeftTextStyle(index);
 
         el.innerHTML = renderLeftTextHtml(newText);
 
@@ -6368,7 +7215,7 @@ function advanceLeftText(){
         // pinned to the default line and stop advancing.
         if (leftTextIndex !== 0){
             leftTextIndex = 0;
-            leftTextSwap(leftTexts[0]);
+            leftTextSwap(leftTexts[0], 0);
         }
 
     } else {
@@ -6378,7 +7225,8 @@ function advanceLeftText(){
             leftTexts.length;
 
         leftTextSwap(
-            leftTexts[leftTextIndex]
+            leftTexts[leftTextIndex],
+            leftTextIndex
         );
 
     }
@@ -6560,6 +7408,17 @@ let leftTexts = [
 // leftTexts, edited per-line on the Dashboard).
 let leftTextDurations = [10, 10];
 
+// Per-line style OVERRIDES (parallel to leftTexts). Each entry is
+// either null (that line uses the shared leftTextStyleGlobal below)
+// or a full style dict, set per-line from the Dashboard (the 🎨
+// button next to each message line).
+let leftTextLineStyles = [];
+
+// The shared/default left-text style, set from the Dashboard's
+// "Font style" controls. Applies to every line EXCEPT ones with
+// their own entry in leftTextLineStyles.
+let leftTextStyleGlobal = null;
+
 let leftTextIndex = 0;
 let leftScrollEnabled = true;
 let leftBoxVisible = true;
@@ -6595,6 +7454,19 @@ function applyLeftTextStyle(style){
     el.style.fontStyle = style.italic ? "italic" : "normal";
 }
 
+// Returns the style that SHOULD be showing for a given line index:
+// that line's own override if it has one, otherwise the shared/
+// default style.
+function effectiveLeftTextStyle(index){
+    const override = leftTextLineStyles[index];
+    return (override && typeof override === "object") ? override : leftTextStyleGlobal;
+}
+
+function applyEffectiveLeftTextStyle(index){
+    const style = effectiveLeftTextStyle(index);
+    if (style) applyLeftTextStyle(style);
+}
+
 // Converts a message's "||" markers into real <br> line breaks
 // without letting any raw HTML in the message itself get
 // interpreted - text is escaped first (via textContent), THEN the
@@ -6605,7 +7477,7 @@ function renderLeftTextHtml(text){
     return div.innerHTML.split('||').join('<br>');
 }
 
-function leftTextSwap(newText){
+function leftTextSwap(newText, index){
 
     const el = document.getElementById("left-text");
 
@@ -6614,6 +7486,11 @@ function leftTextSwap(newText){
     el.style.opacity = 0;
 
     setTimeout(() => {
+
+        // Switch the style at the same moment the text itself
+        // changes, so a line's own custom style (if any) takes
+        // effect right as that line appears.
+        applyEffectiveLeftTextStyle(index);
 
         el.innerHTML = renderLeftTextHtml(newText);
 
@@ -6654,7 +7531,7 @@ function advanceLeftText(){
         // pinned to the default line and stop advancing.
         if (leftTextIndex !== 0){
             leftTextIndex = 0;
-            leftTextSwap(leftTexts[0]);
+            leftTextSwap(leftTexts[0], 0);
         }
 
     } else {
@@ -6664,7 +7541,8 @@ function advanceLeftText(){
             leftTexts.length;
 
         leftTextSwap(
-            leftTexts[leftTextIndex]
+            leftTexts[leftTextIndex],
+            leftTextIndex
         );
 
     }
@@ -6715,9 +7593,20 @@ async function update(){
         scheduleLeftTextAdvance();
     }
 
-    if (d.left_text_style){
-        applyLeftTextStyle(d.left_text_style);
+    // Pick up any per-line style overrides set from the Dashboard
+    // (the 🎨 button next to each message line).
+    if (Array.isArray(d.left_text_line_styles)){
+        leftTextLineStyles = d.left_text_line_styles;
     }
+
+    // Pick up any font style edits made from the Dashboard (family,
+    // size, bold, italic, color) - this is the shared/default style
+    // for lines without their own override above.
+    if (d.left_text_style){
+        leftTextStyleGlobal = d.left_text_style;
+    }
+
+    applyEffectiveLeftTextStyle(leftTextIndex);
 }
 
 setInterval(update, 1000);
