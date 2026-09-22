@@ -56,12 +56,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = .5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -297,16 +297,6 @@ left_box_enabled = True
 # the Dashboard (/right-box/enable, /right-box/disable).
 right_box_enabled = True
 
-# Whether just the small message line above the timer digits
-# (id="msg" in the overlay - "Stream ends in..." etc.) is shown.
-# Separate from right_box_enabled above, which hides the WHOLE
-# right box (timer included) - this only hides the message line,
-# and the timer digits expand upward to fill the freed space
-# (#time-row already has flex:1, so it fills #right on its own
-# once #msg is taken out of the layout). Toggled from the
-# Dashboard (/msg-box/enable, /msg-box/disable).
-msg_box_enabled = True
-
 # The actual lines the left-side text rotates through. Editable
 # from the Dashboard (a textarea, one line per message - "how many
 # messages" it cycles through is just how many lines you put there)
@@ -319,18 +309,6 @@ DEFAULT_LEFT_TEXTS = [
 ]
 left_texts = list(DEFAULT_LEFT_TEXTS)
 
-# How long (in seconds) each line in left_texts stays on screen
-# before rotating to the next one. This list is PARALLEL to
-# left_texts: left_text_durations[0] is how long left_texts[0] shows,
-# left_text_durations[1] is how long left_texts[1] shows, and so on.
-# Editable per-line from the Dashboard (a seconds box next to each
-# line). Any line without a saved duration uses
-# DEFAULT_LEFT_TEXT_SECONDS.
-DEFAULT_LEFT_TEXT_SECONDS = 10
-MIN_LEFT_TEXT_SECONDS = 1
-MAX_LEFT_TEXT_SECONDS = 3600
-left_text_durations = [DEFAULT_LEFT_TEXT_SECONDS] * len(left_texts)
-
 # Look-and-feel of the left-side text (font family, size, bold,
 # italic, color). Editable from the Dashboard so the user isn't
 # stuck with whatever was hardcoded in CSS. Applied on the overlay
@@ -338,7 +316,7 @@ left_text_durations = [DEFAULT_LEFT_TEXT_SECONDS] * len(left_texts)
 # handling in the timer page's JS below).
 DEFAULT_LEFT_TEXT_STYLE = {
     "font_family": "Arial, sans-serif",
-    "font_size": 32.67,     # px
+    "font_size": 53,     # px
     "bold": True,
     "italic": False,
     "color": "#FFFFFF"
@@ -366,7 +344,7 @@ msg_texts_locked = list(DEFAULT_MSG_TEXTS_LOCKED)
 
 DEFAULT_MSG_TEXT_STYLE = {
     "font_family": "Arial, sans-serif",
-    "font_size": 16.03,     # px
+    "font_size": 26,     # px
     "bold": True,
     "italic": False,
     "color": "#FFFFFF"
@@ -413,35 +391,6 @@ def sanitize_text_style(raw, base):
         color = str(raw["color"]).strip()
         if re.fullmatch(r"#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?", color):
             result["color"] = color
-
-    return result
-
-
-def sanitize_durations(raw_durations, count):
-    """
-    Returns a list of exactly `count` per-line durations in seconds.
-    Bad/missing/out-of-range entries fall back to (or are clamped
-    toward) sane values instead of raising, so one bad number can
-    never break the rotation.
-    """
-
-    if not isinstance(raw_durations, list):
-        raw_durations = []
-
-    result = []
-
-    for i in range(count):
-        try:
-            value = float(raw_durations[i])
-            if value != value:  # NaN
-                raise ValueError
-        except (IndexError, TypeError, ValueError):
-            value = DEFAULT_LEFT_TEXT_SECONDS
-
-        value = max(MIN_LEFT_TEXT_SECONDS, min(MAX_LEFT_TEXT_SECONDS, value))
-
-        # Store whole numbers as ints (10 instead of 10.0).
-        result.append(int(value) if value == int(value) else value)
 
     return result
 
@@ -710,9 +659,7 @@ def save_state():
             "left_text_scroll": left_text_scroll_enabled,
             "left_box_enabled": left_box_enabled,
             "right_box_enabled": right_box_enabled,
-            "msg_box_enabled": msg_box_enabled,
             "left_texts": left_texts,
-            "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
             "msg_texts_locked": msg_texts_locked,
@@ -734,9 +681,7 @@ def load_state():
     global left_text_scroll_enabled
     global left_box_enabled
     global right_box_enabled
-    global msg_box_enabled
     global left_texts
-    global left_text_durations
     global left_text_style
     global msg_texts_unlocked
     global msg_texts_locked
@@ -760,16 +705,10 @@ def load_state():
         left_text_scroll_enabled = bool(data.get("left_text_scroll", True))
         left_box_enabled = bool(data.get("left_box_enabled", True))
         right_box_enabled = bool(data.get("right_box_enabled", True))
-        msg_box_enabled = bool(data.get("msg_box_enabled", True))
 
         left_texts = sanitize_text_lines(
             data.get("left_texts", DEFAULT_LEFT_TEXTS),
             DEFAULT_LEFT_TEXTS
-        )
-
-        left_text_durations = sanitize_durations(
-            data.get("left_text_durations"),
-            len(left_texts)
         )
 
         left_text_style = sanitize_text_style(
@@ -2259,9 +2198,7 @@ def state():
             "left_text_scroll_enabled": left_text_scroll_enabled,
             "left_box_enabled": left_box_enabled,
             "right_box_enabled": right_box_enabled,
-            "msg_box_enabled": msg_box_enabled,
             "left_texts": left_texts,
-            "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
             "msg_texts_unlocked": msg_texts_unlocked,
             "msg_texts_locked": msg_texts_locked,
@@ -2327,50 +2264,21 @@ def right_box_disable():
     return jsonify({"ok": True, "right_box_enabled": False})
 
 
-@app.route("/msg-box/enable")
-def msg_box_enable():
-    """Shows the "Stream ends in..." message line above the timer
-    digits again."""
-    global msg_box_enabled
-    msg_box_enabled = True
-    save_state()
-    return jsonify({"ok": True, "msg_box_enabled": True})
-
-
-@app.route("/msg-box/disable")
-def msg_box_disable():
-    """Hides just the message line above the timer digits - the
-    timer digits themselves stay on and expand upward to fill the
-    freed space."""
-    global msg_box_enabled
-    msg_box_enabled = False
-    save_state()
-    return jsonify({"ok": True, "msg_box_enabled": False})
-
-
 @app.route("/left-text/set-texts", methods=["POST"])
 def left_text_set_texts():
     """
-    Replaces the full list of rotating left-side text lines, and
-    (optionally) how many seconds each line stays on screen.
-    Called from the Dashboard - the user decides how many
-    lines/messages just by how many non-empty rows they fill in.
+    Replaces the full list of rotating left-side text lines.
+    Called from the Dashboard's textarea (one line per message) -
+    the user decides how many lines/messages just by how many
+    non-empty lines they put in the box.
 
-    Body: {"texts": ["line one", "line two", ...],
-           "durations": [10, 5, ...]}
-
-    "durations" is parallel to "texts" (same order). It is optional:
-    if it's left out, each line keeps the default
-    (DEFAULT_LEFT_TEXT_SECONDS). Values are clamped to
-    MIN_LEFT_TEXT_SECONDS..MAX_LEFT_TEXT_SECONDS.
+    Body: {"texts": ["line one", "line two", ...]}
     """
 
     global left_texts
-    global left_text_durations
 
     data = request.get_json(silent=True) or {}
     raw_texts = data.get("texts", [])
-    raw_durations = data.get("durations")
 
     if not isinstance(raw_texts, list):
         return jsonify({
@@ -2378,23 +2286,7 @@ def left_text_set_texts():
             "error": "\"texts\" must be a list of strings."
         }), 400
 
-    # Line up each duration with its text BEFORE dropping empty
-    # lines, so removing a blank row can't shift the other rows'
-    # durations onto the wrong text.
-    if not isinstance(raw_durations, list):
-        raw_durations = []
-
-    cleaned = []
-    cleaned_raw_durations = []
-
-    for i, t in enumerate(raw_texts):
-        text = str(t).strip()
-        if not text:
-            continue
-        cleaned.append(text)
-        cleaned_raw_durations.append(
-            raw_durations[i] if i < len(raw_durations) else None
-        )
+    cleaned = [str(t).strip() for t in raw_texts if str(t).strip()]
 
     if not cleaned:
         return jsonify({
@@ -2403,17 +2295,9 @@ def left_text_set_texts():
         }), 400
 
     left_texts = cleaned
-    left_text_durations = sanitize_durations(
-        cleaned_raw_durations,
-        len(cleaned)
-    )
     save_state()
 
-    return jsonify({
-        "ok": True,
-        "left_texts": left_texts,
-        "left_text_durations": left_text_durations
-    })
+    return jsonify({"ok": True, "left_texts": left_texts})
 
 
 @app.route("/left-text/set-style", methods=["POST"])
@@ -3606,33 +3490,6 @@ input[type="color"] {
     color: var(--danger);
 }
 
-.left-text-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.left-text-row input.lt-text {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.left-text-row input.lt-secs {
-    flex: 0 0 76px;
-    width: 76px;
-}
-
-.left-text-row .lt-unit {
-    color: var(--text-dim);
-    font-size: 13px;
-}
-
-.left-text-row button {
-    flex: 0 0 auto;
-    padding: 8px 10px;
-}
-
 .preview-box {
     margin-top: 14px;
     padding: 18px;
@@ -3742,8 +3599,7 @@ hr.divider {
 
     <p class="hint">
         When the box is ON: Scrolling ON rotates through the lines
-        below, showing each one for the number of seconds you set next
-        to it; Scrolling OFF stays fixed on the first line.
+        below every 10 seconds; Scrolling OFF stays fixed on the first line.
     </p>
 
     <div class="btn-row">
@@ -3756,18 +3612,8 @@ hr.divider {
     <div class="two-col">
 
         <div>
-            <label class="field-label">Message lines + seconds each one stays on screen (add or remove as many as you want)</label>
-            <div id="leftTextsRows"></div>
-            <div class="btn-row" style="margin-top:8px;">
-                <button onclick="leftTextsEditor.addRow()">+ Add line</button>
-            </div>
-            <p class="hint" style="margin-top:10px;">
-                To break one message into two lines on the overlay
-                WITHOUT making it a separate rotating message, type
-                || (two pipe characters) where you want the break -
-                e.g. "Type your question||in chat." Each row is its
-                own rotating message.
-            </p>
+            <label class="field-label">Message lines (one per line - add or remove as many as you want)</label>
+            <textarea id="leftTextsBox" rows="6"></textarea>
             <div class="btn-row" style="margin-top:10px;">
                 <button class="primary" onclick="leftTextsEditor.save()">Save Text Lines</button>
             </div>
@@ -3846,15 +3692,6 @@ hr.divider {
         <button id="rightBoxOffBtn" onclick="setRightBox(false)">Box OFF</button>
     </div>
     <div id="rightBoxStatus" class="status-line"></div>
-
-    <hr class="divider">
-
-    <label class="field-label">"Stream ends in..." message on/off (timer digits expand up to fill the space when off)</label>
-    <div class="btn-row">
-        <button id="msgBoxOnBtn" onclick="setMsgBox(true)">Message ON</button>
-        <button id="msgBoxOffBtn" onclick="setMsgBox(false)">Message OFF</button>
-    </div>
-    <div id="msgBoxStatus" class="status-line"></div>
 
 </div>
 
@@ -4120,125 +3957,30 @@ async function loadRightBoxStatus(){
 
 loadRightBoxStatus();
 
-// ---------------- message-above-timer on/off ----------------
-
-async function setMsgBox(on){
-    const statusEl = document.getElementById('msgBoxStatus');
-    try {
-        const res = await fetch(on ? '/msg-box/enable' : '/msg-box/disable');
-        const data = await res.json();
-        if (data.ok){
-            setLine(statusEl, on ? 'Message is ON.' : 'Message is OFF (timer expands up to fill the space).', false);
-        } else {
-            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
-        }
-    } catch (e){
-        setLine(statusEl, 'Request failed: ' + e, true);
-    }
-}
-
-async function loadMsgBoxStatus(){
-    const statusEl = document.getElementById('msgBoxStatus');
-    try {
-        const res = await fetch('/state');
-        const data = await res.json();
-        const on = data.msg_box_enabled !== false;
-        setLine(statusEl, on ? 'Message is currently ON.' : 'Message is currently OFF (timer expands up to fill the space).', false);
-    } catch (e){
-        setLine(statusEl, 'Failed to load current state: ' + e, true);
-    }
-}
-
-loadMsgBoxStatus();
-
 // ---------------- left-side rotating text ----------------
 
 const leftTextsEditor = (function(){
-
-    const DEFAULT_SECONDS = 10;
-
-    function rowsEl(){
-        return document.getElementById('leftTextsRows');
-    }
-
-    function addRow(text, seconds){
-        const row = document.createElement('div');
-        row.className = 'left-text-row';
-
-        const textInput = document.createElement('input');
-        textInput.type = 'text';
-        textInput.className = 'lt-text';
-        textInput.placeholder = 'Message text';
-        textInput.value = text || '';
-
-        const secsInput = document.createElement('input');
-        secsInput.type = 'number';
-        secsInput.className = 'lt-secs';
-        secsInput.min = '1';
-        secsInput.max = '3600';
-        secsInput.step = '0.5';
-        secsInput.value = seconds || DEFAULT_SECONDS;
-
-        const unit = document.createElement('span');
-        unit.className = 'lt-unit';
-        unit.textContent = 'sec';
-
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.title = 'Remove this line';
-        removeBtn.textContent = '\u2715';
-        removeBtn.onclick = function(){ row.remove(); };
-
-        row.appendChild(textInput);
-        row.appendChild(secsInput);
-        row.appendChild(unit);
-        row.appendChild(removeBtn);
-
-        rowsEl().appendChild(row);
-    }
 
     async function load(){
         try {
             const res = await fetch('/state');
             const data = await res.json();
-
-            const texts = data.left_texts || [];
-            const durations = data.left_text_durations || [];
-
-            rowsEl().innerHTML = '';
-
-            texts.forEach(function(t, i){
-                addRow(t, durations[i]);
-            });
+            document.getElementById('leftTextsBox').value = (data.left_texts || []).join('\\n');
         } catch (e){
             setLine(document.getElementById('leftTextsStatus'), 'Failed to load current text: ' + e, true);
         }
     }
 
     async function save(){
+        const box = document.getElementById('leftTextsBox');
         const statusEl = document.getElementById('leftTextsStatus');
 
-        const texts = [];
-        const durations = [];
+        const lines = box.value
+            .split('\\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
 
-        const rows = rowsEl().querySelectorAll('.left-text-row');
-
-        for (const row of rows){
-            const text = row.querySelector('.lt-text').value.trim();
-            if (text.length === 0) continue;
-
-            const secs = Number(row.querySelector('.lt-secs').value);
-
-            if (!isFinite(secs) || secs < 1){
-                setLine(statusEl, 'Every line needs a time of at least 1 second.', true);
-                return;
-            }
-
-            texts.push(text);
-            durations.push(secs);
-        }
-
-        if (texts.length === 0){
+        if (lines.length === 0){
             setLine(statusEl, 'Enter at least one line.', true);
             return;
         }
@@ -4247,13 +3989,12 @@ const leftTextsEditor = (function(){
             const res = await fetch('/left-text/set-texts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ texts: texts, durations: durations })
+                body: JSON.stringify({ texts: lines })
             });
             const data = await res.json();
 
             if (data.ok){
                 setLine(statusEl, 'Saved ' + data.left_texts.length + ' line(s).', false);
-                load();
             } else {
                 setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
             }
@@ -4264,10 +4005,7 @@ const leftTextsEditor = (function(){
 
     load();
 
-    return {
-        save: save,
-        addRow: function(){ addRow('', DEFAULT_SECONDS); }
-    };
+    return { save: save };
 
 })();
 
@@ -4386,8 +4124,8 @@ html, body {
     z-index: 2;
 }
 #left {
-    width: 229.65px;
-    height: 70.88px;
+    width: 337px;
+    height: 115px;
     background: rgba(58, 58, 58, 0.9);
     color: white;
 
@@ -4408,7 +4146,7 @@ html, body {
    they can be changed from the Dashboard without touching CSS. The
    values below are just the pre-JS fallback/first-paint look. */
 #left-text {
-    font-size: 32.67px;
+    font-size: 53px;
     font-weight: 549;
     line-height: 0.95;
 
@@ -4417,12 +4155,11 @@ html, body {
     opacity: 1;
 
     transition: opacity .8s ease;
-    width: 100%;
 }
 
 #right {
-    width: 259.65px;
-    height: 70.88px;
+    width: 421.27px;
+    height: 115px;
 
     # background: rgba(58, 58, 58, 0.9);
 
@@ -4736,7 +4473,7 @@ html, body {
 
 #msg {
     width: 100%;
-    height: 12.33px;
+    height: 20px;
 
     display: flex;
     justify-content: center;
@@ -4747,7 +4484,7 @@ html, body {
        applyMsgTextStyle() in the JS below), so they can be changed
        from the Dashboard without touching CSS. Values below are
        just the pre-JS fallback/first-paint look. */
-    font-size: 16.03px;
+    font-size: 26px;
     font-weight: 650;
     line-height: 1.2;
 
@@ -4755,7 +4492,7 @@ html, body {
 
     white-space: pre-line;
 
-    margin-top: 4.93px;
+    margin-top: 8px;
     margin-bottom: 0;
 
     opacity: 1;
@@ -4766,23 +4503,12 @@ html, body {
 }
 
 #time {
-    font-size: 67.8px;
+    font-size: 110px;
     font-weight: 530;
 
-    margin-top: -11.09px;
+    margin-top: -18px;
 
     transition: transform 0.15s ease, color 0.15s ease;
-}
-
-/* When the "Stream ends in..." message is hidden (see
-   applyMsgBoxVisibility() below), #right gets the "msg-hidden"
-   class. #time-row already grows to fill the freed space on its
-   own (flex:1) - this just cancels #time's -11.09px margin-top,
-   which was only there to nudge the digits up under the message
-   line, so the digits land truly centered in the taller box
-   instead of pinned toward the top. */
-#right.msg-hidden #time {
-    margin-top: 0;
 }
 
 #time.time-increased {
@@ -5075,10 +4801,7 @@ html, body {
 
     </div>-->
     
-    <!-- The "left" box (Tell or ask me anything.) now lives on its
-         own page - see /left-overlay - so it can be added as a
-         separate OBS browser source and positioned independently
-         from the timer below. -->
+    <div id="left"><span id="left-text">Tell or ask me anything.</span></div>
 
     <div id="right">
     <div class="box-bg">
@@ -6029,42 +5752,18 @@ async function update(){
     // as the left box above.
     applyRightBoxVisibility(d.right_box_enabled !== false);
 
-    // Show/hide just the message line above the timer digits - the
-    // digits expand upward on their own once it's hidden.
-    applyMsgBoxVisibility(d.msg_box_enabled !== false);
-
     // Pick up any text-line edits made from the Dashboard. If the
     // list actually changed, snap the index back to 0 so it doesn't
     // point past the end of a shorter new list.
-    let leftTextsChanged = false;
-    let leftDurationsChanged = false;
-
     if (Array.isArray(d.left_texts) && d.left_texts.length){
-        leftTextsChanged =
+        const changed =
             d.left_texts.length !== leftTexts.length ||
             d.left_texts.some((t, i) => t !== leftTexts[i]);
 
-        if (leftTextsChanged){
+        if (changed){
             leftTexts = d.left_texts;
             leftTextIndex = 0;
         }
-    }
-
-    // Pick up per-line duration edits made from the Dashboard.
-    if (Array.isArray(d.left_text_durations) && d.left_text_durations.length){
-        leftDurationsChanged =
-            d.left_text_durations.length !== leftTextDurations.length ||
-            d.left_text_durations.some((t, i) => t !== leftTextDurations[i]);
-
-        if (leftDurationsChanged){
-            leftTextDurations = d.left_text_durations;
-        }
-    }
-
-    // Restart the countdown so the new timing takes effect right
-    // away instead of after the old, already-running timeout.
-    if (leftTextsChanged || leftDurationsChanged){
-        scheduleLeftTextAdvance();
     }
 
     // Pick up any font style edits made from the Dashboard (family,
@@ -6219,10 +5918,6 @@ let leftTexts = [
     "Type your question in chat!"
 ];
 
-// Seconds each line in leftTexts stays on screen (parallel to
-// leftTexts, edited per-line on the Dashboard).
-let leftTextDurations = [10, 10];
-
 let leftTextIndex = 0;
 let leftScrollEnabled = true;
 
@@ -6261,28 +5956,6 @@ function applyRightBoxVisibility(visible){
     box.style.display = visible ? "flex" : "none";
 }
 
-// Whether just the "Stream ends in..." message line (id="msg") is
-// shown. When hidden, #time-row's existing flex:1 automatically
-// expands it to fill #right on its own, and #right gets the
-// "msg-hidden" class (see CSS above) so #time re-centers inside
-// the taller space instead of staying pinned toward the top.
-let msgBoxVisible = true;
-
-function applyMsgBoxVisibility(visible){
-    if (visible === msgBoxVisible) return;
-    msgBoxVisible = visible;
-
-    const box = document.getElementById("msg");
-    if (!box) return;
-
-    box.style.display = visible ? "flex" : "none";
-
-    const rightBox = document.getElementById("right");
-    if (rightBox) {
-        rightBox.classList.toggle("msg-hidden", !visible);
-    }
-}
-
 // Last-applied style, so applyLeftTextStyle() can skip re-touching
 // the DOM when nothing actually changed since the last /state poll.
 let currentLeftTextStyle = null;
@@ -6307,16 +5980,6 @@ function applyLeftTextStyle(style){
     el.style.fontStyle = style.italic ? "italic" : "normal";
 }
 
-// Converts a message's "||" markers into real <br> line breaks
-// without letting any raw HTML in the message itself get
-// interpreted - text is escaped first (via textContent), THEN the
-// || markers are swapped in as actual <br> tags.
-function renderLeftTextHtml(text){
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML.split('||').join('<br>');
-}
-
 function leftTextSwap(newText){
 
     const el =
@@ -6329,7 +5992,7 @@ function leftTextSwap(newText){
 
     setTimeout(() => {
 
-        el.innerHTML = renderLeftTextHtml(newText);
+        el.innerText = newText;
 
         el.style.opacity = 1;
 
@@ -6337,30 +6000,7 @@ function leftTextSwap(newText){
 
 }
 
-// Rotates the left-side text. Each line stays up for its OWN
-// duration (leftTextDurations[index], in seconds - set per line on
-// the Dashboard), so a timeout is scheduled after every swap
-// instead of using one fixed setInterval.
-let leftTextTimer = null;
-
-function leftTextDurationMs(index){
-    const secs = Number(leftTextDurations[index]);
-    return (isFinite(secs) && secs > 0 ? secs : 10) * 1000;
-}
-
-function scheduleLeftTextAdvance(){
-    clearTimeout(leftTextTimer);
-
-    // While scrolling is off, just re-check once a second so it
-    // starts rotating again soon after being switched back on.
-    const delay = leftScrollEnabled
-        ? leftTextDurationMs(leftTextIndex)
-        : 1000;
-
-    leftTextTimer = setTimeout(advanceLeftText, delay);
-}
-
-function advanceLeftText(){
+setInterval(() => {
 
     if (!leftScrollEnabled){
 
@@ -6371,22 +6011,19 @@ function advanceLeftText(){
             leftTextSwap(leftTexts[0]);
         }
 
-    } else {
-
-        leftTextIndex =
-            (leftTextIndex + 1) %
-            leftTexts.length;
-
-        leftTextSwap(
-            leftTexts[leftTextIndex]
-        );
+        return;
 
     }
 
-    scheduleLeftTextAdvance();
-}
+    leftTextIndex =
+        (leftTextIndex + 1) %
+        leftTexts.length;
 
-scheduleLeftTextAdvance();
+    leftTextSwap(
+        leftTexts[leftTextIndex]
+    );
+
+}, 10000);
 
 
 let currentLocked = false;
@@ -6455,272 +6092,6 @@ setInterval(
 );
 
 loadGiftImageManifest();
-update();
-
-</script>
-
-</body>
-
-</html>
-"""
-
-
-@app.route("/left-overlay")
-def left_overlay_page():
-
-    return """
-<!doctype html>
-
-<html>
-
-<head>
-
-<meta charset="utf-8">
-
-<title>Left Overlay</title>
-
-<style>
-
-html, body {
-    margin: 0;
-    background: transparent;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    font-weight: 400;
-}
-
-#wrap {
-    position: absolute;
-    top: 18px;
-    left: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-
-    z-index: 9999;
-    width: fit-content;
-}
-
-#left {
-    width: 229.65px;
-    height: 70.88px;
-    background: rgba(58, 58, 58, 0.9);
-    color: white;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    padding: 0;
-}
-
-/* Font family/size/weight/style/color are NOT set here - they're
-   applied as inline styles from left_text_style (same as on the
-   /timer page), so they can be changed from the Dashboard without
-   touching CSS. The values below are just the pre-JS fallback. */
-#left-text {
-    font-size: 32.67px;
-    font-weight: 549;
-    line-height: 0.95;
-
-    letter-spacing: .5px;
-
-    opacity: 1;
-
-    transition: opacity .8s ease;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div id="wrap">
-    <div id="left"><span id="left-text">Tell or ask me anything.</span></div>
-</div>
-
-<script>
-
-// This page mirrors the "left" box logic that used to live on
-// /timer. It polls the same /state endpoint the Dashboard writes
-// to, so the Dashboard's Box ON/OFF, text lines, and style
-// controls keep working exactly the same for this box, whether
-// it's used here or on /timer.
-
-let leftTexts = [
-    "Tell or ask me anything.",
-    "Type your question in chat!"
-];
-
-// Seconds each line in leftTexts stays on screen (parallel to
-// leftTexts, edited per-line on the Dashboard).
-let leftTextDurations = [10, 10];
-
-let leftTextIndex = 0;
-let leftScrollEnabled = true;
-let leftBoxVisible = true;
-let currentLeftTextStyle = null;
-
-function applyLeftBoxVisibility(visible){
-    if (visible === leftBoxVisible) return;
-    leftBoxVisible = visible;
-
-    const box = document.getElementById("left");
-    if (!box) return;
-
-    box.style.display = visible ? "flex" : "none";
-}
-
-function applyLeftTextStyle(style){
-
-    const el = document.getElementById("left-text");
-
-    if (!el || !style) return;
-
-    const serialized = JSON.stringify(style);
-
-    if (serialized === currentLeftTextStyle) return;
-
-    currentLeftTextStyle = serialized;
-
-    if (style.font_family) el.style.fontFamily = style.font_family;
-    if (style.font_size) el.style.fontSize = style.font_size + "px";
-    if (style.color) el.style.color = style.color;
-
-    el.style.fontWeight = style.bold ? "bold" : "normal";
-    el.style.fontStyle = style.italic ? "italic" : "normal";
-}
-
-// Converts a message's "||" markers into real <br> line breaks
-// without letting any raw HTML in the message itself get
-// interpreted - text is escaped first (via textContent), THEN the
-// || markers are swapped in as actual <br> tags.
-function renderLeftTextHtml(text){
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML.split('||').join('<br>');
-}
-
-function leftTextSwap(newText){
-
-    const el = document.getElementById("left-text");
-
-    if (!el) return;
-
-    el.style.opacity = 0;
-
-    setTimeout(() => {
-
-        el.innerHTML = renderLeftTextHtml(newText);
-
-        el.style.opacity = 1;
-
-    }, 400);
-
-}
-
-// Rotates the left-side text. Each line stays up for its OWN
-// duration (leftTextDurations[index], in seconds - set per line on
-// the Dashboard), so a timeout is scheduled after every swap
-// instead of using one fixed setInterval.
-let leftTextTimer = null;
-
-function leftTextDurationMs(index){
-    const secs = Number(leftTextDurations[index]);
-    return (isFinite(secs) && secs > 0 ? secs : 10) * 1000;
-}
-
-function scheduleLeftTextAdvance(){
-    clearTimeout(leftTextTimer);
-
-    // While scrolling is off, just re-check once a second so it
-    // starts rotating again soon after being switched back on.
-    const delay = leftScrollEnabled
-        ? leftTextDurationMs(leftTextIndex)
-        : 1000;
-
-    leftTextTimer = setTimeout(advanceLeftText, delay);
-}
-
-function advanceLeftText(){
-
-    if (!leftScrollEnabled){
-
-        // Scrolling turned off from the Dashboard - make sure it's
-        // pinned to the default line and stop advancing.
-        if (leftTextIndex !== 0){
-            leftTextIndex = 0;
-            leftTextSwap(leftTexts[0]);
-        }
-
-    } else {
-
-        leftTextIndex =
-            (leftTextIndex + 1) %
-            leftTexts.length;
-
-        leftTextSwap(
-            leftTexts[leftTextIndex]
-        );
-
-    }
-
-    scheduleLeftTextAdvance();
-}
-
-scheduleLeftTextAdvance();
-
-async function update(){
-
-    let r = await fetch('/state');
-
-    let d = await r.json();
-
-    leftScrollEnabled = d.left_text_scroll_enabled !== false;
-
-    applyLeftBoxVisibility(d.left_box_enabled !== false);
-
-    let leftTextsChanged = false;
-    let leftDurationsChanged = false;
-
-    if (Array.isArray(d.left_texts) && d.left_texts.length){
-        leftTextsChanged =
-            d.left_texts.length !== leftTexts.length ||
-            d.left_texts.some((t, i) => t !== leftTexts[i]);
-
-        if (leftTextsChanged){
-            leftTexts = d.left_texts;
-            leftTextIndex = 0;
-        }
-    }
-
-    // Pick up per-line duration edits made from the Dashboard.
-    if (Array.isArray(d.left_text_durations) && d.left_text_durations.length){
-        leftDurationsChanged =
-            d.left_text_durations.length !== leftTextDurations.length ||
-            d.left_text_durations.some((t, i) => t !== leftTextDurations[i]);
-
-        if (leftDurationsChanged){
-            leftTextDurations = d.left_text_durations;
-        }
-    }
-
-    // Restart the countdown so the new timing takes effect right
-    // away instead of after the old, already-running timeout.
-    if (leftTextsChanged || leftDurationsChanged){
-        scheduleLeftTextAdvance();
-    }
-
-    if (d.left_text_style){
-        applyLeftTextStyle(d.left_text_style);
-    }
-}
-
-setInterval(update, 1000);
 update();
 
 </script>
