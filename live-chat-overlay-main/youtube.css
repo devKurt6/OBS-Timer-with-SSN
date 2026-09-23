@@ -33,7 +33,7 @@
     LAYOUT
     */
     --comment-width: auto; /* go 100% for a full screen lower third style*/
-    --comment-padding: 20px 40px 20px 70px;
+    --comment-padding: 20px 10px 20px 70px;
     --comment-area-height: 90vh;
     --comment-scale: 1;
     --comment-area-size-offset: 0;
