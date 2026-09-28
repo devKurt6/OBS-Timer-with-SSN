@@ -307,6 +307,98 @@ right_box_enabled = True
 # Dashboard (/msg-box/enable, /msg-box/disable).
 msg_box_enabled = True
 
+# ---------------- IMAGE OVERLAY ----------------
+# A third overlay (its own page: /image-overlay) that shows a picture
+# or screenshot uploaded from the Dashboard. Like /left-overlay, add
+# it to OBS as its own Browser Source.
+#
+# The uploaded picture is stored in the "overlay_images" folder next
+# to this script. Only ONE picture is kept at a time - uploading a new
+# one replaces (and deletes) the old one.
+IMAGE_OVERLAY_FOLDER = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "overlay_images"
+)
+
+os.makedirs(IMAGE_OVERLAY_FOLDER, exist_ok=True)
+
+# Largest picture the Dashboard will accept.
+MAX_IMAGE_UPLOAD_BYTES = 15 * 1024 * 1024
+
+# Flask rejects any request body bigger than this before our code even
+# runs (a little above the image limit to leave room for the multipart
+# wrapper around the file).
+app.config["MAX_CONTENT_LENGTH"] = MAX_IMAGE_UPLOAD_BYTES + 1024 * 1024
+
+# How the picture is fitted into the overlay area:
+#   contain = whole picture visible, keeps proportions (may leave gaps)
+#   cover   = fills the whole area, keeps proportions (may crop edges)
+#   fill    = stretches to the area exactly (may distort)
+IMAGE_FIT_OPTIONS = ("contain", "cover", "fill")
+
+# Whether the picture is currently shown on the overlay. Starts OFF so
+# nothing appears until a picture has been uploaded.
+image_box_enabled = False
+
+# Filename (inside IMAGE_OVERLAY_FOLDER) of the current picture, or ""
+# if none has been uploaded yet.
+image_overlay_file = ""
+
+image_overlay_fit = "contain"
+
+# Size of the picture on the overlay, in pixels. Each side is either a
+# number (exact px) or the string "auto":
+#   auto width  = width follows the height, keeping the picture's proportions
+#   auto height = height follows the width, keeping the picture's proportions
+#   both auto   = the picture's own original size (never bigger than the
+#                 overlay page itself)
+# The defaults match the Left-Side box (229.65 x 70.88).
+IMAGE_SIZE_DEFAULT_WIDTH = 229.65
+IMAGE_SIZE_DEFAULT_HEIGHT = 70.88
+IMAGE_SIZE_MIN = 1
+IMAGE_SIZE_MAX = 4000
+
+image_overlay_width = IMAGE_SIZE_DEFAULT_WIDTH
+image_overlay_height = IMAGE_SIZE_DEFAULT_HEIGHT
+
+
+def parse_image_size(value):
+    """
+    Turns a width/height value into either the string "auto" or a float
+    number of pixels (rounded to 2 decimals). Accepts numbers, numeric
+    strings like "300" or "300px", and "auto". Returns None when the
+    value is not usable (wrong type, not a number, or outside
+    IMAGE_SIZE_MIN..IMAGE_SIZE_MAX).
+    """
+
+    if isinstance(value, bool):
+        return None
+
+    if isinstance(value, str):
+        text = value.strip().lower()
+
+        if text == "auto":
+            return "auto"
+
+        if text.endswith("px"):
+            text = text[:-2].strip()
+
+        try:
+            value = float(text)
+        except ValueError:
+            return None
+
+    if not isinstance(value, (int, float)):
+        return None
+
+    value = float(value)
+
+    # Rejects NaN and infinity too.
+    if not (IMAGE_SIZE_MIN <= value <= IMAGE_SIZE_MAX):
+        return None
+
+    return round(value, 2)
+
 # The actual lines the left-side text rotates through. Editable
 # from the Dashboard (a textarea, one line per message - "how many
 # messages" it cycles through is just how many lines you put there)
@@ -341,7 +433,9 @@ DEFAULT_LEFT_TEXT_STYLE = {
     "font_size": 32.67,     # px
     "bold": True,
     "italic": False,
-    "color": "#FFFFFF"
+    "color": "#FFFFFF",
+    "shadow_offset": 0,          # px; 0 = no shadow
+    "shadow_color": "#3F3F3F"    # Minecraft's dark-grey text shadow
 }
 left_text_style = dict(DEFAULT_LEFT_TEXT_STYLE)
 
@@ -394,7 +488,9 @@ DEFAULT_MSG_TEXT_STYLE = {
     "font_size": 16.03,     # px
     "bold": True,
     "italic": False,
-    "color": "#FFFFFF"
+    "color": "#FFFFFF",
+    "shadow_offset": 0,          # px; 0 = no shadow
+    "shadow_color": "#3F3F3F"
 }
 msg_text_style = dict(DEFAULT_MSG_TEXT_STYLE)
 
@@ -438,6 +534,20 @@ def sanitize_text_style(raw, base):
         color = str(raw["color"]).strip()
         if re.fullmatch(r"#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?", color):
             result["color"] = color
+
+    # Hard (un-blurred) drop shadow, offset down and to the right by
+    # this many px - the look of Minecraft-style text. 0 turns it off.
+    if "shadow_offset" in raw:
+        try:
+            offset = float(raw["shadow_offset"])
+            result["shadow_offset"] = max(0, min(20, offset))
+        except (TypeError, ValueError):
+            pass
+
+    if "shadow_color" in raw:
+        shadow_color = str(raw["shadow_color"]).strip()
+        if re.fullmatch(r"#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?", shadow_color):
+            result["shadow_color"] = shadow_color
 
     return result
 
@@ -808,6 +918,11 @@ def save_state():
             "left_box_enabled": left_box_enabled,
             "right_box_enabled": right_box_enabled,
             "msg_box_enabled": msg_box_enabled,
+            "image_box_enabled": image_box_enabled,
+            "image_overlay_file": image_overlay_file,
+            "image_overlay_fit": image_overlay_fit,
+            "image_overlay_width": image_overlay_width,
+            "image_overlay_height": image_overlay_height,
             "left_texts": left_texts,
             "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
@@ -834,6 +949,11 @@ def load_state():
     global left_box_enabled
     global right_box_enabled
     global msg_box_enabled
+    global image_box_enabled
+    global image_overlay_file
+    global image_overlay_fit
+    global image_overlay_width
+    global image_overlay_height
     global left_texts
     global left_text_durations
     global left_text_style
@@ -862,6 +982,42 @@ def load_state():
         left_box_enabled = bool(data.get("left_box_enabled", True))
         right_box_enabled = bool(data.get("right_box_enabled", True))
         msg_box_enabled = bool(data.get("msg_box_enabled", True))
+
+        image_box_enabled = bool(data.get("image_box_enabled", False))
+
+        image_overlay_fit = data.get("image_overlay_fit", "contain")
+        if image_overlay_fit not in IMAGE_FIT_OPTIONS:
+            image_overlay_fit = "contain"
+
+        saved_width = parse_image_size(
+            data.get("image_overlay_width", IMAGE_SIZE_DEFAULT_WIDTH)
+        )
+        saved_height = parse_image_size(
+            data.get("image_overlay_height", IMAGE_SIZE_DEFAULT_HEIGHT)
+        )
+        image_overlay_width = (
+            saved_width if saved_width is not None
+            else IMAGE_SIZE_DEFAULT_WIDTH
+        )
+        image_overlay_height = (
+            saved_height if saved_height is not None
+            else IMAGE_SIZE_DEFAULT_HEIGHT
+        )
+
+        # Only trust the saved filename if it is a plain filename that
+        # still exists on disk (the folder could have been cleaned).
+        saved_image = data.get("image_overlay_file", "")
+        if (
+            isinstance(saved_image, str)
+            and saved_image
+            and saved_image == os.path.basename(saved_image)
+            and os.path.isfile(
+                os.path.join(IMAGE_OVERLAY_FOLDER, saved_image)
+            )
+        ):
+            image_overlay_file = saved_image
+        else:
+            image_overlay_file = ""
 
         left_texts = sanitize_text_lines(
             data.get("left_texts", DEFAULT_LEFT_TEXTS),
@@ -2370,6 +2526,16 @@ def state():
             "left_box_enabled": left_box_enabled,
             "right_box_enabled": right_box_enabled,
             "msg_box_enabled": msg_box_enabled,
+            "image_box_enabled": image_box_enabled,
+            "image_overlay_url": (
+                "/image-overlay/file/" + image_overlay_file
+                if image_overlay_file
+                else ""
+            ),
+            "image_overlay_fit": image_overlay_fit,
+            "image_overlay_width": image_overlay_width,
+            "image_overlay_height": image_overlay_height,
+            "fonts_version": fonts_version,
             "left_texts": left_texts,
             "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
@@ -3653,6 +3819,8 @@ def dashboard():
 
 <title>Timer Dashboard</title>
 
+<link id="custom-fonts-css" rel="stylesheet" href="/fonts.css">
+
 <style>
 
 :root {
@@ -3853,6 +4021,65 @@ input[type="color"] {
 
 .status-line.err {
     color: var(--danger);
+}
+
+.font-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0;
+    border-top: 1px solid var(--panel-border);
+}
+
+.font-row .font-sample {
+    flex: 1;
+    font-size: 22px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.font-row .font-name {
+    color: var(--text-dim);
+    font-size: 13px;
+    min-width: 120px;
+}
+
+.image-drop {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 2px dashed var(--panel-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 14px;
+    transition: border-color .15s, background .15s;
+}
+
+.image-drop:hover,
+.image-drop.dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.image-drop img {
+    width: 160px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 8px;
+    /* checkerboard so transparent PNGs are easy to see */
+    background:
+        repeating-conic-gradient(#2a2733 0% 25%, #211f29 0% 50%)
+        50% / 16px 16px;
+    flex-shrink: 0;
+}
+
+.image-drop img.empty {
+    visibility: hidden;
+    width: 0;
+    margin-right: -16px;
 }
 
 .left-text-row {
@@ -4251,6 +4478,16 @@ hr.divider {
                     <input id="leftFontItalic" type="checkbox"><label for="leftFontItalic">Italic</label>
                 </div>
 
+                <div>
+                    <label class="field-label">Shadow (px, 0 = off)</label>
+                    <input id="leftShadowOffset" type="number" min="0" max="20" step="1">
+                </div>
+
+                <div>
+                    <label class="field-label">Shadow color</label>
+                    <input id="leftShadowColor" type="color">
+                </div>
+
             </div>
 
             <p id="leftStylePreview" class="preview-box">Tell or ask me anything.</p>
@@ -4290,6 +4527,114 @@ hr.divider {
     <div id="msgBoxStatus" class="status-line"></div>
 
 </div>
+
+</div>
+
+
+<div class="card wide">
+
+    <h2>🔤 Custom Fonts</h2>
+    <p class="hint">
+        Upload a font file (.ttf, .otf, .woff or .woff2). It then appears in
+        every "Font family" dropdown below, marked "(uploaded)". The overlays
+        load it straight from this program, so nothing has to be installed on
+        the PC or in OBS. Only upload fonts you have the right to use.
+    </p>
+
+    <div class="btn-row">
+        <button class="primary" onclick="document.getElementById('customFontFile').click()">Upload font file...</button>
+    </div>
+    <input type="file" id="customFontFile" accept=".ttf,.otf,.woff,.woff2" style="display:none">
+    <div id="customFontStatus" class="status-line"></div>
+
+    <div id="customFontList"></div>
+
+    <p class="hint" style="margin-top:12px;">
+        Tip for a Minecraft-style look: choose the pixel font, turn Bold OFF,
+        set the text color to white, and set "Shadow" to about one eighth of
+        the font size (for example 4 at size 32) with the color #3F3F3F.
+        Pixel fonts look sharpest at sizes that are a multiple of 8.
+    </p>
+
+</div>
+
+
+<div class="card wide">
+
+    <h2>🖼️ Image Overlay</h2>
+    <p class="hint">
+        Show a screenshot or picture on stream. Add
+        <b>http://127.0.0.1:5000/image-overlay</b> to OBS as its own
+        Browser Source. The picture starts at the same top-left spot as the
+        Left-Side box, so give this source the same size and position as your
+        Left Overlay source. Set the picture's width and height below (or
+        Auto), and use the fit option to choose whether it shows whole,
+        crops, or stretches when both are set.
+    </p>
+
+    <label class="field-label">Picture on/off</label>
+    <div class="btn-row">
+        <button id="imageBoxOnBtn" onclick="setImageBox(true)">Picture ON</button>
+        <button id="imageBoxOffBtn" onclick="setImageBox(false)">Picture OFF</button>
+    </div>
+    <div id="imageBoxStatus" class="status-line"></div>
+
+    <hr class="divider">
+
+    <label class="field-label">Upload a picture (PNG, JPG, GIF, WebP, BMP, AVIF or SVG, up to 15 MB)</label>
+
+    <div id="imageDrop" class="image-drop" onclick="document.getElementById('imageFile').click()">
+        <img id="imagePreview" class="empty" alt="Current overlay picture">
+        <div>
+            Click to choose a file, drag one in here,<br>
+            or paste a screenshot anywhere on this page (Ctrl+V).
+        </div>
+    </div>
+
+    <input type="file" id="imageFile" accept="image/*" style="display:none">
+
+    <div class="btn-row" style="margin-top:10px;">
+        <button class="danger" onclick="clearImage()">Remove picture</button>
+    </div>
+    <div id="imageUploadStatus" class="status-line"></div>
+
+    <hr class="divider">
+
+    <label class="field-label">How the picture fits the overlay area</label>
+    <select id="imageFit" onchange="setImageFit()">
+        <option value="contain">Fit inside (whole picture visible, keeps proportions)</option>
+        <option value="cover">Fill and crop (no gaps, keeps proportions)</option>
+        <option value="fill">Stretch (fills exactly, may distort)</option>
+    </select>
+    <div id="imageFitStatus" class="status-line"></div>
+
+    <hr class="divider">
+
+    <label class="field-label">Picture size (pixels) - or Auto</label>
+    <p class="hint">
+        Auto keeps the picture's own proportions: Auto width follows the
+        height, Auto height follows the width, and both Auto shows the
+        picture at its original size (never bigger than the overlay page).
+        The fit option above only matters when both width and height are
+        numbers. Allowed range: 1 to 4000 px.
+    </p>
+    <div class="btn-row" style="align-items:center; gap:10px; flex-wrap:wrap;">
+        <span>Width</span>
+        <input type="number" id="imageWidth" min="1" max="4000" step="0.01" style="width:110px;" oninput="syncImageSizeInputs()">
+        <label style="display:flex; align-items:center; gap:4px;">
+            <input type="checkbox" id="imageWidthAuto" onchange="syncImageSizeInputs()"> Auto
+        </label>
+        <span style="margin-left:14px;">Height</span>
+        <input type="number" id="imageHeight" min="1" max="4000" step="0.01" style="width:110px;">
+        <label style="display:flex; align-items:center; gap:4px;">
+            <input type="checkbox" id="imageHeightAuto" onchange="syncImageSizeInputs()"> Auto
+        </label>
+    </div>
+    <div class="btn-row" style="margin-top:10px;">
+        <button onclick="saveImageSize()">Apply size</button>
+        <button onclick="resetImageSize()">Match Left-Side box (229.65 x 70.88)</button>
+    </div>
+    <div id="imageSizeStatus" class="status-line"></div>
 
 </div>
 
@@ -4366,6 +4711,16 @@ hr.divider {
             <input id="msgFontItalic" type="checkbox"><label for="msgFontItalic">Italic</label>
         </div>
 
+        <div>
+            <label class="field-label">Shadow (px, 0 = off)</label>
+            <input id="msgShadowOffset" type="number" min="0" max="20" step="1">
+        </div>
+
+        <div>
+            <label class="field-label">Shadow color</label>
+            <input id="msgShadowColor" type="color">
+        </div>
+
     </div>
 
     <p id="msgStylePreview" class="preview-box">Stream ends in...</p>
@@ -4388,6 +4743,167 @@ function setLine(el, text, isError){
     el.classList.add(isError ? 'err' : 'ok');
 }
 
+// ---------------- custom (uploaded) fonts ----------------
+
+// Filled in by the server when the page loads: [{family, file, url}, ...]
+let CUSTOM_FONTS = __CUSTOM_FONTS_JSON__;
+
+const UPLOADED_SUFFIX = ' (uploaded)';
+
+function customFontValue(f){
+    return "'" + f.family + "', sans-serif";
+}
+
+// Makes every "Font family" dropdown (left text, timer message, and each
+// per-line style panel) list exactly the fonts in CUSTOM_FONTS.
+function syncCustomFontOptions(){
+    const wanted = CUSTOM_FONTS.map(customFontValue);
+    const selects = document.querySelectorAll('#leftFontFamily, #msgFontFamily, .lts-family');
+
+    selects.forEach(function(sel){
+
+        // Drop uploaded fonts that no longer exist.
+        Array.from(sel.options).forEach(function(o){
+            const isUploaded = o.textContent.slice(-UPLOADED_SUFFIX.length) === UPLOADED_SUFFIX;
+            if (isUploaded && wanted.indexOf(o.value) === -1){
+                o.remove();
+            }
+        });
+
+        // Add new ones just above the "Custom (type below)..." entry.
+        const customOpt = Array.from(sel.options).find(function(o){ return o.value === 'custom'; }) || null;
+
+        CUSTOM_FONTS.forEach(function(f){
+            const value = customFontValue(f);
+            const exists = Array.from(sel.options).some(function(o){ return o.value === value; });
+            if (!exists){
+                const o = document.createElement('option');
+                o.value = value;
+                o.textContent = f.family + UPLOADED_SUFFIX;
+                sel.insertBefore(o, customOpt);
+            }
+        });
+    });
+}
+
+function renderCustomFontList(){
+    const box = document.getElementById('customFontList');
+    box.innerHTML = '';
+
+    if (!CUSTOM_FONTS.length){
+        const p = document.createElement('p');
+        p.className = 'hint';
+        p.textContent = 'No custom fonts uploaded yet.';
+        box.appendChild(p);
+        return;
+    }
+
+    CUSTOM_FONTS.forEach(function(f){
+        const row = document.createElement('div');
+        row.className = 'font-row';
+
+        const name = document.createElement('span');
+        name.className = 'font-name';
+        name.textContent = f.family;
+
+        const sample = document.createElement('span');
+        sample.className = 'font-sample';
+        sample.style.fontFamily = customFontValue(f);
+        sample.textContent = 'Server Address - TheLine.org 0123';
+
+        const del = document.createElement('button');
+        del.className = 'danger';
+        del.textContent = 'Delete';
+        del.addEventListener('click', function(){ deleteCustomFont(f.family); });
+
+        row.appendChild(name);
+        row.appendChild(sample);
+        row.appendChild(del);
+        box.appendChild(row);
+    });
+}
+
+// Re-reads the font list from the server and refreshes everything that
+// shows it (dropdowns, list, and the live previews).
+async function refreshCustomFonts(){
+    const res = await fetch('/fonts/list');
+    const data = await res.json();
+
+    CUSTOM_FONTS = data.fonts || [];
+
+    document.getElementById('custom-fonts-css').href = '/fonts.css?v=' + Date.now();
+
+    syncCustomFontOptions();
+    renderCustomFontList();
+
+    if (typeof leftStyleEditor !== 'undefined') leftStyleEditor.refreshPreview();
+    if (typeof msgStyleEditor !== 'undefined') msgStyleEditor.refreshPreview();
+}
+
+async function uploadCustomFont(file){
+    const statusEl = document.getElementById('customFontStatus');
+
+    if (!file){
+        return;
+    }
+
+    setLine(statusEl, 'Uploading...', false);
+
+    const form = new FormData();
+    form.append('font', file, file.name);
+
+    try {
+        const res = await fetch('/fonts/upload', { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.ok){
+            await refreshCustomFonts();
+            setLine(statusEl, 'Uploaded "' + data.family + '" - pick it from a Font family dropdown, then Save.', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Upload failed: ' + e, true);
+    }
+}
+
+async function deleteCustomFont(family){
+    const statusEl = document.getElementById('customFontStatus');
+
+    if (!confirm('Delete the font "' + family + '"? Any text still using it falls back to a default font.')){
+        return;
+    }
+
+    try {
+        const res = await fetch('/fonts/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ family: family })
+        });
+        const data = await res.json();
+
+        if (data.ok){
+            await refreshCustomFonts();
+            setLine(statusEl, 'Deleted "' + family + '".', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+document.getElementById('customFontFile').addEventListener('change', function(e){
+    const file = e.target.files && e.target.files[0];
+    uploadCustomFont(file);
+    e.target.value = '';
+});
+
+// Must run BEFORE the style editors below load the saved style, so a saved
+// uploaded font is recognised as a normal dropdown choice.
+syncCustomFontOptions();
+renderCustomFontList();
+
 // ---------------- generic font-style editor ----------------
 // One of these is created per customizable text element (left-side
 // text, timer message text). Handles loading the current style from
@@ -4402,6 +4918,8 @@ function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
         color: prefix + 'FontColor',
         bold: prefix + 'FontBold',
         italic: prefix + 'FontItalic',
+        shadowOffset: prefix + 'ShadowOffset',
+        shadowColor: prefix + 'ShadowColor',
         preview: prefix + 'StylePreview',
         status: prefix + 'StyleStatus'
     };
@@ -4419,9 +4937,14 @@ function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
         preview.style.color = document.getElementById(ids.color).value;
         preview.style.fontWeight = document.getElementById(ids.bold).checked ? 'bold' : 'normal';
         preview.style.fontStyle = document.getElementById(ids.italic).checked ? 'italic' : 'normal';
+
+        const shadowPx = Number(document.getElementById(ids.shadowOffset).value) || 0;
+        preview.style.textShadow = shadowPx > 0
+            ? shadowPx + 'px ' + shadowPx + 'px 0 ' + document.getElementById(ids.shadowColor).value
+            : '';
     }
 
-    [ids.family, ids.familyCustom, ids.size, ids.color, ids.bold, ids.italic].forEach(id => {
+    [ids.family, ids.familyCustom, ids.size, ids.color, ids.bold, ids.italic, ids.shadowOffset, ids.shadowColor].forEach(id => {
         document.getElementById(id).addEventListener('input', refreshPreview);
     });
 
@@ -4447,6 +4970,8 @@ function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
             document.getElementById(ids.color).value = style.color || '#ffffff';
             document.getElementById(ids.bold).checked = !!style.bold;
             document.getElementById(ids.italic).checked = !!style.italic;
+            document.getElementById(ids.shadowOffset).value = style.shadow_offset || 0;
+            document.getElementById(ids.shadowColor).value = style.shadow_color || '#3F3F3F';
 
             refreshPreview();
         } catch (e){
@@ -4462,7 +4987,9 @@ function wireStyleEditor(prefix, endpoint, stateKey, fallbackText){
             font_size: Number(document.getElementById(ids.size).value) || 24,
             bold: document.getElementById(ids.bold).checked,
             italic: document.getElementById(ids.italic).checked,
-            color: document.getElementById(ids.color).value
+            color: document.getElementById(ids.color).value,
+            shadow_offset: Number(document.getElementById(ids.shadowOffset).value) || 0,
+            shadow_color: document.getElementById(ids.shadowColor).value
         };
 
         try {
@@ -4553,6 +5080,264 @@ async function loadRightBoxStatus(){
 
 loadRightBoxStatus();
 
+// ---------------- image overlay ----------------
+
+// Reads the current image-overlay settings from /state and refreshes
+// the preview, the fit dropdown and the status text.
+async function loadImageOverlayState(){
+    const statusEl = document.getElementById('imageBoxStatus');
+    try {
+        const res = await fetch('/state');
+        const data = await res.json();
+
+        const url = data.image_overlay_url || '';
+        const preview = document.getElementById('imagePreview');
+
+        if (url){
+            if (preview.getAttribute('data-url') !== url){
+                preview.src = url;
+                preview.setAttribute('data-url', url);
+            }
+            preview.classList.remove('empty');
+        } else {
+            preview.removeAttribute('src');
+            preview.removeAttribute('data-url');
+            preview.classList.add('empty');
+        }
+
+        if (data.image_overlay_fit){
+            document.getElementById('imageFit').value = data.image_overlay_fit;
+        }
+
+        applyImageSizeToInputs(data.image_overlay_width, data.image_overlay_height);
+
+        if (!url){
+            setLine(statusEl, 'No picture uploaded yet.', false);
+        } else if (data.image_box_enabled === true){
+            setLine(statusEl, 'Picture is currently ON.', false);
+        } else {
+            setLine(statusEl, 'Picture is currently OFF (hidden on overlay).', false);
+        }
+    } catch (e){
+        setLine(statusEl, 'Failed to load current state: ' + e, true);
+    }
+}
+
+async function setImageBox(on){
+    const statusEl = document.getElementById('imageBoxStatus');
+    try {
+        const res = await fetch(on ? '/image-overlay/enable' : '/image-overlay/disable');
+        const data = await res.json();
+        if (data.ok){
+            loadImageOverlayState();
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+async function uploadImage(file){
+    const statusEl = document.getElementById('imageUploadStatus');
+
+    if (!file){
+        return;
+    }
+
+    setLine(statusEl, 'Uploading...', false);
+
+    const form = new FormData();
+    form.append('image', file, file.name || 'pasted-image.png');
+
+    try {
+        const res = await fetch('/image-overlay/upload', {
+            method: 'POST',
+            body: form
+        });
+        const data = await res.json();
+
+        if (data.ok){
+            setLine(statusEl, 'Uploaded - the picture is now showing on the overlay.', false);
+            loadImageOverlayState();
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Upload failed: ' + e, true);
+    }
+}
+
+async function clearImage(){
+    const statusEl = document.getElementById('imageUploadStatus');
+    try {
+        const res = await fetch('/image-overlay/clear', { method: 'POST' });
+        const data = await res.json();
+        if (data.ok){
+            setLine(statusEl, 'Picture removed.', false);
+            loadImageOverlayState();
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+// ---- picture size (width / height / auto) ----
+
+function syncImageSizeInputs(){
+    document.getElementById('imageWidth').disabled =
+        document.getElementById('imageWidthAuto').checked;
+    document.getElementById('imageHeight').disabled =
+        document.getElementById('imageHeightAuto').checked;
+}
+
+function applyImageSizeToInputs(w, h){
+    const pairs = [
+        [w, 'imageWidth', 'imageWidthAuto'],
+        [h, 'imageHeight', 'imageHeightAuto']
+    ];
+    pairs.forEach(function(p){
+        const value = p[0];
+        const input = document.getElementById(p[1]);
+        const auto = document.getElementById(p[2]);
+        if (value === 'auto'){
+            auto.checked = true;
+        } else if (typeof value === 'number'){
+            auto.checked = false;
+            input.value = value;
+        }
+    });
+    syncImageSizeInputs();
+}
+
+async function saveImageSize(){
+    const statusEl = document.getElementById('imageSizeStatus');
+
+    function readSide(inputId, autoId){
+        if (document.getElementById(autoId).checked) return 'auto';
+        const raw = document.getElementById(inputId).value;
+        return raw === '' ? null : Number(raw);
+    }
+
+    const width = readSide('imageWidth', 'imageWidthAuto');
+    const height = readSide('imageHeight', 'imageHeightAuto');
+
+    if (width === null || height === null){
+        setLine(statusEl, 'Enter a number for width and height, or tick Auto.', true);
+        return;
+    }
+
+    try {
+        const res = await fetch('/image-overlay/set-size', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ width: width, height: height })
+        });
+        const data = await res.json();
+        if (data.ok){
+            applyImageSizeToInputs(data.image_overlay_width, data.image_overlay_height);
+            setLine(statusEl, 'Saved.', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+async function resetImageSize(){
+    const statusEl = document.getElementById('imageSizeStatus');
+    try {
+        const res = await fetch('/image-overlay/set-size', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reset: true })
+        });
+        const data = await res.json();
+        if (data.ok){
+            applyImageSizeToInputs(data.image_overlay_width, data.image_overlay_height);
+            setLine(statusEl, 'Reset to the Left-Side box size.', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+async function setImageFit(){
+    const statusEl = document.getElementById('imageFitStatus');
+    const fit = document.getElementById('imageFit').value;
+    try {
+        const res = await fetch('/image-overlay/set-fit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fit: fit })
+        });
+        const data = await res.json();
+        if (data.ok){
+            setLine(statusEl, 'Saved.', false);
+        } else {
+            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
+        }
+    } catch (e){
+        setLine(statusEl, 'Request failed: ' + e, true);
+    }
+}
+
+// File picker
+document.getElementById('imageFile').addEventListener('change', function(e){
+    const file = e.target.files && e.target.files[0];
+    uploadImage(file);
+    // Reset so choosing the same file again still fires "change".
+    e.target.value = '';
+});
+
+// Drag and drop
+(function(){
+    const drop = document.getElementById('imageDrop');
+
+    ['dragenter', 'dragover'].forEach(function(name){
+        drop.addEventListener(name, function(e){
+            e.preventDefault();
+            drop.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(function(name){
+        drop.addEventListener(name, function(e){
+            e.preventDefault();
+            drop.classList.remove('dragover');
+        });
+    });
+
+    drop.addEventListener('drop', function(e){
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        uploadImage(file);
+    });
+})();
+
+// Paste a screenshot (Ctrl+V) anywhere on the Dashboard. Only reacts
+// when the clipboard actually holds an image, so pasting normal text
+// into the text boxes is unaffected.
+document.addEventListener('paste', function(e){
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for (const item of items){
+        if (item.kind === 'file' && item.type.indexOf('image/') === 0){
+            const file = item.getAsFile();
+            if (file){
+                e.preventDefault();
+                uploadImage(file);
+                return;
+            }
+        }
+    }
+});
+
+loadImageOverlayState();
+
 // ---------------- message-above-timer on/off ----------------
 
 async function setMsgBox(on){
@@ -4607,6 +5392,18 @@ const leftTextsEditor = (function(){
         { value: "custom", label: "Custom (type below)..." }
     ];
 
+    // LT_FONT_OPTIONS plus any uploaded fonts (just above the trailing
+    // "Custom (type below)..." entry). Called each time a line's style
+    // panel is built, so newly uploaded fonts are always included.
+    function ltFontOptions(){
+        const list = LT_FONT_OPTIONS.slice(0, -1);
+        CUSTOM_FONTS.forEach(function(f){
+            list.push({ value: customFontValue(f), label: f.family + UPLOADED_SUFFIX });
+        });
+        list.push(LT_FONT_OPTIONS[LT_FONT_OPTIONS.length - 1]);
+        return list;
+    }
+
     // The shared/global left-text style (from the "Font style"
     // controls further down) - used only to seed sensible starting
     // values when a line's own style panel is opened for the first
@@ -4657,7 +5454,7 @@ const leftTextsEditor = (function(){
 
         const familySelect = document.createElement('select');
         familySelect.className = 'lts-family';
-        LT_FONT_OPTIONS.forEach(function(opt){
+        ltFontOptions().forEach(function(opt){
             const o = document.createElement('option');
             o.value = opt.value;
             o.textContent = opt.label;
@@ -4679,6 +5476,17 @@ const leftTextsEditor = (function(){
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
         colorInput.className = 'lts-color';
+
+        const shadowInput = document.createElement('input');
+        shadowInput.type = 'number';
+        shadowInput.className = 'lts-shadow';
+        shadowInput.min = '0';
+        shadowInput.max = '20';
+        shadowInput.step = '1';
+
+        const shadowColorInput = document.createElement('input');
+        shadowColorInput.type = 'color';
+        shadowColorInput.className = 'lts-shadow-color';
 
         const boldWrap = document.createElement('label');
         boldWrap.className = 'lt-style-checkbox';
@@ -4702,6 +5510,8 @@ const leftTextsEditor = (function(){
         fieldsWrap.appendChild(fieldGroup('Color', colorInput, 'lt-style-field-color'));
         fieldsWrap.appendChild(boldWrap);
         fieldsWrap.appendChild(italicWrap);
+        fieldsWrap.appendChild(fieldGroup('Shadow (px, 0 = off)', shadowInput, 'lt-style-field-size'));
+        fieldsWrap.appendChild(fieldGroup('Shadow color', shadowColorInput, 'lt-style-field-color'));
 
         panel.appendChild(enableWrap);
         panel.appendChild(fieldsWrap);
@@ -4714,10 +5524,12 @@ const leftTextsEditor = (function(){
             font_size: 32,
             bold: true,
             italic: false,
-            color: '#FFFFFF'
+            color: '#FFFFFF',
+            shadow_offset: 0,
+            shadow_color: '#3F3F3F'
         };
 
-        const knownFamily = LT_FONT_OPTIONS.some(function(o){ return o.value === seed.font_family; });
+        const knownFamily = ltFontOptions().some(function(o){ return o.value === seed.font_family; });
         if (knownFamily){
             familySelect.value = seed.font_family;
         } else if (seed.font_family){
@@ -4729,6 +5541,8 @@ const leftTextsEditor = (function(){
         colorInput.value = seed.color || '#ffffff';
         boldCb.checked = !!seed.bold;
         italicCb.checked = !!seed.italic;
+        shadowInput.value = seed.shadow_offset || 0;
+        shadowColorInput.value = seed.shadow_color || '#3F3F3F';
 
         function updateFieldsEnabled(){
             const on = enableCb.checked;
@@ -4757,7 +5571,9 @@ const leftTextsEditor = (function(){
             font_size: Number(panel.querySelector('.lts-size').value) || 32,
             bold: panel.querySelector('.lts-bold').checked,
             italic: panel.querySelector('.lts-italic').checked,
-            color: panel.querySelector('.lts-color').value
+            color: panel.querySelector('.lts-color').value,
+            shadow_offset: Number(panel.querySelector('.lts-shadow').value) || 0,
+            shadow_color: panel.querySelector('.lts-shadow-color').value
         };
     }
 
@@ -5132,7 +5948,7 @@ loadMsgTexts();
 </body>
 
 </html>
-"""
+""".replace("__CUSTOM_FONTS_JSON__", json.dumps(list_custom_fonts()))
 
 
 
@@ -5153,6 +5969,8 @@ def timer_page():
 <meta charset="utf-8">
 
 <title>Timer</title>
+
+<link id="custom-fonts-css" rel="stylesheet" href="/fonts.css">
 
 <style>
 
@@ -6837,6 +7655,8 @@ async function update(){
     // entirely rather than just making it invisible.
     applyLeftBoxVisibility(d.left_box_enabled !== false);
 
+    applyFontsVersion(d.fonts_version);
+
     // Show/hide the ENTIRE right box (timer + message), same idea
     // as the left box above.
     applyRightBoxVisibility(d.right_box_enabled !== false);
@@ -7024,6 +7844,13 @@ function applyMsgTextStyle(style){
 
     el.style.fontWeight = style.bold ? "bold" : "normal";
     el.style.fontStyle = style.italic ? "italic" : "normal";
+
+    // Hard drop shadow (Minecraft-style). With no shadow set, "" hands
+    // control back to whatever the page's own CSS specifies.
+    el.style.textShadow = (Number(style.shadow_offset) > 0)
+        ? style.shadow_offset + "px " + style.shadow_offset + "px 0 " +
+          (style.shadow_color || "#3F3F3F")
+        : "";
 }
 
 
@@ -7069,6 +7896,21 @@ let leftScrollEnabled = true;
 // shown at all. Toggled from the Dashboard (/left-box/enable,
 // /left-box/disable) - separate from leftScrollEnabled above,
 // which only affects whether the text inside it rotates.
+// Reloads /fonts.css when a font is uploaded/removed on the Dashboard,
+// so an overlay that is already open picks it up without a refresh.
+let currentFontsVersion;
+
+function applyFontsVersion(version){
+
+    if (version === undefined || version === currentFontsVersion) return;
+
+    currentFontsVersion = version;
+
+    const link = document.getElementById("custom-fonts-css");
+
+    if (link) link.href = "/fonts.css?v=" + version;
+}
+
 let leftBoxVisible = true;
 
 function applyLeftBoxVisibility(visible){
@@ -7144,6 +7986,13 @@ function applyLeftTextStyle(style){
 
     el.style.fontWeight = style.bold ? "bold" : "normal";
     el.style.fontStyle = style.italic ? "italic" : "normal";
+
+    // Hard drop shadow (Minecraft-style). With no shadow set, "" hands
+    // control back to whatever the page's own CSS specifies.
+    el.style.textShadow = (Number(style.shadow_offset) > 0)
+        ? style.shadow_offset + "px " + style.shadow_offset + "px 0 " +
+          (style.shadow_color || "#3F3F3F")
+        : "";
 }
 
 // Returns the style that SHOULD be showing for a given line index:
@@ -7338,6 +8187,8 @@ def left_overlay_page():
 
 <title>Left Overlay</title>
 
+<link id="custom-fonts-css" rel="stylesheet" href="/fonts.css">
+
 <style>
 
 html, body {
@@ -7442,6 +8293,21 @@ let leftTextIndex = 0;
 // line's font).
 let leftTextShownIndex = 0;
 let leftScrollEnabled = true;
+// Reloads /fonts.css when a font is uploaded/removed on the Dashboard,
+// so an overlay that is already open picks it up without a refresh.
+let currentFontsVersion;
+
+function applyFontsVersion(version){
+
+    if (version === undefined || version === currentFontsVersion) return;
+
+    currentFontsVersion = version;
+
+    const link = document.getElementById("custom-fonts-css");
+
+    if (link) link.href = "/fonts.css?v=" + version;
+}
+
 let leftBoxVisible = true;
 let currentLeftTextStyle = null;
 
@@ -7473,6 +8339,13 @@ function applyLeftTextStyle(style){
 
     el.style.fontWeight = style.bold ? "bold" : "normal";
     el.style.fontStyle = style.italic ? "italic" : "normal";
+
+    // Hard drop shadow (Minecraft-style). With no shadow set, "" hands
+    // control back to whatever the page's own CSS specifies.
+    el.style.textShadow = (Number(style.shadow_offset) > 0)
+        ? style.shadow_offset + "px " + style.shadow_offset + "px 0 " +
+          (style.shadow_color || "#3F3F3F")
+        : "";
 }
 
 // Returns the style that SHOULD be showing for a given line index:
@@ -7584,6 +8457,8 @@ async function update(){
 
     applyLeftBoxVisibility(d.left_box_enabled !== false);
 
+    applyFontsVersion(d.fonts_version);
+
     let leftTextsChanged = false;
     let leftDurationsChanged = false;
 
@@ -7629,6 +8504,708 @@ async function update(){
     }
 
     applyEffectiveLeftTextStyle(leftTextShownIndex);
+}
+
+setInterval(update, 1000);
+update();
+
+</script>
+
+</body>
+
+</html>
+"""
+
+
+# ============================================================
+# CUSTOM FONTS
+# ============================================================
+# Font files (.ttf / .otf / .woff / .woff2) uploaded from the Dashboard
+# are stored in the "overlay_fonts" folder next to this script and
+# handed to the overlay pages through /fonts.css (a stylesheet of
+# @font-face rules), so nothing has to be installed on the PC or in
+# OBS. You can also just drop a font file into that folder yourself.
+#
+# A font's name in the dropdowns is its filename without the extension
+# (letters/digits only): "Minecraft-Regular.ttf" -> "Minecraft Regular".
+
+FONT_FOLDER = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "overlay_fonts"
+)
+
+os.makedirs(FONT_FOLDER, exist_ok=True)
+
+MAX_FONT_UPLOAD_BYTES = 5 * 1024 * 1024
+
+# file extension -> CSS @font-face format() name
+FONT_FORMATS = {
+    "ttf": "truetype",
+    "otf": "opentype",
+    "woff": "woff",
+    "woff2": "woff2"
+}
+
+# Changes whenever a font is added or removed. Sent in /state so an
+# overlay that is already open (e.g. live in OBS) knows to reload
+# /fonts.css.
+fonts_version = int(time.time() * 1000)
+
+
+def detect_font_extension(data):
+    """
+    Works out what kind of font `data` really is from its first bytes
+    (not from the uploaded filename). Returns "ttf", "otf", "woff",
+    "woff2", or None if it is not a supported font file.
+    """
+
+    magic = data[:4]
+
+    if magic in (b"\x00\x01\x00\x00", b"true"):
+        return "ttf"
+
+    if magic == b"OTTO":
+        return "otf"
+
+    if magic == b"wOFF":
+        return "woff"
+
+    if magic == b"wOF2":
+        return "woff2"
+
+    return None
+
+
+def font_family_from_filename(filename):
+    """
+    Turns a filename into the font-family name used in the dropdowns
+    and in CSS. Only letters, digits and spaces survive, so the name is
+    always safe to put inside a CSS string and passes the font_family
+    validation in sanitize_text_style().
+    """
+
+    stem = os.path.splitext(os.path.basename(filename or ""))[0]
+    stem = re.sub(r"[^A-Za-z0-9]+", " ", stem).strip()
+
+    return stem[:60].strip() or "Custom Font"
+
+
+def list_custom_fonts():
+    """
+    Returns every usable font in FONT_FOLDER as a list of
+    {"family", "file", "format", "url"}, sorted by name. If the same
+    family exists in two formats only the first is listed.
+    """
+
+    fonts = []
+    seen = set()
+
+    try:
+        names = sorted(os.listdir(FONT_FOLDER), key=str.lower)
+    except OSError:
+        return fonts
+
+    for name in names:
+
+        extension = os.path.splitext(name)[1].lower().lstrip(".")
+
+        if extension not in FONT_FORMATS:
+            continue
+
+        path = os.path.join(FONT_FOLDER, name)
+
+        if not os.path.isfile(path):
+            continue
+
+        family = font_family_from_filename(name)
+
+        if family.lower() in seen:
+            continue
+
+        seen.add(family.lower())
+
+        try:
+            version = int(os.path.getmtime(path))
+        except OSError:
+            version = 0
+
+        fonts.append({
+            "family": family,
+            "file": name,
+            "format": FONT_FORMATS[extension],
+            "url": f"/fonts/file/{quote(name)}?v={version}"
+        })
+
+    return fonts
+
+
+def delete_custom_font_files(family):
+    """Deletes every font file belonging to `family`. Returns count."""
+
+    removed = 0
+
+    for name in os.listdir(FONT_FOLDER):
+
+        extension = os.path.splitext(name)[1].lower().lstrip(".")
+
+        if extension not in FONT_FORMATS:
+            continue
+
+        if font_family_from_filename(name).lower() != family.lower():
+            continue
+
+        try:
+            os.remove(os.path.join(FONT_FOLDER, name))
+            removed += 1
+        except OSError:
+            pass
+
+    return removed
+
+
+@app.route("/fonts/list")
+def fonts_list():
+    return jsonify({"ok": True, "fonts": list_custom_fonts()})
+
+
+@app.route("/fonts.css")
+def fonts_css():
+    """Stylesheet with one @font-face rule per uploaded font."""
+
+    rules = []
+
+    for font in list_custom_fonts():
+        rules.append(
+            "@font-face {\n"
+            f"    font-family: '{font['family']}';\n"
+            f"    src: url('{font['url']}') format('{font['format']}');\n"
+            "    font-display: block;\n"
+            "}"
+        )
+
+    response = app.response_class(
+        "\n".join(rules) + "\n",
+        mimetype="text/css"
+    )
+    response.headers["Cache-Control"] = "no-cache"
+
+    return response
+
+
+@app.route("/fonts/file/<path:filename>")
+def fonts_file(filename):
+    """Serves an uploaded font file."""
+
+    extension = os.path.splitext(filename)[1].lower().lstrip(".")
+
+    if extension not in FONT_FORMATS:
+        return jsonify({"ok": False, "error": "Not found."}), 404
+
+    response = send_from_directory(FONT_FOLDER, filename)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+
+    return response
+
+
+@app.route("/fonts/upload", methods=["POST"])
+def fonts_upload():
+    """
+    Receives a font file (multipart form, field name "font"). It is
+    stored as "<Family Name>.<ext>", replacing any font that already has
+    that name.
+    """
+    global fonts_version
+
+    upload = request.files.get("font")
+
+    if upload is None:
+        return jsonify({
+            "ok": False,
+            "error": "No font file was received."
+        }), 400
+
+    data = upload.stream.read(MAX_FONT_UPLOAD_BYTES + 1)
+
+    if not data:
+        return jsonify({"ok": False, "error": "The file is empty."}), 400
+
+    if len(data) > MAX_FONT_UPLOAD_BYTES:
+        return jsonify({
+            "ok": False,
+            "error": (
+                "Font file is too large (limit is "
+                f"{MAX_FONT_UPLOAD_BYTES // (1024 * 1024)} MB)."
+            )
+        }), 413
+
+    extension = detect_font_extension(data)
+
+    if extension is None:
+        return jsonify({
+            "ok": False,
+            "error": (
+                "That doesn't look like a supported font "
+                "(.ttf, .otf, .woff or .woff2)."
+            )
+        }), 400
+
+    family = font_family_from_filename(upload.filename)
+    new_name = f"{family}.{extension}"
+    new_path = os.path.join(FONT_FOLDER, new_name)
+    temp_path = new_path + ".tmp"
+
+    try:
+        with open(temp_path, "wb") as f:
+            f.write(data)
+
+        # Replace any older file for this family (even a different
+        # format), then move the new one into place.
+        delete_custom_font_files(family)
+        os.replace(temp_path, new_path)
+    except OSError as e:
+        try:
+            os.remove(temp_path)
+        except OSError:
+            pass
+        return jsonify({
+            "ok": False,
+            "error": f"Could not save the font: {e}"
+        }), 500
+
+    fonts_version = int(time.time() * 1000)
+
+    return jsonify({"ok": True, "family": family})
+
+
+@app.route("/fonts/delete", methods=["POST"])
+def fonts_delete():
+    """Deletes an uploaded font by family name."""
+    global fonts_version
+
+    payload = request.get_json(silent=True) or {}
+    family = str(payload.get("family", "")).strip()
+
+    if not family:
+        return jsonify({"ok": False, "error": "No font name given."}), 400
+
+    if delete_custom_font_files(family) == 0:
+        return jsonify({"ok": False, "error": "Font not found."}), 404
+
+    fonts_version = int(time.time() * 1000)
+
+    return jsonify({"ok": True})
+
+
+# ============================================================
+# IMAGE OVERLAY
+# ============================================================
+# A picture/screenshot overlay. The Dashboard uploads the picture
+# (file picker, drag-and-drop, or pasting a screenshot with Ctrl+V);
+# /image-overlay (a Browser Source in OBS) polls /state and shows it.
+
+def detect_image_extension(data):
+    """
+    Works out what kind of image `data` really is from its first
+    bytes (NOT from the uploaded filename, which can be wrong or
+    malicious). Returns a file extension like "png", or None if it is
+    not a supported picture type.
+    """
+
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "png"
+
+    if data.startswith(b"\xff\xd8\xff"):
+        return "jpg"
+
+    if data.startswith((b"GIF87a", b"GIF89a")):
+        return "gif"
+
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "webp"
+
+    if data.startswith(b"BM") and len(data) > 14:
+        return "bmp"
+
+    if data[4:8] == b"ftyp" and (
+        b"avif" in data[8:32] or b"avis" in data[8:32]
+    ):
+        return "avif"
+
+    # SVG is text, so look for an <svg tag near the top.
+    head = data[:2048].decode("utf-8", errors="ignore").lower()
+    if "<svg" in head:
+        return "svg"
+
+    return None
+
+
+def delete_overlay_image_file(filename):
+    """Deletes a picture from IMAGE_OVERLAY_FOLDER. Never raises."""
+
+    if not filename or filename != os.path.basename(filename):
+        return
+
+    try:
+        os.remove(os.path.join(IMAGE_OVERLAY_FOLDER, filename))
+    except OSError:
+        pass
+
+
+@app.errorhandler(413)
+def _request_too_large(_error):
+    limit_mb = MAX_IMAGE_UPLOAD_BYTES // (1024 * 1024)
+    return jsonify({
+        "ok": False,
+        "error": f"File is too large (limit is {limit_mb} MB)."
+    }), 413
+
+
+@app.route("/image-overlay/upload", methods=["POST"])
+def image_overlay_upload():
+    """
+    Receives a picture from the Dashboard (multipart form, field name
+    "image"), stores it as the current overlay picture, replaces the
+    previous one, and turns the overlay ON so it shows right away.
+    """
+    global image_overlay_file
+    global image_box_enabled
+
+    upload = request.files.get("image")
+
+    if upload is None:
+        return jsonify({
+            "ok": False,
+            "error": "No image was received."
+        }), 400
+
+    data = upload.stream.read(MAX_IMAGE_UPLOAD_BYTES + 1)
+
+    if not data:
+        return jsonify({
+            "ok": False,
+            "error": "The file is empty."
+        }), 400
+
+    if len(data) > MAX_IMAGE_UPLOAD_BYTES:
+        return jsonify({
+            "ok": False,
+            "error": (
+                "File is too large (limit is "
+                f"{MAX_IMAGE_UPLOAD_BYTES // (1024 * 1024)} MB)."
+            )
+        }), 413
+
+    extension = detect_image_extension(data)
+
+    if extension is None:
+        return jsonify({
+            "ok": False,
+            "error": (
+                "That doesn't look like a supported picture "
+                "(PNG, JPG, GIF, WebP, BMP, AVIF or SVG)."
+            )
+        }), 400
+
+    # Server-generated name: the uploaded filename is never used, and a
+    # new name per upload means the overlay's browser cache can never
+    # show a stale picture.
+    new_name = f"image_{int(time.time() * 1000)}.{extension}"
+    new_path = os.path.join(IMAGE_OVERLAY_FOLDER, new_name)
+    temp_path = new_path + ".tmp"
+
+    try:
+        with open(temp_path, "wb") as f:
+            f.write(data)
+        os.replace(temp_path, new_path)
+    except OSError as e:
+        delete_overlay_image_file(os.path.basename(temp_path))
+        return jsonify({
+            "ok": False,
+            "error": f"Could not save the picture: {e}"
+        }), 500
+
+    with lock:
+        old_name = image_overlay_file
+        image_overlay_file = new_name
+        image_box_enabled = True
+
+    if old_name and old_name != new_name:
+        delete_overlay_image_file(old_name)
+
+    save_state()
+
+    return jsonify({
+        "ok": True,
+        "image_overlay_url": "/image-overlay/file/" + new_name,
+        "image_box_enabled": True
+    })
+
+
+@app.route("/image-overlay/file/<path:filename>")
+def image_overlay_file_route(filename):
+    """Serves the uploaded overlay picture."""
+
+    response = send_from_directory(IMAGE_OVERLAY_FOLDER, filename)
+
+    # An uploaded SVG could contain script; these headers stop it from
+    # running if someone opens the file's URL directly.
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+    )
+    response.headers["X-Content-Type-Options"] = "nosniff"
+
+    return response
+
+
+@app.route("/image-overlay/enable")
+def image_overlay_enable():
+    """Shows the picture on the overlay (only if one is uploaded)."""
+    global image_box_enabled
+
+    with lock:
+        if not image_overlay_file:
+            return jsonify({
+                "ok": False,
+                "error": "Upload a picture first."
+            }), 400
+
+        image_box_enabled = True
+
+    save_state()
+    return jsonify({"ok": True, "image_box_enabled": True})
+
+
+@app.route("/image-overlay/disable")
+def image_overlay_disable():
+    """Hides the picture from the overlay (the file is kept)."""
+    global image_box_enabled
+
+    image_box_enabled = False
+    save_state()
+    return jsonify({"ok": True, "image_box_enabled": False})
+
+
+@app.route("/image-overlay/clear", methods=["POST"])
+def image_overlay_clear():
+    """Removes the current picture completely (and hides the overlay)."""
+    global image_overlay_file
+    global image_box_enabled
+
+    with lock:
+        old_name = image_overlay_file
+        image_overlay_file = ""
+        image_box_enabled = False
+
+    delete_overlay_image_file(old_name)
+    save_state()
+
+    return jsonify({"ok": True})
+
+
+@app.route("/image-overlay/set-fit", methods=["POST"])
+def image_overlay_set_fit():
+    """Sets how the picture fits the overlay: contain / cover / fill."""
+    global image_overlay_fit
+
+    payload = request.get_json(silent=True) or {}
+    fit = payload.get("fit")
+
+    if fit not in IMAGE_FIT_OPTIONS:
+        return jsonify({
+            "ok": False,
+            "error": "fit must be one of: " + ", ".join(IMAGE_FIT_OPTIONS)
+        }), 400
+
+    image_overlay_fit = fit
+    save_state()
+
+    return jsonify({"ok": True, "image_overlay_fit": fit})
+
+
+@app.route("/image-overlay/set-size", methods=["POST"])
+def image_overlay_set_size():
+    """
+    Sets the picture's width and height on the overlay. Each of "width"
+    and "height" is a number of pixels or "auto". Send {"reset": true}
+    to go back to the Left-Side box size.
+    """
+    global image_overlay_width
+    global image_overlay_height
+
+    payload = request.get_json(silent=True) or {}
+
+    if payload.get("reset") is True:
+        new_width = IMAGE_SIZE_DEFAULT_WIDTH
+        new_height = IMAGE_SIZE_DEFAULT_HEIGHT
+    else:
+        new_width = parse_image_size(payload.get("width"))
+        new_height = parse_image_size(payload.get("height"))
+
+        if new_width is None or new_height is None:
+            return jsonify({
+                "ok": False,
+                "error": (
+                    "width and height must each be \"auto\" or a number "
+                    "from %d to %d (pixels)."
+                    % (IMAGE_SIZE_MIN, IMAGE_SIZE_MAX)
+                )
+            }), 400
+
+    image_overlay_width = new_width
+    image_overlay_height = new_height
+    save_state()
+
+    return jsonify({
+        "ok": True,
+        "image_overlay_width": image_overlay_width,
+        "image_overlay_height": image_overlay_height
+    })
+
+
+@app.route("/image-overlay")
+def image_overlay_page():
+
+    return """
+<!doctype html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8">
+
+<title>Image Overlay</title>
+
+<style>
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+}
+
+/* The picture starts at the same top-left spot as the left box on
+   /left-overlay (#wrap top/left). Its width and height are set from the
+   Dashboard (Image Overlay > Picture size) through inline styles - each
+   is either a number of pixels or "auto" - so the values below are only
+   the first-paint fallback (the left box's size). The max-* rules keep
+   the picture from ever growing past the overlay page itself. */
+#pic {
+    position: absolute;
+    top: 18px;
+    left: 0;
+    display: block;
+    width: 229.65px;
+    height: 70.88px;
+    max-width: 100vw;
+    max-height: calc(100vh - 18px);
+    object-fit: contain;
+
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<img id="pic" alt="">
+
+<script>
+
+// Polls the same /state endpoint as the other overlays. Whatever is
+// uploaded / switched ON or OFF on the Dashboard shows up here within
+// about a second.
+
+const pic = document.getElementById("pic");
+
+// The URL we are currently showing (or in the middle of switching to).
+let targetUrl = "";
+
+// Bumped on every switch so an older, slower image load can never
+// overwrite a newer one.
+let swapToken = 0;
+
+function showPicture(url){
+
+    const token = ++swapToken;
+    const hadPicture = !!targetUrl;
+
+    targetUrl = url;
+
+    // Fade the old picture out first (if there was one).
+    pic.style.opacity = 0;
+
+    // Load the new picture in the background so it fades in fully
+    // formed instead of appearing half-loaded.
+    const loader = new Image();
+
+    loader.onload = () => {
+
+        setTimeout(() => {
+
+            if (token !== swapToken) return;
+
+            pic.src = url;
+            pic.style.opacity = 1;
+
+        }, hadPicture ? 350 : 0);
+
+    };
+
+    loader.onerror = () => {
+
+        // Allow the next poll to try again.
+        if (token === swapToken) targetUrl = "";
+
+    };
+
+    loader.src = url;
+}
+
+function hidePicture(){
+
+    swapToken++;
+    targetUrl = "";
+    pic.style.opacity = 0;
+}
+
+async function update(){
+
+    try {
+
+        const r = await fetch("/state");
+        const d = await r.json();
+
+        const fit = d.image_overlay_fit;
+
+        if (fit === "contain" || fit === "cover" || fit === "fill"){
+            pic.style.objectFit = fit;
+        }
+
+        // Width / height: a number of px, or "auto" (natural size for
+        // that side, proportions kept).
+        const w = d.image_overlay_width;
+        const h = d.image_overlay_height;
+        pic.style.width = (typeof w === "number") ? (w + "px") : "auto";
+        pic.style.height = (typeof h === "number") ? (h + "px") : "auto";
+
+        const wanted = (d.image_box_enabled === true && d.image_overlay_url)
+            ? d.image_overlay_url
+            : "";
+
+        if (wanted === targetUrl) return;
+
+        if (wanted) showPicture(wanted);
+        else hidePicture();
+
+    } catch (e) {
+        // Server briefly unreachable - keep whatever is on screen.
+    }
 }
 
 setInterval(update, 1000);
