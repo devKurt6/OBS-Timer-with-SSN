@@ -56,12 +56,12 @@ def _allow_extension_requests(response):
 
 # ---------------- JEWELS ----------------
 # 1 Jewel = 1 second
-GIFT_SECONDS_PER_JEWEL = 1
+GIFT_SECONDS_PER_JEWEL = .5
 
 
 # ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-SUPERCHAT_SECONDS_PER_USD = 60
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -5225,9 +5225,7 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    transition: opacity .8s ease;
     width: 100%;
 }
 
@@ -5571,9 +5569,7 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    transition: opacity .8s ease;
 
     flex-shrink: 0;
 }
@@ -6893,7 +6889,7 @@ async function update(){
         leftTextStyleGlobal = d.left_text_style;
     }
 
-    applyEffectiveLeftTextStyle(leftTextShownIndex);
+    applyEffectiveLeftTextStyle(leftTextIndex);
 
     let handledByEvent = false;
 
@@ -7057,13 +7053,6 @@ let leftTextLineStyles = [];
 let leftTextStyleGlobal = null;
 
 let leftTextIndex = 0;
-
-// Index of the line that is ACTUALLY on screen right now. leftTextIndex
-// moves ahead the instant a rotation starts, but the text itself only
-// changes after the fade-out, so the /state poll must style the DISPLAYED
-// line, not the upcoming one (otherwise the old text flashes in the new
-// line's font).
-let leftTextShownIndex = 0;
 let leftScrollEnabled = true;
 
 // Whether the entire #left box (background + text) should be
@@ -7185,7 +7174,6 @@ function leftTextSwap(newText, index){
         // Switch the style at the same moment the text itself
         // changes, so a line's own custom style (if any) takes
         // effect right as that line appears.
-        leftTextShownIndex = index;
         applyEffectiveLeftTextStyle(index);
 
         el.innerHTML = renderLeftTextHtml(newText);
@@ -7390,9 +7378,7 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    transition: opacity .8s ease;
 }
 
 </style>
@@ -7434,13 +7420,6 @@ let leftTextLineStyles = [];
 let leftTextStyleGlobal = null;
 
 let leftTextIndex = 0;
-
-// Index of the line that is ACTUALLY on screen right now. leftTextIndex
-// moves ahead the instant a rotation starts, but the text itself only
-// changes after the fade-out, so the /state poll must style the DISPLAYED
-// line, not the upcoming one (otherwise the old text flashes in the new
-// line's font).
-let leftTextShownIndex = 0;
 let leftScrollEnabled = true;
 let leftBoxVisible = true;
 let currentLeftTextStyle = null;
@@ -7511,7 +7490,6 @@ function leftTextSwap(newText, index){
         // Switch the style at the same moment the text itself
         // changes, so a line's own custom style (if any) takes
         // effect right as that line appears.
-        leftTextShownIndex = index;
         applyEffectiveLeftTextStyle(index);
 
         el.innerHTML = renderLeftTextHtml(newText);
@@ -7628,7 +7606,7 @@ async function update(){
         leftTextStyleGlobal = d.left_text_style;
     }
 
-    applyEffectiveLeftTextStyle(leftTextShownIndex);
+    applyEffectiveLeftTextStyle(leftTextIndex);
 }
 
 setInterval(update, 1000);
