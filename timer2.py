@@ -5225,9 +5225,10 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    /* Must finish BEFORE the 400ms swap delay in leftTextSwap(), so the
+       text is fully invisible at the moment the font AND text change
+       together (no half-faded text switching font). */
+    transition: opacity .35s ease;
     width: 100%;
 }
 
@@ -5571,9 +5572,7 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    transition: opacity .8s ease;
 
     flex-shrink: 0;
 }
@@ -7390,9 +7389,10 @@ html, body {
 
     opacity: 1;
 
-    /* Must be <= the 400ms swap delay in leftTextSwap(), so the text is
-       fully invisible at the moment the font/text change. */
-    transition: opacity .4s ease;
+    /* Must finish BEFORE the 400ms swap delay in leftTextSwap(), so the
+       text is fully invisible at the moment the font AND text change
+       together (no half-faded text switching font). */
+    transition: opacity .35s ease;
 }
 
 </style>
