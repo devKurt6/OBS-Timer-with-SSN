@@ -19,9 +19,6 @@
     "https://www.youtube.com/*",
     "https://studio.youtube.com/*",
     "https://chat.aaronpk.tv/*",
-    "https://www.tiktok.com/*",
-    "https://tiktok.com/*",
-    "https://livecenter.tiktok.com/*",
     "http://127.0.0.1:5000/*",
     "http://127.0.0.1:5001/*"
   ],
@@ -44,17 +41,6 @@
         "jquery.js",
         "youtube.js"
       ]
-    },
-    {
-      "matches": [
-        "https://www.tiktok.com/@*/live*",
-        "https://www.tiktok.com/live*",
-        "https://tiktok.com/@*/live*",
-        "https://tiktok.com/live*",
-        "https://livecenter.tiktok.com/common_live_chat*"
-      ],
-      "js": ["tiktok.js"],
-      "run_at": "document_idle"
     },
     {
       "matches": [

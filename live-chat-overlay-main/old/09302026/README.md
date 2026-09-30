@@ -40,12 +40,6 @@ Open up the YouTube live chat for a video, and click YouTube's "popout chat" but
 
 `https://www.youtube.com/live_chat?is_popout=1&v=VIDEOID`
 
-### Combining TikTok LIVE chat
-
-Reload this unpacked extension from `chrome://extensions/`, open the YouTube live chat popout, and click **Get Overlay URL** once to register the session. Keep that chat tab open, then open TikTok LIVE in the same Chrome profile. New TikTok messages appear as clickable rows mixed into the same YouTube chat list; click one to send it to the overlay URL for OBS, just like a YouTube message. TikTok capture reads visible rows from its live page; it does not fetch chat when that page is closed.
-
-**Enable TikTok** defaults to OFF; turn it ON to allow TikTok chat. **TikTok Only** hides YouTube rows and shows only TikTok chat. Filter settings are saved by the extension; enabling TikTok Only automatically enables TikTok chat.
-
 ### Keying from a Computer
 
 You'll next need to bring that into your video stream and key it out, which will depend on what software or hardware you are using. In the ATEM Mini, you can use these settings in the upstream keyer:

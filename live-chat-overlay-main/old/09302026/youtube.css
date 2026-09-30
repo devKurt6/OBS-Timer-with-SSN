@@ -99,10 +99,6 @@ yt-gift-message-view-model.shown-comment {
     background-color: var(--shown-comment-bg-color) !important;
     opacity: 0.4;
 }
-.ssn-tiktok-chat-row.shown-comment {
-    background-color: var(--shown-comment-bg-color) !important;
-    opacity: 0.4;
-}
 .shown-comment:hover {
     opacity: 0.5;
 }
@@ -113,19 +109,6 @@ yt-live-chat-paid-sticker-renderer.active-comment,
 yt-gift-message-view-model.active-comment {
     background-color: var(--active-comment-bg-color) !important;
     opacity: 1;
-}
-.ssn-tiktok-chat-row.active-comment {
-    background-color: var(--active-comment-bg-color) !important;
-    opacity: 1;
-}
-.ssn-tiktok-chat-row:hover {
-    background-color: #eee !important;
-}
-html[dark] .ssn-tiktok-chat-row:hover {
-    background-color: #444 !important;
-}
-.ssn-tiktok-chat-row.active-comment:hover {
-    background-color: var(--active-comment-bg-color) !important;
 }
 highlight-chat {
     font-family: var(--font-family);
@@ -469,8 +452,6 @@ yt-live-chat-viewer-engagement-message-renderer {
   margin-left: 20px;
 }
 #fan-funding-filter-toggle,
-#tiktok-filter-toggle,
-#tiktok-only-toggle,
 #author-filter-toggle {
   margin-left: 20px;
 }
@@ -485,33 +466,6 @@ yt-live-chat-viewer-engagement-message-renderer {
 #author-filter-toggle.author-filter-active {
   background: #1565c0;
   border-color: #1565c0;
-}
-#tiktok-filter-toggle.tiktok-filter-active {
-  background: #2e7d32;
-  border-color: #2e7d32;
-}
-#tiktok-only-toggle.tiktok-only-active {
-  background: #1565c0;
-  border-color: #1565c0;
-}
-#tiktok-connection-status {
-  display: inline-block;
-  margin-left: 12px;
-  padding: 4px 9px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 600;
-  color: #fff;
-  background: #555;
-}
-#tiktok-connection-status.status-connected {
-  background: #2e7d32;
-}
-#tiktok-connection-status.status-waiting {
-  background: #9a6700;
-}
-.tiktok-only-hidden {
-  display: none !important;
 }
 #search-filter-container {
   margin-left: 20px;

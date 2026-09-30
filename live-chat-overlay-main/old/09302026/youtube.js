@@ -14,13 +14,6 @@ var config = {};
 var lastID = "";
 var videoID = "";
 var autoHideTimer = null;
-var ssnBottomFeedList = null;
-var ssnBottomFeedObserver = null;
-var ssnBottomFeedOrder = 0;
-var tiktokFilterEnabled = true;
-var tiktokOnlyEnabled = false;
-var lastOverlayWasTikTok = false;
-var tiktokCaptureStatus = "disconnected";
 var fanFundingMode = "all";
 var fanFundingGiftMinimumJewels = 67;
 // Scales the whole SUPERCHAT badge (icon, text, padding, everything
@@ -32,193 +25,6 @@ var censoredWords = {
   "faggot": "f*ggot"
 };
 
-// Receive TikTok comments from the extension worker and add them as selectable
-// rows in this YouTube popout. Clicking a row uses the normal overlay handler.
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-  if (message && message.type === "TIKTOK_CAPTURE_STATUS_UPDATE") {
-    updateTikTokConnectionStatus(message.status);
-    sendResponse({ ok: true });
-    return false;
-  }
-  if (!message || message.type !== "ADD_TIKTOK_CHAT_ROW") return false;
-  if (tiktokFilterEnabled) {
-    sendResponse({ ok: true, filtered: true });
-    return false;
-  }
-  var list = document.querySelector("#items");
-  var chat = message.chat || {};
-  if (!list || !chat.chatname || !chat.chatmessage) {
-    sendResponse({ ok: false, error: "YouTube chat list or TikTok message is unavailable." });
-    return false;
-  }
-  useBottomChatOrder(list);
-
-  var row = document.createElement("div");
-  row.className = "ssn-tiktok-chat-row";
-  row.id = "ssn-tiktok-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-  row.style.cssText = "display:flex;align-items:flex-start;gap:8px;padding:8px 16px;color:var(--yt-live-chat-primary-text-color,#fff);font-family:Roboto,Arial,sans-serif;font-size:24px;line-height:32px;cursor:pointer;";
-  var avatar = document.createElement("img");
-  avatar.id = "img";
-  avatar.src = chat.chatimg || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-  avatar.alt = "";
-  avatar.style.cssText = "width:24px;height:24px;border-radius:50%;object-fit:cover;flex:none;";
-  var text = document.createElement("div");
-  text.style.cssText = "min-width:0;overflow-wrap:anywhere;";
-  var name = document.createElement("span");
-  name.id = "author-name";
-  var authorName = String(chat.chatname || "").trim();
-  name.textContent = authorName;
-  name.style.cssText = "font-weight:600;margin-right:6px;";
-  var body = document.createElement("span");
-  body.id = "message";
-  body.textContent = chat.chatmessage;
-  var referenceRow = list.querySelector("yt-live-chat-text-message-renderer");
-  if (referenceRow) {
-    var referenceName = referenceRow.querySelector("#author-name");
-    var referenceMessage = referenceRow.querySelector("#message");
-    copyYouTubeTypography(referenceRow, row);
-    copyYouTubeTypography(referenceName, name);
-    copyYouTubeTypography(referenceMessage, body);
-  }
-  assignBottomFeedOrder(row);
-  text.appendChild(name);
-  text.appendChild(body);
-  row.appendChild(avatar);
-  row.appendChild(text);
-  list.appendChild(row);
-  scrollUnifiedChatToBottom();
-  sendResponse({ ok: true });
-  return false;
-});
-
-function useBottomChatOrder(list) {
-  // Give every arriving row a monotonically increasing flex order so new
-  // YouTube and TikTok messages appear at the bottom without moving YouTube DOM.
-  list.style.setProperty("display", "flex", "important");
-  list.style.setProperty("flex-direction", "column", "important");
-  list.style.setProperty("align-items", "stretch", "important");
-  if (list === ssnBottomFeedList) return;
-  if (ssnBottomFeedObserver) ssnBottomFeedObserver.disconnect();
-  ssnBottomFeedList = list;
-
-  var selector = "yt-live-chat-text-message-renderer,yt-live-chat-paid-message-renderer,yt-live-chat-membership-item-renderer,ytd-sponsorships-live-chat-gift-purchase-announcement-renderer,yt-live-chat-paid-sticker-renderer,yt-gift-message-view-model";
-  Array.from(list.querySelectorAll(selector)).forEach(assignBottomFeedOrder);
-  Array.from(list.querySelectorAll(selector)).forEach(applyTikTokOnlyToYouTubeRow);
-  ssnBottomFeedObserver = new MutationObserver(function(mutations) {
-    var addedChat = false;
-    mutations.forEach(function(mutation) {
-      mutation.addedNodes.forEach(function(node) {
-        if (!node || node.nodeType !== 1) return;
-        if (node.matches(selector)) {
-          assignBottomFeedOrder(node);
-          applyTikTokOnlyToYouTubeRow(node);
-          addedChat = true;
-        }
-        if (node.querySelectorAll) {
-          var nestedRows = Array.from(node.querySelectorAll(selector));
-          nestedRows.forEach(assignBottomFeedOrder);
-          nestedRows.forEach(applyTikTokOnlyToYouTubeRow);
-          if (nestedRows.length) addedChat = true;
-        }
-      });
-    });
-    if (addedChat) setTimeout(scrollUnifiedChatToBottom, 0);
-  });
-  ssnBottomFeedObserver.observe(list, { childList: true, subtree: true });
-}
-
-function assignBottomFeedOrder(row) {
-  if (!row || row.dataset.ssnBottomOrder) return;
-  row.dataset.ssnBottomOrder = String(++ssnBottomFeedOrder);
-  row.style.setProperty("order", row.dataset.ssnBottomOrder, "important");
-  row.style.setProperty("flex", "0 0 auto", "important");
-}
-
-function scrollUnifiedChatToBottom() {
-  var scroller = document.querySelector("#item-scroller");
-  if (scroller) scroller.scrollTop = scroller.scrollHeight;
-}
-
-function updateTikTokConnectionStatus(status) {
-  tiktokCaptureStatus = status === "connected" || status === "waiting" ? status : "disconnected";
-  var labels = {
-    connected: "TikTok Live Chat: Connected",
-    waiting: "TikTok Live Chat: Waiting for chat",
-    disconnected: "TikTok Live Chat: Disconnected"
-  };
-  $("#tiktok-connection-status")
-    .text(labels[tiktokCaptureStatus])
-    .removeClass("status-connected status-waiting status-disconnected")
-    .addClass("status-" + tiktokCaptureStatus);
-}
-
-function refreshTikTokConnectionStatus() {
-  chrome.runtime.sendMessage({ type: "GET_TIKTOK_STATUS" }, function(response) {
-    if (chrome.runtime.lastError) return;
-    updateTikTokConnectionStatus(response && response.status);
-  });
-}
-
-function copyYouTubeTypography(source, target) {
-  if (!source || !target) return;
-  var style = window.getComputedStyle(source);
-  ["fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "color", "textTransform"].forEach(function(property) {
-    if (style[property]) target.style[property] = style[property];
-  });
-}
-
-function updateTikTokFilterButtonLabel() {
-  $("#tiktok-filter-toggle")
-    .text("TikTok: " + (tiktokFilterEnabled ? "OFF" : "ON"))
-    .toggleClass("tiktok-filter-active", !tiktokFilterEnabled);
-  $("#tiktok-filter-toggle").attr("aria-pressed", tiktokFilterEnabled ? "false" : "true");
-}
-
-function updateTikTokOnlyButtonLabel() {
-  $("#tiktok-only-toggle")
-    .text("TikTok Only: " + (tiktokOnlyEnabled ? "ON" : "OFF"))
-    .toggleClass("tiktok-only-active", tiktokOnlyEnabled)
-    .attr("aria-pressed", tiktokOnlyEnabled ? "true" : "false");
-}
-
-function applyTikTokOnlyToYouTubeRow(row) {
-  if (row && !row.classList.contains("ssn-tiktok-chat-row")) {
-    row.classList.toggle("tiktok-only-hidden", tiktokOnlyEnabled);
-  }
-}
-
-function setTikTokOnlyMode(enabled, saveState) {
-  tiktokOnlyEnabled = !!enabled;
-  if (tiktokOnlyEnabled && tiktokFilterEnabled) setTikTokFilterMode(false);
-  document.querySelectorAll("#items yt-live-chat-text-message-renderer, #items yt-live-chat-paid-message-renderer, #items yt-live-chat-membership-item-renderer, #items yt-live-chat-paid-sticker-renderer, #items yt-gift-message-view-model, #items ytd-sponsorships-live-chat-gift-purchase-announcement-renderer")
-    .forEach(applyTikTokOnlyToYouTubeRow);
-  if (tiktokOnlyEnabled && !lastOverlayWasTikTok) hideActiveChat();
-  updateTikTokOnlyButtonLabel();
-  if (saveState !== false) {
-    chrome.runtime.sendMessage({ type: "SET_TIKTOK_ONLY", enabled: tiktokOnlyEnabled });
-  }
-}
-
-function setTikTokFilterMode(enabled, saveState) {
-  tiktokFilterEnabled = !!enabled;
-  if (tiktokFilterEnabled) {
-    document.querySelectorAll(".ssn-tiktok-chat-row").forEach(function(row) { row.remove(); });
-    if (tiktokOnlyEnabled) setTikTokOnlyMode(false);
-    if (lastOverlayWasTikTok) hideActiveChat();
-  }
-  updateTikTokFilterButtonLabel();
-  if (saveState !== false) {
-    chrome.runtime.sendMessage({ type: "SET_TIKTOK_FILTER", enabled: tiktokFilterEnabled });
-  }
-}
-
-function findChatListAndUseBottomOrder() {
-  var list = document.querySelector("#items");
-  if (list) useBottomChatOrder(list);
-}
-
-findChatListAndUseBottomOrder();
-new MutationObserver(findChatListAndUseBottomOrder).observe(document.documentElement, { childList: true, subtree: true });
 
 
 
@@ -507,7 +313,7 @@ document.addEventListener("click", function(e) {
     console.log("CLICK:", e.target);
 }, true);
 
-$("body").off("pointerdown").on("pointerdown", "yt-live-chat-text-message-renderer,yt-live-chat-paid-message-renderer,yt-live-chat-membership-item-renderer,ytd-sponsorships-live-chat-gift-purchase-announcement-renderer,yt-live-chat-paid-sticker-renderer, yt-gift-message-view-model, .ssn-tiktok-chat-row", function() {
+$("body").off("pointerdown").on("pointerdown", "yt-live-chat-text-message-renderer,yt-live-chat-paid-message-renderer,yt-live-chat-membership-item-renderer,ytd-sponsorships-live-chat-gift-purchase-announcement-renderer,yt-live-chat-paid-sticker-renderer, yt-gift-message-view-model", function() {
 
   // Fan funding filters only Jewel gifts. Super Chats, Super Stickers,
   // memberships, and gifted memberships keep their existing behavior.
@@ -544,8 +350,6 @@ setTimeout(function(){
     hideActiveChat();
     return;
   }
-
-  lastOverlayWasTikTok = $(this).hasClass("ssn-tiktok-chat-row");
 
   if ($(this).is("yt-gift-message-view-model")) {
 
@@ -1268,11 +1072,6 @@ data.backgroundColor = "";
 
   // console.log(data);
 
-var isTikTokMessage = $(this).hasClass("ssn-tiktok-chat-row");
-var authorPlatformIconHTML = isTikTokMessage
-  ? '<div style="background:#111;border-radius:5px;padding:2px 3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" aria-label="TikTok" style="display:block"><path fill="#25F4EE" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.4v13.67a2.9 2.9 0 1 1-2.9-2.9c.16 0 .32.01.47.04v-3.43a6.3 6.3 0 1 0 5.83 6.28V9.4a8.2 8.2 0 0 0 4.8 1.55V7.56c-.35 0-.69-.03-1.03-.1z" transform="translate(-1 1)"/><path fill="#FE2C55" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.4v13.67a2.9 2.9 0 1 1-2.9-2.9c.16 0 .32.01.47.04v-3.43a6.3 6.3 0 1 0 5.83 6.28V9.4a8.2 8.2 0 0 0 4.8 1.55V7.56c-.35 0-.69-.03-1.03-.1z" transform="translate(1 -1)"/><path fill="#fff" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.4v13.67a2.9 2.9 0 1 1-2.9-2.9c.16 0 .32.01.47.04v-3.43a6.3 6.3 0 1 0 5.83 6.28V9.4a8.2 8.2 0 0 0 4.8 1.55V7.56c-.35 0-.69-.03-1.03-.1z"/></svg></div>'
-  : '<div style="background:#fff;border-radius:6px;padding:2px 3px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.35);flex-shrink:0;"><svg width="19" height="14" viewBox="0 0 22 16" style="flex-shrink:0;display:block"><defs><linearGradient id="ytGradName" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ff4d4d"/><stop offset="55%" stop-color="#e50000"/><stop offset="100%" stop-color="#a80000"/></linearGradient><linearGradient id="ytShineName" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#fff" stop-opacity="0.55"/><stop offset="45%" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="ytDropName" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#000" flood-opacity="0.45"/></filter></defs><rect width="22" height="16" rx="4" fill="url(#ytGradName)" filter="url(#ytDropName)"/><rect x="0.6" y="0.6" width="20.8" height="14.8" rx="3.4" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/><rect width="22" height="8" rx="4" fill="url(#ytShineName)"/><polygon points="9,5 9,11 14.5,8" fill="#8c0000" opacity="0.4" transform="translate(0.4,0.6)"/><polygon points="9,5 9,11 14.5,8" fill="#fff"/><polygon points="9,5 9,7.6 11.8,6.3" fill="#ffffff" opacity="0.55"/></svg></div>';
-
 var html =
     '<div class="hl-c-cont fadeout" style="'
 +'position:relative;'
@@ -1296,7 +1095,30 @@ var html =
 +'align-items:center;'
 +'gap:6px;'
 +'">'
-    + authorPlatformIconHTML
+    + '<div style="background:#fff;border-radius:6px;padding:2px 3px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.35);flex-shrink:0;">'
+    + '<svg width="19" height="14" viewBox="0 0 22 16" style="flex-shrink:0; display:block;">'
+        + '<defs>'
+            + '<linearGradient id="ytGradName" x1="0%" y1="0%" x2="0%" y2="100%">'
+                + '<stop offset="0%" stop-color="#ff4d4d"/>'
+                + '<stop offset="55%" stop-color="#e50000"/>'
+                + '<stop offset="100%" stop-color="#a80000"/>'
+            + '</linearGradient>'
+            + '<linearGradient id="ytShineName" x1="0%" y1="0%" x2="0%" y2="100%">'
+                + '<stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>'
+                + '<stop offset="45%" stop-color="#fff" stop-opacity="0"/>'
+            + '</linearGradient>'
+            + '<filter id="ytDropName" x="-30%" y="-30%" width="160%" height="160%">'
+                + '<feDropShadow dx="0" dy="1" stdDeviation="0.8" flood-color="#000" flood-opacity="0.45"/>'
+            + '</filter>'
+        + '</defs>'
+        + '<rect width="22" height="16" rx="4" fill="url(#ytGradName)" filter="url(#ytDropName)"/>'
+        + '<rect x="0.6" y="0.6" width="20.8" height="14.8" rx="3.4" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>'
+        + '<rect width="22" height="8" rx="4" fill="url(#ytShineName)"/>'
+        + '<polygon points="9,5 9,11 14.5,8" fill="#8c0000" opacity="0.4" transform="translate(0.4,0.6)"/>'
+        + '<polygon points="9,5 9,11 14.5,8" fill="#fff"/>'
+        + '<polygon points="9,5 9,7.6 11.8,6.3" fill="#ffffff" opacity="0.55"/>'
+    + '</svg>'
+    + '</div>'
     + '<span>' + data.authorname + '</span>'
     + '<div class="hl-badges">' + data.badges + '</div>'
     + '</div>'
@@ -1387,7 +1209,6 @@ function hideActiveChat() {
   });
 
   lastID = false;
-  lastOverlayWasTikTok = false;
 }
 
 $("body").on("click", ".btn-clear", function() {
@@ -1535,9 +1356,6 @@ if (window.location.hash) {
 $("#primary-content").append('<span id="get-overlay-url-container"><a href="#" id="pop-out-button" class="button">Get Overlay URL</a></span>');
 $("#primary-content").append('<span class="hidden" style="margin-top: 50px;"><input type="url" readonly id="pop-out-url"></span>');
 $("#primary-content").append('<span id="fan-funding-filter-container"><a href="#" id="fan-funding-filter-toggle" class="button button-small">Jewel Filter (67+): OFF</a></span>');
-$("#primary-content").append('<span id="tiktok-filter-container"><a href="#" id="tiktok-filter-toggle" class="button button-small" aria-pressed="false">Enable TikTok: OFF</a></span>');
-$("#primary-content").append('<span id="tiktok-only-filter-container"><a href="#" id="tiktok-only-toggle" class="button button-small" aria-pressed="false">TikTok Only: OFF</a></span>');
-$("#primary-content").append('<span id="tiktok-connection-status" class="status-disconnected" role="status" aria-live="polite">TikTok Live Chat: Disconnected</span>');
 $("#primary-content").append('<span id="author-filter-container"><a href="#" id="author-filter-toggle" class="button button-small">Only @' + authorFilterHandle + ': OFF</a></span>');
 $("#primary-content").append('<span id="search-filter-container"><a href="#" id="search-filter-toggle" class="button button-small">Search Filter: OFF</a><textarea id="search-filter-input" class="hidden" placeholder="@username1, @username2, @username3 ... (comma, space, or newline separated - paste as many as you want)"></textarea></span>');
 
@@ -1549,29 +1367,6 @@ $("#fan-funding-filter-toggle").click(function(e) {
   e.preventDefault();
   setFanFundingMode(fanFundingMode === "gifts-67-plus" ? "all" : "gifts-67-plus");
 });
-
-$("#tiktok-filter-toggle").click(function(e) {
-  e.preventDefault();
-  setTikTokFilterMode(!tiktokFilterEnabled);
-});
-
-$("#tiktok-only-toggle").click(function(e) {
-  e.preventDefault();
-  setTikTokOnlyMode(!tiktokOnlyEnabled);
-});
-
-chrome.runtime.sendMessage({ type: "GET_TIKTOK_FILTER" }, function(response) {
-  if (chrome.runtime.lastError) return;
-  setTikTokFilterMode(!!(response && response.enabled), false);
-});
-
-chrome.runtime.sendMessage({ type: "GET_TIKTOK_ONLY" }, function(response) {
-  if (chrome.runtime.lastError) return;
-  setTikTokOnlyMode(!!(response && response.enabled), false);
-});
-
-refreshTikTokConnectionStatus();
-setInterval(refreshTikTokConnectionStatus, 4000);
 
 $("#author-filter-toggle").click(function(e) {
   e.preventDefault();
@@ -1622,13 +1417,6 @@ $("#pop-out-button").click(function(e){
   }
 
   window.location.hash = sessionID;
-
-  chrome.runtime.sendMessage({
-    type: "REGISTER_OVERLAY_SESSION",
-    sessionID: sessionID,
-    videoID: videoID,
-    serverURL: remoteServerURL
-  });
 
   $("#pop-out-url").val(remoteWindowURL+"#"+sessionID);
   $("#pop-out-url").parent().removeClass("hidden");
