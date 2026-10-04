@@ -54,45 +54,14 @@ def _allow_extension_requests(response):
 # CONFIG
 # ============================================================
 
-# ---------------- TIME RATES (editable from the Dashboard) ----------------
-# These two are only the STARTING DEFAULTS. The live values can be
-# changed from the Dashboard ("Time Rates" card) and are saved to
-# timer_state.json, so they survive a restart. The rest of the code
-# keeps reading GIFT_SECONDS_PER_JEWEL / SUPERCHAT_SECONDS_PER_USD
-# at the moment each gift / Super Chat arrives, so a change applies
-# instantly to everything that comes in afterwards.
-#
-# 1 Jewel = 6 seconds
-DEFAULT_GIFT_SECONDS_PER_JEWEL = 6
+# ---------------- JEWELS ----------------
+# 1 Jewel = 1 second
+GIFT_SECONDS_PER_JEWEL = .5
 
+
+# ---------------- SUPER CHAT ----------------
 # $1 USD = 60 seconds
-DEFAULT_SUPERCHAT_SECONDS_PER_USD = 60
-
-# Allowed range for the Dashboard inputs (seconds).
-RATE_MIN = 0.001
-RATE_MAX = 100000
-
-GIFT_SECONDS_PER_JEWEL = DEFAULT_GIFT_SECONDS_PER_JEWEL
-SUPERCHAT_SECONDS_PER_USD = DEFAULT_SUPERCHAT_SECONDS_PER_USD
-
-
-def parse_rate(value):
-    """Returns `value` as a clean number of seconds, or None if it is
-    not a usable rate (not a number, NaN/infinity, or outside
-    RATE_MIN..RATE_MAX)."""
-
-    if isinstance(value, bool):
-        return None
-
-    try:
-        number = float(value)
-    except (TypeError, ValueError):
-        return None
-
-    if number != number or not (RATE_MIN <= number <= RATE_MAX):
-        return None
-
-    return int(number) if number == int(number) else round(number, 4)
+SUPERCHAT_SECONDS_PER_USD = 30
 
 
 # ---------------- CURRENCY API ----------------
@@ -945,8 +914,6 @@ def save_state():
             "bank_seconds": bank_seconds,
             "running": timer_running,
             "locked": timer_locked,
-            "gift_seconds_per_jewel": GIFT_SECONDS_PER_JEWEL,
-            "superchat_seconds_per_usd": SUPERCHAT_SECONDS_PER_USD,
             "left_text_scroll": left_text_scroll_enabled,
             "left_box_enabled": left_box_enabled,
             "right_box_enabled": right_box_enabled,
@@ -974,8 +941,6 @@ def save_state():
 
 
 def load_state():
-    global GIFT_SECONDS_PER_JEWEL
-    global SUPERCHAT_SECONDS_PER_USD
     global timer_seconds
     global bank_seconds
     global timer_running
@@ -1012,17 +977,6 @@ def load_state():
         timer_running = False
 
         timer_locked = bool(data.get("locked", False))
-
-        saved_gift_rate = parse_rate(data.get("gift_seconds_per_jewel"))
-        saved_usd_rate = parse_rate(data.get("superchat_seconds_per_usd"))
-        GIFT_SECONDS_PER_JEWEL = (
-            saved_gift_rate if saved_gift_rate is not None
-            else DEFAULT_GIFT_SECONDS_PER_JEWEL
-        )
-        SUPERCHAT_SECONDS_PER_USD = (
-            saved_usd_rate if saved_usd_rate is not None
-            else DEFAULT_SUPERCHAT_SECONDS_PER_USD
-        )
 
         left_text_scroll_enabled = bool(data.get("left_text_scroll", True))
         left_box_enabled = bool(data.get("left_box_enabled", True))
@@ -2582,8 +2536,6 @@ def state():
             "image_overlay_width": image_overlay_width,
             "image_overlay_height": image_overlay_height,
             "fonts_version": fonts_version,
-            "gift_seconds_per_jewel": GIFT_SECONDS_PER_JEWEL,
-            "superchat_seconds_per_usd": SUPERCHAT_SECONDS_PER_USD,
             "left_texts": left_texts,
             "left_text_durations": left_text_durations,
             "left_text_style": left_text_style,
@@ -2954,59 +2906,6 @@ def msg_text_set_style():
     save_state()
 
     return jsonify({"ok": True, "msg_text_style": msg_text_style})
-
-
-# ============================================================
-# TIME RATES (Dashboard-editable)
-# ============================================================
-
-@app.route("/rates/set", methods=["POST"])
-def rates_set():
-    """
-    Changes how many seconds a Jewel and a Super Chat dollar add to the
-    timer. Applies immediately to every gift / Super Chat that arrives
-    afterwards and is saved to the state file.
-
-    Body: {"gift_seconds_per_jewel": 6, "superchat_seconds_per_usd": 60}
-    or    {"reset": true}   to go back to the built-in defaults.
-    """
-    global GIFT_SECONDS_PER_JEWEL
-    global SUPERCHAT_SECONDS_PER_USD
-
-    payload = request.get_json(silent=True) or {}
-
-    if payload.get("reset") is True:
-        new_gift = DEFAULT_GIFT_SECONDS_PER_JEWEL
-        new_usd = DEFAULT_SUPERCHAT_SECONDS_PER_USD
-    else:
-        new_gift = parse_rate(payload.get("gift_seconds_per_jewel"))
-        new_usd = parse_rate(payload.get("superchat_seconds_per_usd"))
-
-        if new_gift is None or new_usd is None:
-            return jsonify({
-                "ok": False,
-                "error": (
-                    "Both rates must be numbers from %g to %g seconds."
-                    % (RATE_MIN, RATE_MAX)
-                )
-            }), 400
-
-    with lock:
-        GIFT_SECONDS_PER_JEWEL = new_gift
-        SUPERCHAT_SECONDS_PER_USD = new_usd
-
-    save_state()
-
-    print(
-        f"TIME RATES CHANGED: 1 Jewel = {new_gift:g} s, "
-        f"$1 = {new_usd:g} s"
-    )
-
-    return jsonify({
-        "ok": True,
-        "gift_seconds_per_jewel": GIFT_SECONDS_PER_JEWEL,
-        "superchat_seconds_per_usd": SUPERCHAT_SECONDS_PER_USD
-    })
 
 
 # ============================================================
@@ -3989,7 +3888,7 @@ header p {
    narrow screens. */
 .card.dual-row {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
     padding: 0;
     background: none;
@@ -3998,18 +3897,6 @@ header p {
 
 .card.dual-row > .card {
     margin: 0;
-}
-
-@media (max-width: 800px) {
-    .card.dual-row {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-/* Single column version of .two-col (used by the Left-Side Text card so
-   the message editor gets the full card width). */
-.two-col.stack {
-    grid-template-columns: minmax(0, 1fr);
 }
 
 .card h2 {
@@ -4197,23 +4084,14 @@ input[type="color"] {
 
 .left-text-row {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
 }
 
-/* The message box sits on its own full-width line (seconds / style /
-   remove controls wrap underneath it), and is a multi-line textarea so
-   longer messages wrap instead of scrolling out of sight. */
-.left-text-row textarea.lt-text {
-    flex: 1 1 100%;
-    width: 100%;
+.left-text-row input.lt-text {
+    flex: 1 1 auto;
     min-width: 0;
-    min-height: 68px;
-    font-size: 16px;
-    line-height: 1.35;
-    resize: vertical;
 }
 
 .left-text-row input.lt-secs {
@@ -4478,40 +4356,6 @@ hr.divider {
 </div>
 
 
-<div class="card wide">
-
-    <h2>⚙️ Time Rates</h2>
-    <p class="hint">
-        How many seconds each donation adds to the timer. Changes apply
-        instantly to every gift / Super Chat that arrives afterwards, and
-        are remembered after a restart.
-    </p>
-
-    <div class="two-col">
-
-        <div>
-            <label class="field-label">Seconds added per 1 Jewel (gifts)</label>
-            <input id="rateJewel" type="number" min="0.001" max="100000" step="any">
-        </div>
-
-        <div>
-            <label class="field-label">Seconds added per $1 USD (Super Chats)</label>
-            <input id="rateUsd" type="number" min="0.001" max="100000" step="any">
-        </div>
-
-    </div>
-
-    <p id="ratePreview" class="hint" style="margin-top:10px;"></p>
-
-    <div class="btn-row">
-        <button class="primary" onclick="saveRates()">Save Rates</button>
-        <button onclick="resetRates()">Reset to defaults (6 and 60)</button>
-    </div>
-    <div id="ratesStatus" class="status-line"></div>
-
-</div>
-
-
 <div class="card wide dual-row">
 
 <div class="card">
@@ -4543,7 +4387,7 @@ hr.divider {
 
     <hr class="divider">
 
-    <div class="two-col stack">
+    <div class="two-col">
 
         <div>
             <label class="field-label">Saved groups</label>
@@ -5740,10 +5584,10 @@ const leftTextsEditor = (function(){
         const row = document.createElement('div');
         row.className = 'left-text-row';
 
-        const textInput = document.createElement('textarea');
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
         textInput.className = 'lt-text';
-        textInput.rows = 2;
-        textInput.placeholder = 'Message text (press Enter for a line break)';
+        textInput.placeholder = 'Message text';
         textInput.value = text || '';
 
         const secsInput = document.createElement('input');
@@ -5889,7 +5733,7 @@ const leftTextsEditor = (function(){
 
         for (const outer of outers){
             const row = outer.querySelector('.left-text-row');
-            const text = row.querySelector('.lt-text').value.replace(/\\r?\\n/g, '||').trim();
+            const text = row.querySelector('.lt-text').value.trim();
             if (text.length === 0) continue;
 
             const secs = Number(row.querySelector('.lt-secs').value);
@@ -6003,7 +5847,7 @@ const leftTextsEditor = (function(){
 
         for (const outer of outers){
             const row = outer.querySelector('.left-text-row');
-            const text = row.querySelector('.lt-text').value.replace(/\\r?\\n/g, '||').trim();
+            const text = row.querySelector('.lt-text').value.trim();
             if (text.length === 0) continue;
 
             const secs = Number(row.querySelector('.lt-secs').value);
@@ -6051,94 +5895,6 @@ const leftTextsEditor = (function(){
     };
 
 })();
-
-// ---------------- time rates (seconds per jewel / per USD) ----------------
-
-function formatRateSeconds(sec){
-    sec = Math.round(sec);
-    if (sec < 60) return sec + ' sec';
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    if (m < 60) return m + ' min' + (s ? ' ' + s + ' sec' : '');
-    const h = Math.floor(m / 60);
-    const mm = m % 60;
-    return h + ' hr' + (mm ? ' ' + mm + ' min' : '');
-}
-
-function refreshRatePreview(){
-    const jewel = Number(document.getElementById('rateJewel').value);
-    const usd = Number(document.getElementById('rateUsd').value);
-    const el = document.getElementById('ratePreview');
-
-    if (!(jewel > 0) || !(usd > 0)){
-        el.textContent = '';
-        return;
-    }
-
-    el.textContent =
-        'Example: 100 Jewels = ' + formatRateSeconds(100 * jewel) +
-        '   |   $5 Super Chat = ' + formatRateSeconds(5 * usd);
-}
-
-document.getElementById('rateJewel').addEventListener('input', refreshRatePreview);
-document.getElementById('rateUsd').addEventListener('input', refreshRatePreview);
-
-function applyRatesToInputs(jewel, usd){
-    document.getElementById('rateJewel').value = jewel;
-    document.getElementById('rateUsd').value = usd;
-    refreshRatePreview();
-}
-
-async function loadRates(){
-    try {
-        const res = await fetch('/state');
-        const data = await res.json();
-        applyRatesToInputs(data.gift_seconds_per_jewel, data.superchat_seconds_per_usd);
-    } catch (e){
-        setLine(document.getElementById('ratesStatus'), 'Failed to load current rates: ' + e, true);
-    }
-}
-
-async function sendRates(body, okText){
-    const statusEl = document.getElementById('ratesStatus');
-    try {
-        const res = await fetch('/rates/set', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (data.ok){
-            applyRatesToInputs(data.gift_seconds_per_jewel, data.superchat_seconds_per_usd);
-            setLine(statusEl, okText, false);
-        } else {
-            setLine(statusEl, 'Error: ' + (data.error || 'unknown error'), true);
-        }
-    } catch (e){
-        setLine(statusEl, 'Request failed: ' + e, true);
-    }
-}
-
-function saveRates(){
-    const jewelRaw = document.getElementById('rateJewel').value;
-    const usdRaw = document.getElementById('rateUsd').value;
-
-    if (jewelRaw === '' || usdRaw === ''){
-        setLine(document.getElementById('ratesStatus'), 'Enter a number in both boxes.', true);
-        return;
-    }
-
-    sendRates(
-        { gift_seconds_per_jewel: Number(jewelRaw), superchat_seconds_per_usd: Number(usdRaw) },
-        'Saved - applies to the next gift / Super Chat.'
-    );
-}
-
-function resetRates(){
-    sendRates({ reset: true }, 'Reset to the defaults.');
-}
-
-loadRates();
 
 // ---------------- timer message text (unlocked + locked) ----------------
 
